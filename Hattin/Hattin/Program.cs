@@ -4,46 +4,42 @@ namespace Hattin
 {
     class Engine
     {
-        private int[] board = new int[120];
-        public int[] Board
+        private BoardState currentBoardState;
+        public BoardState CurrentBoardState
         {
-            get { return board; }
-            private set { board = value; }
+            get { return currentBoardState; }
+            set { currentBoardState = value; }
         }
 
-        private int plyCounter;
-        public int PlyCounter
+        //Does one need to keep a full copy of the board state for every move?
+        //Maybe make another datatype which contains a board hash and move
+        private List<BoardState> boardHistory;
+        public List<BoardState> BoardHistory
         {
-            get { return plyCounter; }
-            private set { plyCounter = value; }
-        }
-
-        private int pliesWithoutCapture;
-        public int PliesWithoutCapture
-        {
-            get { return pliesWithoutCapture; }
-            private set { pliesWithoutCapture = value; }
-        }
-
-        private SideEnum sideToMove;
-        public SideEnum SideToMove
-        {
-            get { return sideToMove; }
-            private set { sideToMove = value; }
-        }
-
-        private EnPassantSquares enPassantSquares;
-        public EnPassantSquares EnPassantSquares
-        {
-            get { return enPassantSquares; }
-            private set { enPassantSquares = value; }
+            get { return boardHistory; }
+            set { boardHistory = value; }
         }
 
 
+    }
 
-        //boardhash for 3 fold repetition
-
-
-
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            /*
+                //Lists dont copy the item, its still a reference
+                //Simple types (primitives?) like ints do get copied and cant be changed from outside
+                List<int[]> a = new();
+                int[] b = new int[1];
+                int x = 21;
+                b[0] = x;
+                a.Add(b);
+                Console.WriteLine(a[0][0]); //21
+                x = 21344;
+                b[0] = 4124;
+                Console.WriteLine(a[0][0]); //4124
+            */
+        }
     }
 }

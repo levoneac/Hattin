@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Hattin")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+64e3e334942e5e4e0e4164e466b417d76455d199")]
 [assembly: System.Reflection.AssemblyProductAttribute("Hattin")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Hattin")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
