@@ -2,9 +2,9 @@ namespace Hattin.Types
 {
     public class BoardState
     {
-        public static readonly int BOARD_SQAURE_NUMBER = 120;
+        public static readonly SquareIndexType squareIndexing = SquareIndexType.Base_120;
 
-        private int[] board = new int[BOARD_SQAURE_NUMBER];
+        private int[] board = new int[(int)squareIndexing];
         public int[] Board
         {
             get { return board; }
