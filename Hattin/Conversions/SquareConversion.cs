@@ -2,29 +2,59 @@ using Hattin.Types;
 
 namespace Hattin.Conversions
 {
-    public static class SquareConversions //struct?
+    public class SquareConversions //struct?
     {
+        //Less safe to use these directly, but probably a bit faster
+        public static readonly int[] Array64To120 = new int[64];
+        public static readonly int[] Array120To64 = new int[120];
+        static SquareConversions() //static constructors run only once
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                Array64To120[i] = Convert64To120(i);
+                Array120To64[i] = Convert120To64(i);
+            }
+            for (int i = 64; i < 120; i++)
+            {
+                Array120To64[i] = Convert120To64(i);
+            }
+        }
         public static int Convert(int index, SquareIndexType fromType, SquareIndexType toType)
         {
             if (fromType == SquareIndexType.Base_64 && toType == SquareIndexType.Base_120)
             {
-                return Convert64to120(index);
+                return Convert64To120(index);
             }
             else if (fromType == SquareIndexType.Base_120 && toType == SquareIndexType.Base_64)
             {
-                return Convert120to64(index);
+                return Convert120To64(index);
             }
             else
             {
                 throw new NotImplementedException($"This conversion({fromType} to {toType}) is not yet implemented");
             }
         }
+        public static int AutoChooseConvert64And120(int index, SquareIndexType fromType)
+        {
+            if (fromType == SquareIndexType.Base_64)
+            {
+                return Convert64To120(index);
+            }
+            else if (fromType == SquareIndexType.Base_120)
+            {
+                return Convert120To64(index);
+            }
+            else
+            {
+                throw new NotImplementedException("Only base 64 and 120 allowed");
+            }
+        }
 
-        public static int Convert64to120(int index)
+        public static int Convert64To120(int index)
         {
             if (index < 0 || index > 63)
             {
-                throw new ArgumentOutOfRangeException($"{index} is out of range [0, 63]");
+                throw new ArgumentOutOfRangeException(nameof(index), index, $"{index} is out of range [0, 63]");
             }
             //base 120 starts at 21
             int start = 21;
@@ -39,11 +69,11 @@ namespace Hattin.Conversions
 
         }
 
-        public static int Convert120to64(int index)
+        public static int Convert120To64(int index)
         {
             if (index < 0 || index > 119)
             {
-                throw new ArgumentOutOfRangeException($"{index} is out of range [0, 119]");
+                throw new ArgumentOutOfRangeException(nameof(index), index, $"{index} is out of range [0, 119]");
             }
             if (index < 21 || index > 98)
             {

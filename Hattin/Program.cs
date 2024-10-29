@@ -44,6 +44,12 @@ namespace Hattin
             BitBoard bb = new();
             bb.Board = 256 + 512 + 1024 + 2048 + 4096 + 8192 + 16384 + 32768;
             bb.PrintBitBoard();
+            bb.Board |= 1UL << Conversions.SquareConversions.Array120To64[(int)BoardSquares.H8];
+            bb.PrintBitBoard();
+            bb.AddPieceBase_120(21);
+            bb.PrintBitBoard();
+            Console.WriteLine(bb.CountSetBits());
+            /*
             Console.WriteLine();
             for (int i = 0; i < 64; i++)
             {
@@ -51,19 +57,20 @@ namespace Hattin
                 {
                     Console.WriteLine();
                 }
-                Console.Write("|" + Conversions.SquareConversions.Convert(i, SquareIndexType.Base_64, SquareIndexType.Base_120) + "|");
+                Console.Write("|" + Conversions.SquareConversions.Array64To120[i] + "|");
             }
 
             Console.WriteLine();
             for (int i = 21; i < 99; i++)
             {
-                int conv = Conversions.SquareConversions.Convert(i, SquareIndexType.Base_120, SquareIndexType.Base_64);
+                int conv = Conversions.SquareConversions.Array120To64[i];
                 if (conv % 8 == 0 && conv != 112)
                 {
                     Console.WriteLine();
                 }
                 Console.Write("|" + conv + "|");
             }
+            */
         }
     }
 }
