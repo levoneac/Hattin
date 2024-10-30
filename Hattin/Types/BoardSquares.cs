@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public enum BoardSquares
+    public enum BoardSquares : int
     {
         NoSquare = 112,
         A1 = 21, B1, C1, D1, E1, F1, G1, H1,

@@ -44,11 +44,21 @@ namespace Hattin
             BitBoard bb = new();
             bb.Board = 256 + 512 + 1024 + 2048 + 4096 + 8192 + 16384 + 32768;
             bb.PrintBitBoard();
-            bb.Board |= 1UL << Conversions.SquareConversions.Array120To64[(int)BoardSquares.H8];
+            //bb.Board |= 1UL << Conversions.SquareConversions.Array120To64[(int)BoardSquares.H8];
             bb.PrintBitBoard();
-            bb.AddPieceBase_120(21);
+            bb.AddPieceBase_120(23);
             bb.PrintBitBoard();
             Console.WriteLine(bb.CountSetBits());
+            BitBoard.PrintBitBoard(bb.GetLastSetBit());
+            Console.WriteLine(bb.LastSetBitIndex());
+            bb.PopLastSetBit();
+            bb.PrintBitBoard();
+            bb.PopLastSetBit();
+            bb.PrintBitBoard();
+            bb.PopLastSetBit();
+            bb.PrintBitBoard();
+            bb.PopLastSetBit();
+            bb.PrintBitBoard();
             /*
             Console.WriteLine();
             for (int i = 0; i < 64; i++)

@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public enum SideEnum : ushort
+    public enum SideEnum : int
     {
         White,
         Black,

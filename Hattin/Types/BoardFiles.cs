@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public enum BoardFiles
+    public enum BoardFiles : int
     {
         File_A,
         File_B,
