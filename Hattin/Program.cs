@@ -59,6 +59,10 @@ namespace Hattin
             bb.PrintBitBoard();
             bb.PopLastSetBit();
             bb.PrintBitBoard();
+
+
+            BoardState board = new();
+            board.PrintBoard();
             /*
             Console.WriteLine();
             for (int i = 0; i < 64; i++)

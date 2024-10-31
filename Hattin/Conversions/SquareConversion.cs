@@ -31,7 +31,7 @@ namespace Hattin.Conversions
             }
             else
             {
-                throw new NotImplementedException($"This conversion({fromType} to {toType}) is not yet implemented");
+                throw new NotSupportedException($"This conversion({fromType} to {toType}) is not yet implemented");
             }
         }
         public static int AutoChooseConvert64And120(int index, SquareIndexType fromType)

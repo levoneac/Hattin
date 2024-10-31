@@ -2,18 +2,18 @@ namespace Hattin.Types
 {
     public enum NormalPieces : int
     {
-        Empty,
+        BlackPawn = 1,
+        BlackKnight,
+        BlackBishop,
+        BlackRook,
+        BlackQueen,
+        BlackKing,
         WhitePawn,
         WhiteKnight,
         WhiteBishop,
         WhiteRook,
         WhiteQueen,
         WhiteKing,
-        BlackPawn,
-        BlackKnight,
-        BlackBishop,
-        BlackRook,
-        BlackQueen,
-        BlackKing
+        Empty
     }
 }
