@@ -36,8 +36,8 @@ namespace Hattin.Types
             private set { pliesWithoutCapture = value; }
         }
 
-        private SideEnum sideToMove;
-        public SideEnum SideToMove
+        private SideToMove sideToMove;
+        public SideToMove SideToMove
         {
             get { return sideToMove; }
             private set { sideToMove = value; }
@@ -61,20 +61,43 @@ namespace Hattin.Types
         {
             ProcessFEN(startingFEN);
         }
-
-        public void PrintBoard()
+        public void FlushBoard()
         {
-            for (int i = 0; i < 64; i++)
+            for (int i = 0; i < Board.Length; i++)
             {
-                if (i % 8 == 0)
-                {
-                    Console.WriteLine();
-                }
-                Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
+                Board[i] = 0;
             }
+        }
+        public void PrintBoard(SideToMove perspective)
+        {
+
+            if (perspective == SideToMove.White)
+            {
+                for (int i = 63; i >= 0; i--)
+                {
+                    if ((i + 1) % 8 == 0)
+                    {
+                        Console.WriteLine();
+                    }
+                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 64; i++)
+                {
+                    if (i % 8 == 0)
+                    {
+                        Console.WriteLine();
+                    }
+                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
+                }
+            }
+
         }
         public void ProcessFEN(string FEN)
         {
+            FlushBoard();
             //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             string[] byRank = FEN.Split(" "); //[board state, player to move, castle rights, 50 move rule (in ply), total moves (fullmove)]
             int boardPointer = 63; //FEN starts from the last square (H8)

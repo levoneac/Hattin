@@ -62,7 +62,21 @@ namespace Hattin
 
 
             BoardState board = new();
-            board.PrintBoard();
+            board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
+            board.PrintBoard(SideToMove.Black);
+
+            /*
+                |R||N||B||K||Q||B||N||R|
+                |P||P||P||P||P||P||P||P|
+                |0||0||0||0||0||0||0||0|
+                |0||0||0||0||0||0||0||0|
+                |0||0||0||0||0||0||0||0|
+                |0||0||0||0||0||0||0||0|
+                |p||p||p||p||p||p||p||p|
+                |r||n||b||k||q||b||n||r|
+            */
+
+
             /*
             Console.WriteLine();
             for (int i = 0; i < 64; i++)
@@ -85,6 +99,7 @@ namespace Hattin
                 Console.Write("|" + conv + "|");
             }
             */
+
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public enum SideEnum : int
+    public enum SideToMove : int
     {
         White,
         Black,
