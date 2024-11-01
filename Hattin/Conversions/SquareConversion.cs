@@ -77,7 +77,7 @@ namespace Hattin.Conversions
             }
             if (index < 21 || index > 98)
             {
-                return (int)BoardSquares.NoSquare;
+                return (int)BoardSquare.NoSquare;
             }
 
             //Makes the base 0
@@ -87,7 +87,7 @@ namespace Hattin.Conversions
             int m = start % 10;
             if (m > 7)
             {
-                return (int)BoardSquares.NoSquare;
+                return (int)BoardSquare.NoSquare;
             }
 
             //subtracts the 2 missing out of bounds squares for each row

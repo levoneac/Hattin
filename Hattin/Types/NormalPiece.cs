@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public enum NormalPieces : int
+    public enum NormalPiece : int
     {
         BlackPawn = 1,
         BlackKnight,

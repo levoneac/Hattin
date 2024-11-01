@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public enum BoardRanks : int
+    public enum BoardRank : int
     {
         Rank_1,
         Rank_2,

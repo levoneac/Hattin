@@ -119,7 +119,7 @@ namespace Hattin.Types
                     return i;
                 }
             }
-            return (int)BoardSquares.NoSquare;
+            return (int)BoardSquare.NoSquare;
         }
 
 
@@ -134,7 +134,7 @@ namespace Hattin.Types
                     return i;
                 }
             }
-            return (int)BoardSquares.NoSquare;
+            return (int)BoardSquare.NoSquare;
         }
         public int CountSetBits()
         {
