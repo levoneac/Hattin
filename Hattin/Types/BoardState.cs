@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace Hattin.Types
@@ -14,12 +15,21 @@ namespace Hattin.Types
             private set { board = value; }
         }
 
+        private PieceList<NormalPiece> pieceProperties; //Array of lenght of NormalPiece enum, with each index refering to a list of squares those pieces occupy
+        public PieceList<NormalPiece> PieceProperties
+        {
+            get { return pieceProperties; }
+            private set { pieceProperties = value; }
+        }
+
         private Move lastestMove;
         public Move LastestMove
         {
             get { return lastestMove; }
             private set { lastestMove = value; }
         }
+
+        private List<Move> moveHistory;
 
 
         private int plyCounter;
@@ -61,6 +71,8 @@ namespace Hattin.Types
         {
             Board = new NormalPiece[(int)squareIndexing];
             LastestMove = new Move();
+            PieceProperties = new PieceList<NormalPiece>();
+            moveHistory = new List<Move>();
             PlyCounter = 0;
             PliesWithoutCapture = 0;
             SideToMove = SideToMove.White;
@@ -75,6 +87,16 @@ namespace Hattin.Types
             return HashCode.Combine(Board, EnPassantSquare, CastleRights, SideToMove);
         }
 
+        public ReadOnlyCollection<Move> GetMoveHistory()
+        {
+            return moveHistory.AsReadOnly();
+        }
+
+        public void UpdatePieceBalance()
+        {
+
+        }
+
         public void FlushBoard()
         {
 
@@ -82,6 +104,7 @@ namespace Hattin.Types
             {
                 Board[i] = NormalPiece.Empty;
             }
+            PieceProperties.ClearPieceList();
             PlyCounter = 0;
             PliesWithoutCapture = 0;
             SideToMove = SideToMove.White;
@@ -90,27 +113,29 @@ namespace Hattin.Types
         }
         public void PrintBoard(SideToMove perspective, bool moreInfo = false)
         {
-
+            Console.WriteLine();
             if (perspective == SideToMove.White)
             {
-                for (int i = 63; i >= 0; i--)
+                for (int i = 56; i >= 0; i++)
                 {
+                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
                     if ((i + 1) % 8 == 0)
                     {
                         Console.WriteLine();
+                        i -= 16;
                     }
-                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
                 }
             }
             else
             {
-                for (int i = 0; i < 64; i++)
+                for (int i = 7; i < 64; i--)
                 {
+                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
                     if (i % 8 == 0)
                     {
                         Console.WriteLine();
+                        i += 16;
                     }
-                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
                 }
             }
             Console.WriteLine();
@@ -129,27 +154,36 @@ namespace Hattin.Types
             FlushBoard();
             //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
             string[] byRank = FEN.Split(" "); //[board state(0), player to move(1), castle rights(2), enpassant square(3) 50 move rule (in ply)(4), total moves (fullmove)(5)]
-            int boardPointer = 63; //FEN starts from the last square (H8)
+            int boardPointer = 56; //FEN starts from square (A8)
 
             //Board state
+            bool changeRankNextIter = false;
             foreach (char elem in byRank[0])
             {
                 if (elem == '/')
                 {
                     continue;
                 }
+
                 if (char.IsNumber(elem))
                 {
                     //rank number
-                    boardPointer -= (int)char.GetNumericValue(elem);
+                    boardPointer += (int)char.GetNumericValue(elem);
+                    if (boardPointer % 8 == 0)
+                    {
+                        changeRankNextIter = true;
+                    }
                 }
                 else if (char.IsLetter(elem))
                 {
 
                     if (Enum.TryParse(typeof(FENSymbols), elem.ToString(), false, out object piece))
                     {
-                        Board[Conversions.SquareConversions.Array64To120[boardPointer]] = (NormalPiece)piece;
-                        boardPointer--;
+                        int realPosition = Conversions.SquareConversions.Array64To120[boardPointer];
+                        Board[realPosition] = (NormalPiece)piece;
+                        PieceProperties.PiecePositions[(int)piece].Add((BoardSquare)realPosition);
+                        Console.WriteLine($"{(BoardSquare)realPosition}: {(NormalPiece)piece}, ({(int)boardPointer})");
+                        boardPointer++;
                     }
                     else
                     {
@@ -162,6 +196,19 @@ namespace Hattin.Types
                 {
                     throw new ArgumentException($"{elem} is not a letter or number", nameof(FEN));
                 }
+
+                //logic to jump back 2 rows when current row is done
+                if (changeRankNextIter)
+                {
+                    boardPointer -= 16;
+                    changeRankNextIter = false;
+                }
+                else if ((boardPointer + 1) % 8 == 0)
+                {
+                    changeRankNextIter = true;
+                }
+
+                Console.WriteLine("{0}, {1}: ", boardPointer, changeRankNextIter);
             }
 
             //player to move

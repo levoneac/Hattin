@@ -1,10 +1,10 @@
 namespace Hattin.Types
 {
-    public class Move
+    public readonly struct Move
     {
-        public NormalPiece Piece { get; }
-        public BoardSquare FromSquare { get; }
-        public BoardSquare ToSquare { get; }
+        public NormalPiece Piece { get; init; }
+        public BoardSquare FromSquare { get; init; }
+        public BoardSquare ToSquare { get; init; }
 
         public Move()
         {
