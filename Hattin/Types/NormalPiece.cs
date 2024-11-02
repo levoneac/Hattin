@@ -2,7 +2,8 @@ namespace Hattin.Types
 {
     public enum NormalPiece : int
     {
-        BlackPawn = 1,
+        Empty,
+        BlackPawn,
         BlackKnight,
         BlackBishop,
         BlackRook,
@@ -13,7 +14,6 @@ namespace Hattin.Types
         WhiteBishop,
         WhiteRook,
         WhiteQueen,
-        WhiteKing,
-        Empty
+        WhiteKing
     }
 }

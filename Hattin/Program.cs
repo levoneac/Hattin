@@ -60,10 +60,14 @@ namespace Hattin
             bb.PopLastSetBit();
             bb.PrintBitBoard();
 
-
+            ulong d = (ulong)new Random().NextInt64();
             BoardState board = new();
             board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
             board.PrintBoard(SideToMove.Black, true);
+            Console.WriteLine(board.GetPositionHash());
+
+
+
 
             /*
                 |R||N||B||K||Q||B||N||R|

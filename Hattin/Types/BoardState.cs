@@ -7,8 +7,8 @@ namespace Hattin.Types
         public static readonly SquareIndexType squareIndexing = SquareIndexType.Base_120;
         public static readonly string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        private int[] board;
-        public int[] Board
+        private NormalPiece[] board;
+        public NormalPiece[] Board
         {
             get { return board; }
             private set { board = value; }
@@ -18,7 +18,7 @@ namespace Hattin.Types
         public Move LastestMove
         {
             get { return lastestMove; }
-            set { lastestMove = value; }
+            private set { lastestMove = value; }
         }
 
 
@@ -54,12 +54,12 @@ namespace Hattin.Types
         public CastleRights CastleRights
         {
             get { return castleRights; }
-            set { castleRights = value; }
+            private set { castleRights = value; }
         }
 
         public BoardState()
         {
-            Board = new int[(int)squareIndexing];
+            Board = new NormalPiece[(int)squareIndexing];
             LastestMove = new Move();
             PlyCounter = 0;
             PliesWithoutCapture = 0;
@@ -69,11 +69,18 @@ namespace Hattin.Types
 
             ProcessFEN(startingFEN);
         }
+
+        public int GetPositionHash()
+        {
+            return HashCode.Combine(Board, EnPassantSquare, CastleRights, SideToMove);
+        }
+
         public void FlushBoard()
         {
+
             for (int i = 0; i < Board.Length; i++)
             {
-                Board[i] = 0;
+                Board[i] = NormalPiece.Empty;
             }
             PlyCounter = 0;
             PliesWithoutCapture = 0;
@@ -141,7 +148,7 @@ namespace Hattin.Types
 
                     if (Enum.TryParse(typeof(FENSymbols), elem.ToString(), false, out object piece))
                     {
-                        Board[Conversions.SquareConversions.Array64To120[boardPointer]] = (int)piece;
+                        Board[Conversions.SquareConversions.Array64To120[boardPointer]] = (NormalPiece)piece;
                         boardPointer--;
                     }
                     else

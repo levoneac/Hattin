@@ -2,7 +2,8 @@ namespace Hattin.Types
 {
     public enum FENSymbols : int
     {
-        p = 1,
+        e,
+        p,
         n,
         b,
         r,
