@@ -15,8 +15,8 @@ namespace Hattin.Types
             private set { board = value; }
         }
 
-        private PieceList<NormalPiece> pieceProperties; //Array of lenght of NormalPiece enum, with each index refering to a list of squares those pieces occupy
-        public PieceList<NormalPiece> PieceProperties
+        private PieceList pieceProperties; //Array of lenght of NormalPiece enum, with each index refering to a list of squares those pieces occupy
+        public PieceList PieceProperties
         {
             get { return pieceProperties; }
             private set { pieceProperties = value; }
@@ -71,7 +71,7 @@ namespace Hattin.Types
         {
             Board = new NormalPiece[(int)squareIndexing];
             LastestMove = new Move();
-            PieceProperties = new PieceList<NormalPiece>();
+            PieceProperties = new PieceList();
             moveHistory = new List<Move>();
             PlyCounter = 0;
             PliesWithoutCapture = 0;
@@ -118,7 +118,7 @@ namespace Hattin.Types
             {
                 for (int i = 56; i >= 0; i++)
                 {
-                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
+                    Console.Write($" {(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]} ");
                     if ((i + 1) % 8 == 0)
                     {
                         Console.WriteLine();
@@ -130,7 +130,7 @@ namespace Hattin.Types
             {
                 for (int i = 7; i < 64; i--)
                 {
-                    Console.Write($"|{(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]}|");
+                    Console.Write($" {(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]} ");
                     if (i % 8 == 0)
                     {
                         Console.WriteLine();
@@ -153,22 +153,32 @@ namespace Hattin.Types
         {
             FlushBoard();
             //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            string[] byRank = FEN.Split(" "); //[board state(0), player to move(1), castle rights(2), enpassant square(3) 50 move rule (in ply)(4), total moves (fullmove)(5)]
+            string[] FENparts = FEN.Split(" "); //[board state(0), player to move(1), castle rights(2), enpassant square(3) 50 move rule (in ply)(4), total moves (fullmove)(5)]
             int boardPointer = 56; //FEN starts from square (A8)
 
             //Board state
-            bool changeRankNextIter = false;
-            foreach (char elem in byRank[0])
+            bool changeRankNextIter = false; //true when a rank has been exhausted
+            int elemsInRank = 0; //tracks that all the 8 squares in a rank is described
+            int currentRank = 8;
+            foreach (char elem in FENparts[0])
             {
                 if (elem == '/')
                 {
+                    if (elemsInRank != 8)
+                    {
+                        throw new ArgumentException($"FEN not valid, elems in rank {currentRank} is {elemsInRank} rather than 8", nameof(FEN));
+                    }
+                    elemsInRank = 0;
+                    currentRank--;
                     continue;
                 }
 
                 if (char.IsNumber(elem))
                 {
                     //rank number
-                    boardPointer += (int)char.GetNumericValue(elem);
+                    int spaces = (int)char.GetNumericValue(elem);
+                    boardPointer += spaces;
+                    elemsInRank += spaces;
                     if (boardPointer % 8 == 0)
                     {
                         changeRankNextIter = true;
@@ -184,6 +194,7 @@ namespace Hattin.Types
                         PieceProperties.PiecePositions[(int)piece].Add((BoardSquare)realPosition);
                         Console.WriteLine($"{(BoardSquare)realPosition}: {(NormalPiece)piece}, ({(int)boardPointer})");
                         boardPointer++;
+                        elemsInRank++;
                     }
                     else
                     {
@@ -208,28 +219,28 @@ namespace Hattin.Types
                     changeRankNextIter = true;
                 }
 
-                Console.WriteLine("{0}, {1}: ", boardPointer, changeRankNextIter);
+                //Console.WriteLine("{0}, {1}: ", boardPointer, changeRankNextIter);
             }
 
             //player to move
-            if (byRank[1] == "w")
+            if (FENparts[1] == "w")
             {
                 SideToMove = SideToMove.White;
             }
 
-            else if (byRank[1] == "b")
+            else if (FENparts[1] == "b")
             {
                 SideToMove = SideToMove.Black;
             }
             else
             {
-                throw new ArgumentException($"Player to move value of {byRank[1]} is not valid", nameof(FEN));
+                throw new ArgumentException($"Player to move value of {FENparts[1]} is not valid", nameof(FEN));
             }
 
             //castle rights KQkq
-            if (byRank[2][0] != '-')
+            if (FENparts[2][0] != '-')
             {
-                foreach (char elem in byRank[2])
+                foreach (char elem in FENparts[2])
                 {
                     if (elem == 'K')
                     {
@@ -256,34 +267,34 @@ namespace Hattin.Types
 
 
             //enpassant square
-            if (byRank[3] == "-")
+            if (FENparts[3] == "-")
             {
                 EnPassantSquare = BoardSquare.NoSquare;
             }
             else
             {
-                if (Enum.TryParse(typeof(BoardSquare), byRank[3], true, out object square))
+                if (Enum.TryParse(typeof(BoardSquare), FENparts[3], true, out object square))
                 {
                     EnPassantSquare = (BoardSquare)square;
                 }
                 else
                 {
-                    throw new ArgumentException($"En passantsquare value of {byRank[3]} is not valid", nameof(FEN));
+                    throw new ArgumentException($"En passantsquare value of {FENparts[3]} is not valid", nameof(FEN));
                 }
             }
 
             //50 move rule (in ply)
-            if (int.TryParse(byRank[4], out int plies))
+            if (int.TryParse(FENparts[4], out int plies))
             {
                 pliesWithoutCapture = plies;
             }
             else
             {
-                throw new ArgumentException($"Plies without capture value of {byRank[4]} is not valid", nameof(FEN));
+                throw new ArgumentException($"Plies without capture value of {FENparts[4]} is not valid", nameof(FEN));
             }
 
             //total moves (fullmove)
-            if (int.TryParse(byRank[5], out int moves))
+            if (int.TryParse(FENparts[5], out int moves))
             {
                 if (SideToMove == SideToMove.White)
                 {
@@ -296,7 +307,7 @@ namespace Hattin.Types
             }
             else
             {
-                throw new ArgumentException($"Plies without capture value of {byRank[5]} is not valid", nameof(FEN));
+                throw new ArgumentException($"Plies without capture value of {FENparts[5]} is not valid", nameof(FEN));
             }
         }
 

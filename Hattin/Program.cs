@@ -62,11 +62,11 @@ namespace Hattin
 
             ulong d = (ulong)new Random().NextInt64();
             BoardState board = new();
-            board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
+            board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP3PPP/RNBQKB1R b KQkq - 1 2 ");
             board.PrintBoard(SideToMove.White, false);
             board.PrintBoard(SideToMove.Black, false);
             Console.WriteLine(board.GetPositionHash());
-            board.GetMoveHistory(); //how to prevent this
+            board.GetMoveHistory();
 
             for (int i = 0; i < board.PieceProperties.PiecePositions.Length; i++)
             {
@@ -77,6 +77,8 @@ namespace Hattin
                 }
                 Console.WriteLine();
             }
+            PieceTotals total = board.PieceProperties.CalculatePieceTotals();
+            Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
 
 
