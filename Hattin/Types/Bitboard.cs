@@ -57,7 +57,7 @@ namespace Hattin.Types
         }
 
         //Sets the bit on the given square to 1.
-        public void AddPieceBase_64(int index)
+        public void SetBitPieceBase_64(int index)
         {
             int bitOffset = index;
             if (bitOffset < 0 || bitOffset > 63)
@@ -68,7 +68,7 @@ namespace Hattin.Types
         }
 
         //Sets the bit on the given square to 1.
-        public void AddPieceBase_120(int index)
+        public void SetBitPieceBase_120(int index)
         {
             int bitOffset = Conversions.SquareConversions.Convert120To64(index);
 

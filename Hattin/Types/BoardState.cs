@@ -166,7 +166,7 @@ namespace Hattin.Types
                 {
                     if (elemsInRank != 8)
                     {
-                        throw new ArgumentException($"FEN not valid, elems in rank {currentRank} is {elemsInRank} rather than 8", nameof(FEN));
+                        throw new ArgumentException($"FEN not valid, elems on rank {currentRank} is '{elemsInRank}' rather than '8'", nameof(FEN));
                     }
                     elemsInRank = 0;
                     currentRank--;
@@ -191,7 +191,7 @@ namespace Hattin.Types
                     {
                         int realPosition = Conversions.SquareConversions.Array64To120[boardPointer];
                         Board[realPosition] = (NormalPiece)piece;
-                        PieceProperties.PiecePositions[(int)piece].Add((BoardSquare)realPosition);
+                        PieceProperties.AddPiece((NormalPiece)piece, (BoardSquare)realPosition);
                         Console.WriteLine($"{(BoardSquare)realPosition}: {(NormalPiece)piece}, ({(int)boardPointer})");
                         boardPointer++;
                         elemsInRank++;

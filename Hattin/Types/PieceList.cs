@@ -1,17 +1,49 @@
+using System.Collections.ObjectModel;
+
 namespace Hattin.Types
 {
     //WIP, need to see usecase first
     public class PieceList
     {
-        public List<BoardSquare>[] PiecePositions { get; set; }
+        private List<BoardSquare>[] piecePositions;
+        public ReadOnlyCollection<ReadOnlyCollection<BoardSquare>> PiecePositions
+        {
+            get { return piecePositions.Select(list => list.AsReadOnly()).ToList().AsReadOnly(); } //looks slow ngl
+        }
+        public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
         public int NumPieces { get; private set; }
         public PieceList()
         {
             NumPieces = Enum.GetNames(typeof(NormalPiece)).Length;
-            PiecePositions = new List<BoardSquare>[NumPieces];
+            piecePositions = new List<BoardSquare>[NumPieces];
+            PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             for (int i = 0; i < NumPieces; i++)
             {
-                PiecePositions[i] = new List<BoardSquare>();
+                piecePositions[i] = new List<BoardSquare>();
+                PiecePositionsBitBoard[i] = new List<BitBoard>();
+            }
+        }
+
+        public void AddPiece(NormalPiece piece, BoardSquare square)
+        {
+            piecePositions[(int)piece].Add(square);
+        }
+        public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
+        {
+            int indexOfFromSquare = piecePositions[(int)piece].IndexOf(fromSquare); //LINQ should be side effect free, so you cant change inplace afaik
+            if (indexOfFromSquare == -1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {fromSquare}");
+            }
+            //Should there be checks to see if this square is occupied by other pieces?
+            //Only allow if no friendly piece and bool "capture" argument is true?
+            piecePositions[(int)piece][indexOfFromSquare] = toSquare;
+        }
+        public void RemovePiece(NormalPiece piece, BoardSquare square)
+        {
+            if (!piecePositions[(int)piece].Remove(square))
+            {
+                throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {square}");
             }
         }
 
@@ -20,7 +52,7 @@ namespace Hattin.Types
             int blackTotal = 0;
             int whiteTotal = 0;
 
-            for (int i = 0; i < PiecePositions.Length; i++)
+            for (int i = 0; i < piecePositions.Length; i++)
             {
                 int amountOfPiece = PiecePositions[i].Count;
                 switch ((NormalPiece)i)
@@ -66,7 +98,7 @@ namespace Hattin.Types
 
         public void ClearPieceList()
         {
-            foreach (List<BoardSquare> listOfPieces in PiecePositions)
+            foreach (List<BoardSquare> listOfPieces in piecePositions)
             {
                 listOfPieces.Clear();
             }
