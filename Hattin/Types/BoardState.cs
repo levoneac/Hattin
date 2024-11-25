@@ -70,8 +70,8 @@ namespace Hattin.Types
         public BoardState()
         {
             Board = new NormalPiece[(int)squareIndexing];
-            LastestMove = new Move();
             PieceProperties = new PieceList();
+            LastestMove = new Move();
             moveHistory = new List<Move>();
             PlyCounter = 0;
             PliesWithoutCapture = 0;
@@ -85,6 +85,28 @@ namespace Hattin.Types
         public int GetPositionHash()
         {
             return HashCode.Combine(Board, EnPassantSquare, CastleRights, SideToMove);
+        }
+
+        public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
+        {
+            //check if capture, check, etc..
+            //This function should return an object that has f.ex. enpassantsquare, if its a check, if its a capture
+            //moveProperties = ValidateMove();
+
+            //if(!moveProperties.isValid){throw error}
+
+            pieceProperties.MovePiece(piece, fromSquare, toSquare);
+
+            LastestMove = new Move(piece, fromSquare, toSquare);
+            moveHistory.Add(LastestMove);
+
+            PlyCounter++;
+
+            //if(moveProperties.captureOrPawnmove){PliesWithoutCapture++} else{PliesWithoutCapture = 0}
+
+            SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+
+            //EnpassantSquare = moveProperties.enpassantSquare;
         }
 
         public ReadOnlyCollection<Move> GetMoveHistory()
