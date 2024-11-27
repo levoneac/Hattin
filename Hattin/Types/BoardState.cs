@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text;
+using Hattin.Events.EventArguments;
 
 namespace Hattin.Types
 {
@@ -7,6 +8,8 @@ namespace Hattin.Types
     {
         public static readonly SquareIndexType squareIndexing = SquareIndexType.Base_120;
         public static readonly string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+        public event EventHandler<NewMoveEventArgs> NewMoveEvent;
 
         private NormalPiece[] board;
         public NormalPiece[] Board
@@ -90,6 +93,8 @@ namespace Hattin.Types
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
             positionHashes = new Dictionary<int, int>();
 
+            NewMoveEvent += PrintMove;
+
             ProcessFEN(startingFEN);
         }
 
@@ -115,6 +120,18 @@ namespace Hattin.Types
                 positionHashes.Add(currentPositionHash, 1);
             }
         }
+        public virtual void OnNewMoveEvent(NewMoveEventArgs eventArgs)
+        {
+            if (NewMoveEvent is not null)//if there are any subscribers
+            {
+                NewMoveEvent(this, eventArgs);
+            }
+        }
+
+        public void PrintMove(object? sender, NewMoveEventArgs eventArgs)
+        {
+            Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
+        }
 
         public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
         {
@@ -136,6 +153,8 @@ namespace Hattin.Types
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
             //EnpassantSquare = moveProperties.enpassantSquare;
+            NewMoveEventArgs eventArgs = new NewMoveEventArgs(piece, fromSquare, toSquare);
+            OnNewMoveEvent(eventArgs);
         }
 
         public ReadOnlyCollection<Move> GetMoveHistory()
@@ -243,7 +262,7 @@ namespace Hattin.Types
                         int realPosition = Conversions.SquareConversions.Array64To120[boardPointer];
                         Board[realPosition] = (NormalPiece)piece;
                         PieceProperties.AddPiece((NormalPiece)piece, (BoardSquare)realPosition);
-                        Console.WriteLine($"{(BoardSquare)realPosition}: {(NormalPiece)piece}, ({(int)boardPointer})");
+                        //Console.WriteLine($"{(BoardSquare)realPosition}: {(NormalPiece)piece}, ({(int)boardPointer})");
                         boardPointer++;
                         elemsInRank++;
                     }

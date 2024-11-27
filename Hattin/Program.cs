@@ -42,23 +42,23 @@ namespace Hattin
             */
 
             BitBoard bb = new();
-            bb.Board = 256 + 512 + 1024 + 2048 + 4096 + 8192 + 16384 + 32768;
-            bb.PrintBitBoard();
-            //bb.Board |= 1UL << Conversions.SquareConversions.Array120To64[(int)BoardSquares.H8];
-            bb.PrintBitBoard();
-            bb.SetBitPieceBase_120(23);
-            bb.PrintBitBoard();
-            Console.WriteLine(bb.CountSetBits());
-            BitBoard.PrintBitBoard(bb.GetLastSetBit());
-            Console.WriteLine(bb.LastSetBitIndex());
-            bb.PopLastSetBit();
-            bb.PrintBitBoard();
-            bb.PopLastSetBit();
-            bb.PrintBitBoard();
-            bb.PopLastSetBit();
-            bb.PrintBitBoard();
-            bb.PopLastSetBit();
-            bb.PrintBitBoard();
+            // /bb.Board = 256 + 512 + 1024 + 2048 + 4096 + 8192 + 16384 + 32768;
+            // /bb.PrintBitBoard();
+            // bb.Board |= 1UL << Conversions.SquareConversions.Array120To64[(int)BoardSquares.H8];
+            // /bb.PrintBitBoard();
+            // /bb.SetBitPieceBase_120(23);
+            // /bb.PrintBitBoard();
+            // /Console.WriteLine(bb.CountSetBits());
+            // /BitBoard.PrintBitBoard(bb.GetLastSetBit());
+            // /Console.WriteLine(bb.LastSetBitIndex());
+            // /bb.PopLastSetBit();
+            // /bb.PrintBitBoard();
+            // /bb.PopLastSetBit();
+            // /bb.PrintBitBoard();
+            // /bb.PopLastSetBit();
+            // /bb.PrintBitBoard();
+            // /bb.PopLastSetBit();
+            // /bb.PrintBitBoard();
 
             ulong d = (ulong)new Random().NextInt64();
             BoardState board = new();
@@ -67,17 +67,17 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black, false);
             Console.WriteLine(board.GetPositionHash());
             board.GetMoveHistory();
-            board.PieceProperties.MovePiece(NormalPiece.BlackQueen, BoardSquare.D8, BoardSquare.G3);
+            board.MovePiece(NormalPiece.BlackQueen, BoardSquare.D8, BoardSquare.G3);
             board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
-            for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
-            {
-                Console.Write($"{(NormalPiece)i}: ");
-                for (int j = 0; j < board.PieceProperties.PiecePositions[i].Count; j++)
-                {
-                    Console.Write($"{board.PieceProperties.PiecePositions[i][j]}, ");
-                }
-                Console.WriteLine();
-            }
+            //for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
+            //{
+            //    Console.Write($"{(NormalPiece)i}: ");
+            //    for (int j = 0; j < board.PieceProperties.PiecePositions[i].Count; j++)
+            //    {
+            //        Console.Write($"{board.PieceProperties.PiecePositions[i][j]}, ");
+            //    }
+            //    Console.WriteLine();
+            //}
             PieceTotals total = board.PieceProperties.CalculatePieceTotals();
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
