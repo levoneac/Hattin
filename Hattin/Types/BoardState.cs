@@ -67,6 +67,16 @@ namespace Hattin.Types
             private set { castleRights = value; }
         }
 
+        private Dictionary<int, int> positionHashes;
+
+        private GameResult gameResult;
+        public GameResult GameResult
+        {
+            get { return gameResult; }
+            private set { gameResult = value; }
+        }
+
+
         public BoardState()
         {
             Board = new NormalPiece[(int)squareIndexing];
@@ -78,6 +88,7 @@ namespace Hattin.Types
             SideToMove = SideToMove.White;
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
+            positionHashes = new Dictionary<int, int>();
 
             ProcessFEN(startingFEN);
         }
@@ -85,6 +96,24 @@ namespace Hattin.Types
         public int GetPositionHash()
         {
             return HashCode.Combine(Board, EnPassantSquare, CastleRights, SideToMove);
+        }
+
+        //Add event so this is called for every move
+        public void UpdatePositionHashes()
+        {
+            int currentPositionHash = GetPositionHash();
+            if (positionHashes.TryGetValue(currentPositionHash, out int current))
+            {
+                positionHashes[currentPositionHash] = current + 1;
+                if (positionHashes[currentPositionHash] >= 3)
+                {
+                    GameResult = GameResult.Draw;
+                }
+            }
+            else
+            {
+                positionHashes.Add(currentPositionHash, 1);
+            }
         }
 
         public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
@@ -331,10 +360,15 @@ namespace Hattin.Types
             {
                 throw new ArgumentException($"Plies without capture value of {FENparts[5]} is not valid", nameof(FEN));
             }
+            UpdatePositionHashes();
+
+            //there are a few things missing from FEN. Like: if its check or if its mate
+            //p = UpdateGameProperties()
+            //GameResult = p.GameResult;
         }
 
 
-        //boardhash for 3 fold repetition
+
 
 
     }

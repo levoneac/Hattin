@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 
 namespace Hattin.Types
 {
-    //WIP, need to see usecase first
     public class PieceList
     {
         private List<BoardSquare>[] piecePositions;
@@ -24,10 +23,13 @@ namespace Hattin.Types
             }
         }
 
+        //assumes that move is already verified from caller
         public void AddPiece(NormalPiece piece, BoardSquare square)
         {
             piecePositions[(int)piece].Add(square);
         }
+
+        //assumes that move is already verified from caller
         public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
         {
             int indexOfFromSquare = piecePositions[(int)piece].IndexOf(fromSquare); //LINQ should be side effect free, so you cant change inplace afaik
@@ -39,6 +41,8 @@ namespace Hattin.Types
             //Only allow if no friendly piece and bool "capture" argument is true?
             piecePositions[(int)piece][indexOfFromSquare] = toSquare;
         }
+
+        //assumes that move is already verified from caller
         public void RemovePiece(NormalPiece piece, BoardSquare square)
         {
             if (!piecePositions[(int)piece].Remove(square))
