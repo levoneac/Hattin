@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text;
 using Hattin.Events.EventArguments;
+using Hattin.Interfaces;
 
 namespace Hattin.Types
 {
@@ -79,8 +80,11 @@ namespace Hattin.Types
             private set { gameResult = value; }
         }
 
+        private readonly IMoveGenerator MoveGenerator;
+        private readonly IPositionEvaluator PositionEvaluator;
 
-        public BoardState()
+
+        public BoardState(IMoveGenerator moveGenerator, IPositionEvaluator positionEvaluator)
         {
             Board = new NormalPiece[(int)squareIndexing];
             PieceProperties = new PieceList();
@@ -92,6 +96,8 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
             positionHashes = new Dictionary<int, int>();
+            MoveGenerator = moveGenerator;
+            PositionEvaluator = positionEvaluator;
 
             NewMoveEvent += PrintMove;
 
@@ -104,7 +110,7 @@ namespace Hattin.Types
         }
 
         //Add event so this is called for every move
-        public void UpdatePositionHashes()
+        private void UpdatePositionHashes()
         {
             int currentPositionHash = GetPositionHash();
             if (positionHashes.TryGetValue(currentPositionHash, out int current))
@@ -124,7 +130,7 @@ namespace Hattin.Types
         {
             if (NewMoveEvent is not null)//if there are any subscribers
             {
-                NewMoveEvent(this, eventArgs);
+                NewMoveEvent.Invoke(this, eventArgs);
             }
         }
 
@@ -133,7 +139,7 @@ namespace Hattin.Types
             Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
         }
 
-        public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
+        private void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
         {
             //check if capture, check, etc..
             //This function should return an object that has f.ex. enpassantsquare, if its a check, if its a capture
@@ -162,12 +168,12 @@ namespace Hattin.Types
             return moveHistory.AsReadOnly();
         }
 
-        public void UpdatePieceBalance()
+        private void UpdatePieceBalance()
         {
 
         }
 
-        public void FlushBoard()
+        private void FlushBoard()
         {
 
             for (int i = 0; i < Board.Length; i++)
@@ -385,9 +391,6 @@ namespace Hattin.Types
             //p = UpdateGameProperties()
             //GameResult = p.GameResult;
         }
-
-
-
 
 
     }

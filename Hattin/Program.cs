@@ -1,4 +1,6 @@
-﻿using Hattin.Types;
+﻿using Hattin.Interfaces.Implementations.MoveGenerators;
+using Hattin.Interfaces.Implementations.PositionEvaluators;
+using Hattin.Types;
 
 namespace Hattin
 {
@@ -61,13 +63,13 @@ namespace Hattin
             // /bb.PrintBitBoard();
 
             ulong d = (ulong)new Random().NextInt64();
-            BoardState board = new();
+            BoardState board = new(new BasicMoveGenerator(), new BasicPositionEvaluator());
             board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
             board.PrintBoard(SideToMove.White, false);
             board.PrintBoard(SideToMove.Black, false);
             Console.WriteLine(board.GetPositionHash());
             board.GetMoveHistory();
-            board.MovePiece(NormalPiece.BlackQueen, BoardSquare.D8, BoardSquare.G3);
+            //board.MovePiece(NormalPiece.BlackQueen, BoardSquare.D8, BoardSquare.G3);
             board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
             //for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
             //{
