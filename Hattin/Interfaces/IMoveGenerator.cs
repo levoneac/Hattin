@@ -2,10 +2,10 @@ using Hattin.Types;
 
 namespace Hattin.Interfaces
 {
-    public interface IMoveGenerator
+    public interface IMoveGenerator : INormalPieceMoves
     {
-        Move GetNextValidMove(BoardState currentBoard);
-        Move GetNextCapture(BoardState currentBoard);
-        Move GetNextCheck(BoardState currentBoard);
+        Move GenerateNextValidMove(BoardState currentBoard);
+        Move GenerateNextCapture(BoardState currentBoard);
+        Move GenerateNextCheck(BoardState currentBoard);
     }
 }

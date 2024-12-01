@@ -1,6 +1,7 @@
+using Hattin.Interfaces;
 using Hattin.Types;
 
-namespace Hattin.Interfaces.Implementations.PositionEvaluators
+namespace Hattin.Implementations.PositionEvaluators
 {
     public class BasicPositionEvaluator : IPositionEvaluator
     {

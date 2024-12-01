@@ -80,11 +80,11 @@ namespace Hattin.Types
             private set { gameResult = value; }
         }
 
-        private readonly IMoveGenerator MoveGenerator;
-        private readonly IPositionEvaluator PositionEvaluator;
+        public readonly IMoveGenerator MoveGenerator;
+        public readonly IPositionEvaluator PositionEvaluator;
 
 
-        public BoardState(IMoveGenerator moveGenerator, IPositionEvaluator positionEvaluator)
+        public BoardState(IMoveGenerator moveGenerator, IPositionEvaluator positionEvaluator)//these are just temporarily here. Move to HattinEngine class later
         {
             Board = new NormalPiece[(int)squareIndexing];
             PieceProperties = new PieceList();
@@ -139,7 +139,7 @@ namespace Hattin.Types
             Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
         }
 
-        private void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
+        public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
         {
             //check if capture, check, etc..
             //This function should return an object that has f.ex. enpassantsquare, if its a check, if its a capture
@@ -150,6 +150,8 @@ namespace Hattin.Types
             pieceProperties.MovePiece(piece, fromSquare, toSquare);
 
             LastestMove = new Move(piece, fromSquare, toSquare);
+            Board[(int)fromSquare] = NormalPiece.Empty;
+            Board[(int)toSquare] = piece;
             moveHistory.Add(LastestMove);
 
             PlyCounter++;

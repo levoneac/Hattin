@@ -4,6 +4,6 @@ namespace Hattin.Types
     {
         White,
         Black,
-        Both
+        None
     }
 }

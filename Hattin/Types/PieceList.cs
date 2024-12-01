@@ -4,29 +4,54 @@ namespace Hattin.Types
 {
     public class PieceList
     {
+        //each piecetype has an array of boardsquares that tells you where a piece like that can be found
         private List<BoardSquare>[] piecePositions;
         public ReadOnlyCollection<ReadOnlyCollection<BoardSquare>> PiecePositions
         {
             get { return piecePositions.Select(list => list.AsReadOnly()).ToList().AsReadOnly(); } //looks slow ngl
         }
+
+        //Tracks which color has a piece on each square
+        private List<SideToMove> captureAndBlockingSquares;
+
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
         public int NumPieces { get; private set; }
         public PieceList()
         {
-            NumPieces = Enum.GetNames(typeof(NormalPiece)).Length;
+            NumPieces = Enum.GetNames(typeof(NormalPiece)).Length; //make this take an interface? so that its not that tightly connected with NormalPiece
             piecePositions = new List<BoardSquare>[NumPieces];
+            captureAndBlockingSquares = new List<SideToMove>();
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             for (int i = 0; i < NumPieces; i++)
             {
                 piecePositions[i] = new List<BoardSquare>();
-                PiecePositionsBitBoard[i] = new List<BitBoard>();
+                //PiecePositionsBitBoard[i] = new List<BitBoard>();
             }
+
+            for (int i = 0; i < 64; i++)
+            {
+                captureAndBlockingSquares.Add(SideToMove.None);
+            }
+        }
+
+        public List<BoardSquare> GetPiecePositions(NormalPiece pieceType)
+        {
+            return piecePositions[(int)pieceType];
+        }
+
+        public SideToMove GetColorOfPieceOnSquare(BoardSquare square)
+        {
+            int arrayPos = Conversions.SquareConversions.Convert120To64((int)square);
+            return captureAndBlockingSquares[arrayPos];
         }
 
         //assumes that move is already verified from caller
         public void AddPiece(NormalPiece piece, BoardSquare square)
         {
             piecePositions[(int)piece].Add(square);
+
+            int squareArrayPos = Conversions.SquareConversions.Convert120To64((int)square);
+            captureAndBlockingSquares[squareArrayPos] = Conversions.PieceAndColor.PieceToColor(piece);
         }
 
         //assumes that move is already verified from caller
@@ -40,6 +65,12 @@ namespace Hattin.Types
             //Should there be checks to see if this square is occupied by other pieces?
             //Only allow if no friendly piece and bool "capture" argument is true?
             piecePositions[(int)piece][indexOfFromSquare] = toSquare;
+
+            int fromSquareArrayPos = Conversions.SquareConversions.Convert120To64((int)fromSquare);
+            int toSquareArrayPos = Conversions.SquareConversions.Convert120To64((int)toSquare);
+
+            captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
+            captureAndBlockingSquares[toSquareArrayPos] = Conversions.PieceAndColor.PieceToColor(piece);
         }
 
         //assumes that move is already verified from caller
@@ -49,6 +80,9 @@ namespace Hattin.Types
             {
                 throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {square}");
             }
+
+            int squareArrayPos = Conversions.SquareConversions.Convert120To64((int)square);
+            captureAndBlockingSquares[squareArrayPos] = SideToMove.None;
         }
 
         public PieceTotals CalculatePieceTotals()

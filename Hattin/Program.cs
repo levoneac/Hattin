@@ -1,29 +1,10 @@
-﻿using Hattin.Interfaces.Implementations.MoveGenerators;
-using Hattin.Interfaces.Implementations.PositionEvaluators;
+﻿using Hattin.Implementations.MoveGenerators;
+using Hattin.Implementations.PositionEvaluators;
+
 using Hattin.Types;
 
 namespace Hattin
 {
-    class Engine
-    {
-        private BoardState currentBoardState;
-        public BoardState CurrentBoardState
-        {
-            get { return currentBoardState; }
-            set { currentBoardState = value; }
-        }
-
-        //Does one need to keep a full copy of the board state for every move?
-        //Maybe make another datatype which contains a board hash and move
-        private List<BoardState> boardHistory;
-        public List<BoardState> BoardHistory
-        {
-            get { return boardHistory; }
-            set { boardHistory = value; }
-        }
-
-
-    }
 
     class Program
     {
@@ -69,20 +50,29 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black, false);
             Console.WriteLine(board.GetPositionHash());
             board.GetMoveHistory();
-            //board.MovePiece(NormalPiece.BlackQueen, BoardSquare.D8, BoardSquare.G3);
-            board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
-            //for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
-            //{
-            //    Console.Write($"{(NormalPiece)i}: ");
-            //    for (int j = 0; j < board.PieceProperties.PiecePositions[i].Count; j++)
-            //    {
-            //        Console.Write($"{board.PieceProperties.PiecePositions[i][j]}, ");
-            //    }
-            //    Console.WriteLine();
-            //}
+            board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.G5);
+            board.MovePiece(NormalPiece.WhitePawn, BoardSquare.A2, BoardSquare.A4);
+            //board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
+            for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
+            {
+                Console.Write($"{(NormalPiece)i}: ");
+                for (int j = 0; j < board.PieceProperties.PiecePositions[i].Count; j++)
+                {
+                    Console.Write($"{board.PieceProperties.PiecePositions[i][j]}, ");
+                }
+                Console.WriteLine();
+            }
             PieceTotals total = board.PieceProperties.CalculatePieceTotals();
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
+            List<BoardSquare> kMoves = board.MoveGenerator.GenerateKnightMoves(board);
+            Console.Write("Knightmoves: ");
+            foreach (BoardSquare move in kMoves)
+            {
+                Console.Write($"{move} ");
+            }
+            Console.WriteLine();
+            board.PrintBoard(SideToMove.Black);
 
 
 
