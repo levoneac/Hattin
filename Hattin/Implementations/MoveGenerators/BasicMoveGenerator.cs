@@ -41,19 +41,6 @@ namespace Hattin.Implementations.MoveGenerators
         }
 
 
-        public Move GenerateNextValidMove(BoardState currentBoard)
-        {
-            throw new NotImplementedException();
-        }
-        public Move GenerateNextCapture(BoardState currentBoard)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Move GenerateNextCheck(BoardState currentBoard)
-        {
-            throw new NotImplementedException();
-        }
 
         public List<BoardSquare> GeneratePawnMoves(BoardState currentBoard)
         {
@@ -62,8 +49,41 @@ namespace Hattin.Implementations.MoveGenerators
 
         public List<BoardSquare> GenerateBishopMoves(BoardState currentBoard)
         {
-            throw new NotImplementedException();
+            List<BoardSquare> possibleMoves = [];
+            NormalPiece bishopColor = currentBoard.SideToMove == SideToMove.White ? NormalPiece.WhiteBishop : NormalPiece.BlackBishop;
+            SideToMove opponentColor = currentBoard.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+            BoardSquare positionAfterOffset;
+
+            foreach (int bishopPosition in currentBoard.PieceProperties.PiecePositions[(int)bishopColor].Select(i => (int)i))
+            {
+                foreach (int offset in NormalPieceOffsets.Bishop)
+                {
+                    positionAfterOffset = (BoardSquare)(bishopPosition + offset);
+
+                    while ((BoardSquare)Conversions.SquareConversions.Convert120To64((int)positionAfterOffset) != BoardSquare.NoSquare)
+                    {
+                        SideToMove colorOfPieceOnSquare = currentBoard.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
+                        if (colorOfPieceOnSquare == opponentColor)
+                        {
+                            //set capture flag
+                            possibleMoves.Add(positionAfterOffset);
+                            break;
+                        }
+                        else if (colorOfPieceOnSquare == SideToMove.None)
+                        {
+                            possibleMoves.Add(positionAfterOffset);
+                            positionAfterOffset += offset;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            return possibleMoves;
         }
+
 
         public List<BoardSquare> GenerateRookMoves(BoardState currentBoard)
         {
@@ -79,5 +99,21 @@ namespace Hattin.Implementations.MoveGenerators
         {
             throw new NotImplementedException();
         }
+
+
+        public Move GenerateNextValidMove(BoardState currentBoard)
+        {
+            throw new NotImplementedException();
+        }
+        public Move GenerateNextCapture(BoardState currentBoard)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Move GenerateNextCheck(BoardState currentBoard)
+        {
+            throw new NotImplementedException();
+        }
     }
+
 }

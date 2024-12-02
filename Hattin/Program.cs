@@ -52,6 +52,7 @@ namespace Hattin
             board.GetMoveHistory();
             board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.G5);
             board.MovePiece(NormalPiece.WhitePawn, BoardSquare.A2, BoardSquare.A4);
+            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.B7, BoardSquare.B5);
             //board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
             for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
             {
@@ -65,7 +66,7 @@ namespace Hattin
             PieceTotals total = board.PieceProperties.CalculatePieceTotals();
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
-            List<BoardSquare> kMoves = board.MoveGenerator.GenerateKnightMoves(board);
+            List<BoardSquare> kMoves = board.MoveGenerator.GenerateBishopMoves(board);
             Console.Write("Knightmoves: ");
             foreach (BoardSquare move in kMoves)
             {

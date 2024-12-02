@@ -20,7 +20,7 @@ namespace Hattin.Types
         }
 
         private PieceList pieceProperties; //Array of lenght of NormalPiece enum, with each index refering to a list of squares those pieces occupy
-        public PieceList PieceProperties
+        public PieceList PieceProperties //should not really have a public interaction
         {
             get { return pieceProperties; }
             private set { pieceProperties = value; }

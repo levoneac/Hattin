@@ -140,6 +140,10 @@ namespace Hattin.Types
             {
                 listOfPieces.Clear();
             }
+            for (int i = 0; i < 63; i++)
+            {
+                captureAndBlockingSquares[i] = SideToMove.None;
+            }
         }
     }
 
