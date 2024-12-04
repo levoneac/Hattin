@@ -80,10 +80,6 @@ namespace Hattin.Types
             private set { gameResult = value; }
         }
 
-        public readonly IMoveGenerator MoveGenerator;
-        public readonly IPositionEvaluator PositionEvaluator;
-
-
         public BoardState()
         {
             Board = new NormalPiece[(int)squareIndexing];
