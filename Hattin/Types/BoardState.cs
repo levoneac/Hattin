@@ -10,7 +10,7 @@ namespace Hattin.Types
         public static readonly SquareIndexType squareIndexing = SquareIndexType.Base_120;
         public static readonly string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        public event EventHandler<Move> NewMoveEvent;
+        public event EventHandler<NewMoveEventArgs> NewMoveEvent;
 
         private NormalPiece[] board;
         public NormalPiece[] Board
@@ -124,7 +124,7 @@ namespace Hattin.Types
                 positionHashes.Add(currentPositionHash, 1);
             }
         }
-        public virtual void OnNewMoveEvent(Move eventArgs)
+        public virtual void OnNewMoveEvent(NewMoveEventArgs eventArgs)
         {
             if (NewMoveEvent is not null)//if there are any subscribers
             {
@@ -132,7 +132,7 @@ namespace Hattin.Types
             }
         }
 
-        public void PrintMove(object? sender, Move eventArgs)
+        public void PrintMove(object? sender, NewMoveEventArgs eventArgs)
         {
             Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
         }
@@ -159,7 +159,7 @@ namespace Hattin.Types
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
             //EnpassantSquare = moveProperties.enpassantSquare;
-            Move eventArgs = new Move(piece, fromSquare, toSquare);
+            NewMoveEventArgs eventArgs = new NewMoveEventArgs(piece, fromSquare, toSquare);
             OnNewMoveEvent(eventArgs);
         }
 
