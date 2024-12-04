@@ -1,6 +1,7 @@
-﻿using Hattin.Implementations.MoveGenerators;
+﻿using Hattin.Engine;
+using Hattin.Implementations.MoveGenerators;
 using Hattin.Implementations.PositionEvaluators;
-
+using Hattin.Interfaces;
 using Hattin.Types;
 
 namespace Hattin
@@ -44,7 +45,10 @@ namespace Hattin
             // /bb.PrintBitBoard();
 
             ulong d = (ulong)new Random().NextInt64();
-            BoardState board = new(new BasicMoveGenerator(), new BasicPositionEvaluator());
+            BoardState board = new BoardState();
+            IMoveGenerator generator = new BasicMoveGenerator();
+            IPositionEvaluator evaluator = new BasicPositionEvaluator();
+            HattinEngine0_1 engine0_1 = new HattinEngine0_1(board, generator, evaluator);
             board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
             board.PrintBoard(SideToMove.White, false);
             board.PrintBoard(SideToMove.Black, false);
@@ -66,8 +70,8 @@ namespace Hattin
             PieceTotals total = board.PieceProperties.CalculatePieceTotals();
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
-            List<BoardSquare> kMoves = board.MoveGenerator.GenerateQueenMoves(board);
-            Console.Write("Knightmoves: ");
+            List<BoardSquare> kMoves = engine0_1.MoveGenerator.GenerateQueenMoves(board);
+            Console.Write("Moves: ");
             foreach (BoardSquare move in kMoves)
             {
                 Console.Write($"{move} ");

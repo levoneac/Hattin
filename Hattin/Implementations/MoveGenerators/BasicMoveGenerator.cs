@@ -78,8 +78,6 @@ namespace Hattin.Implementations.MoveGenerators
             return GenerateJumpingMoves(currentBoard, pieceColor, opponentColor);
         }
 
-
-
         public List<BoardSquare> GeneratePawnMoves(BoardState currentBoard)
         {
             throw new NotImplementedException();
@@ -92,7 +90,6 @@ namespace Hattin.Implementations.MoveGenerators
             return GenerateSlidingMoves(currentBoard, pieceColor, opponentColor);
 
         }
-
 
         public List<BoardSquare> GenerateRookMoves(BoardState currentBoard)
         {
@@ -114,7 +111,6 @@ namespace Hattin.Implementations.MoveGenerators
             SideToMove opponentColor = currentBoard.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
             return GenerateJumpingMoves(currentBoard, pieceColor, opponentColor);
         }
-
 
         public Move GenerateNextValidMove(BoardState currentBoard)
         {

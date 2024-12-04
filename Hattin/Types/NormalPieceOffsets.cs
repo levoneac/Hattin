@@ -2,7 +2,7 @@ namespace Hattin.Types
 {
     public static class NormalPieceOffsets
     {
-        public static readonly int[] Pawn = [];
+        public static readonly int[] Pawn = [10, 20, 11, 9]; //[forward once, forward twice, take right, take left] as seen from whites perspective
         public static readonly int[] Knight = [-21, -19, -12, -8, 8, 12, 19, 21];
         public static readonly int[] Bishop = [-11, -9, 9, 11];
         public static readonly int[] Rook = [-10, -1, 1, 10];

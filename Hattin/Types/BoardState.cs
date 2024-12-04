@@ -5,12 +5,12 @@ using Hattin.Interfaces;
 
 namespace Hattin.Types
 {
-    public class BoardState
+    public class BoardState : IBoard
     {
         public static readonly SquareIndexType squareIndexing = SquareIndexType.Base_120;
         public static readonly string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        public event EventHandler<NewMoveEventArgs> NewMoveEvent;
+        public event EventHandler<Move> NewMoveEvent;
 
         private NormalPiece[] board;
         public NormalPiece[] Board
@@ -84,7 +84,7 @@ namespace Hattin.Types
         public readonly IPositionEvaluator PositionEvaluator;
 
 
-        public BoardState(IMoveGenerator moveGenerator, IPositionEvaluator positionEvaluator)//these are just temporarily here. Move to HattinEngine class later
+        public BoardState()
         {
             Board = new NormalPiece[(int)squareIndexing];
             PieceProperties = new PieceList();
@@ -96,8 +96,6 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
             positionHashes = new Dictionary<int, int>();
-            MoveGenerator = moveGenerator;
-            PositionEvaluator = positionEvaluator;
 
             NewMoveEvent += PrintMove;
 
@@ -126,7 +124,7 @@ namespace Hattin.Types
                 positionHashes.Add(currentPositionHash, 1);
             }
         }
-        public virtual void OnNewMoveEvent(NewMoveEventArgs eventArgs)
+        public virtual void OnNewMoveEvent(Move eventArgs)
         {
             if (NewMoveEvent is not null)//if there are any subscribers
             {
@@ -134,7 +132,7 @@ namespace Hattin.Types
             }
         }
 
-        public void PrintMove(object? sender, NewMoveEventArgs eventArgs)
+        public void PrintMove(object? sender, Move eventArgs)
         {
             Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
         }
@@ -161,7 +159,7 @@ namespace Hattin.Types
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
             //EnpassantSquare = moveProperties.enpassantSquare;
-            NewMoveEventArgs eventArgs = new NewMoveEventArgs(piece, fromSquare, toSquare);
+            Move eventArgs = new Move(piece, fromSquare, toSquare);
             OnNewMoveEvent(eventArgs);
         }
 
