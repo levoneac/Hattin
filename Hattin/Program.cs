@@ -46,7 +46,7 @@ namespace Hattin
 
             ulong d = (ulong)new Random().NextInt64();
             BoardState board = new BoardState();
-            IMoveGenerator generator = new BasicMoveGenerator();
+            IMoveGenerator generator = new BasicMoveGenerator(board);
             IPositionEvaluator evaluator = new BasicPositionEvaluator();
             HattinEngine0_1 engine0_1 = new HattinEngine0_1(board, generator, evaluator);
             board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
@@ -56,7 +56,7 @@ namespace Hattin
             board.GetMoveHistory();
             board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.D3);
             board.MovePiece(NormalPiece.WhitePawn, BoardSquare.D2, BoardSquare.D4);
-            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.B7, BoardSquare.B5);
+            //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.B7, BoardSquare.B5);
             //board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
             for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
             {
@@ -70,7 +70,8 @@ namespace Hattin
             PieceTotals total = board.PieceProperties.CalculatePieceTotals();
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
-            List<BoardSquare> kMoves = engine0_1.MoveGenerator.GenerateQueenMoves(board);
+            //board.EnPassantSquare = BoardSquare.B4;
+            List<BoardSquare> kMoves = engine0_1.MoveGenerator.GeneratePawnMoves();
             Console.Write("Moves: ");
             foreach (BoardSquare move in kMoves)
             {

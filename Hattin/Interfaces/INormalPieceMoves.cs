@@ -4,11 +4,11 @@ namespace Hattin.Interfaces
 {
     public interface INormalPieceMoves
     {
-        public List<BoardSquare> GeneratePawnMoves(BoardState currentBoard);
-        public List<BoardSquare> GenerateKnightMoves(BoardState currentBoard);
-        public List<BoardSquare> GenerateBishopMoves(BoardState currentBoard);
-        public List<BoardSquare> GenerateRookMoves(BoardState currentBoard);
-        public List<BoardSquare> GenerateQueenMoves(BoardState currentBoard);
-        public List<BoardSquare> GenerateKingMoves(BoardState currentBoard);
+        public List<BoardSquare> GeneratePawnMoves();
+        public List<BoardSquare> GenerateKnightMoves();
+        public List<BoardSquare> GenerateBishopMoves();
+        public List<BoardSquare> GenerateRookMoves();
+        public List<BoardSquare> GenerateQueenMoves();
+        public List<BoardSquare> GenerateKingMoves();
     }
 }
