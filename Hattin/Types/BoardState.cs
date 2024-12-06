@@ -61,7 +61,7 @@ namespace Hattin.Types
         public BoardSquare EnPassantSquare
         {
             get { return enPassantSquare; }
-            private set { enPassantSquare = value; }
+            set { enPassantSquare = value; }
         }
 
         private CastleRights castleRights;

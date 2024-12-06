@@ -55,8 +55,8 @@ namespace Hattin
             Console.WriteLine(board.GetPositionHash());
             board.GetMoveHistory();
             board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.D3);
-            board.MovePiece(NormalPiece.WhitePawn, BoardSquare.D2, BoardSquare.D4);
-            //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.B7, BoardSquare.B5);
+            board.MovePiece(NormalPiece.WhitePawn, BoardSquare.D2, BoardSquare.D5);
+
             //board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
             for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
             {
@@ -70,12 +70,14 @@ namespace Hattin
             PieceTotals total = board.PieceProperties.CalculatePieceTotals();
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
-            //board.EnPassantSquare = BoardSquare.B4;
-            List<BoardSquare> kMoves = engine0_1.MoveGenerator.GeneratePawnMoves();
+
+            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5);
+            board.EnPassantSquare = BoardSquare.E6;
+            List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GenerateKnightMoves();
             Console.Write("Moves: ");
-            foreach (BoardSquare move in kMoves)
+            foreach (GeneratedMove move in kMoves)
             {
-                Console.Write($"{move} ");
+                Console.WriteLine($"{move.FromSquare}-{move.ToSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, capture?: {move.IsCapture} ");
             }
             Console.WriteLine();
             board.PrintBoard(SideToMove.Black);
