@@ -137,10 +137,8 @@ namespace Hattin.Implementations.MoveGenerators
                         {
                             BoardSquare squareBehind = positionAfterOffset - offsets[1];
                             SideToMove pieceBehind = Board.PieceProperties.GetColorOfPieceOnSquare(squareBehind);
-                            if (pieceBehind != SideToMove.None)
-                            {
-                                continue;
-                            }
+                            if (pieceBehind != SideToMove.None) { continue; }
+
                             //set enpassant flag
                             possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, squareBehind, isPromotion, false));
                         }

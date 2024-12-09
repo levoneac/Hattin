@@ -5,6 +5,10 @@ namespace Hattin.Types
         public BoardSquare EnPassantSquare { get; set; }
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
+        //isCheck
+        //isMate?
+        //isBlocking??
+        //
 
         public GeneratedMove() : base()
         {
