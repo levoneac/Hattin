@@ -1,4 +1,5 @@
 ﻿using Hattin.Engine;
+using Hattin.Extensions.SideToMove;
 using Hattin.Extensions.Squares;
 using Hattin.Implementations.MoveGenerators;
 using Hattin.Implementations.PositionEvaluators;
@@ -82,6 +83,7 @@ namespace Hattin
             }
             Console.WriteLine();
             board.PrintBoard(SideToMove.Black);
+
 
 
             /*

@@ -4,19 +4,19 @@ namespace Hattin.Extensions.NormalPiece
 {
     public static class NormalPieceExtensions
     {
-        public static SideToMove ToColor(this Types.NormalPiece piece)
+        public static Types.SideToMove ToColor(this Types.NormalPiece piece)
         {
             if (piece >= Types.NormalPiece.BlackPawn && piece <= Types.NormalPiece.BlackKing)
             {
-                return SideToMove.Black;
+                return Types.SideToMove.Black;
             }
             else if (piece >= Types.NormalPiece.WhitePawn && piece <= Types.NormalPiece.WhiteKing)
             {
-                return SideToMove.White;
+                return Types.SideToMove.White;
             }
             else
             {
-                return SideToMove.None;
+                return Types.SideToMove.None;
             }
         }
     }
