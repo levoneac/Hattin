@@ -1,3 +1,4 @@
+using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
 using Hattin.Types;
 
@@ -24,7 +25,7 @@ namespace Hattin.Implementations.MoveGenerators
                     positionAfterOffset = piecePosition + offset;
 
                     //while the square is on the board, check if the piece collides with something
-                    while ((BoardSquare)Conversions.SquareConversions.Convert120To64((int)positionAfterOffset) != BoardSquare.NoSquare)
+                    while ((BoardSquare)positionAfterOffset.ToBase64Int() != BoardSquare.NoSquare)
                     {
                         SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
                         if (colorOfPieceOnSquare == opponentColor)
@@ -60,7 +61,7 @@ namespace Hattin.Implementations.MoveGenerators
                 {
                     positionAfterOffset = piecePosition + offset;
 
-                    checkIfNoSquare = (BoardSquare)Conversions.SquareConversions.Convert120To64((int)positionAfterOffset);
+                    checkIfNoSquare = (BoardSquare)positionAfterOffset.ToBase64Int();
                     if (checkIfNoSquare == BoardSquare.NoSquare) { continue; }
 
                     SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
@@ -115,7 +116,7 @@ namespace Hattin.Implementations.MoveGenerators
                     positionAfterOffset = pawnPosition + offsets[offsetIndex];
 
                     //if the move doesnt put the pawn off board
-                    checkIfNoSquare = (BoardSquare)Conversions.SquareConversions.Convert120To64((int)positionAfterOffset);
+                    checkIfNoSquare = (BoardSquare)positionAfterOffset.ToBase64Int();
                     if (checkIfNoSquare == BoardSquare.NoSquare) { continue; }
 
                     if (promotionSquares.Contains(positionAfterOffset))
@@ -136,7 +137,7 @@ namespace Hattin.Implementations.MoveGenerators
                         if (offsetIndex == 0)
                         {
                             BoardSquare squareBehind = positionAfterOffset - offsets[1];
-                            SideToMove pieceBehind = Board.PieceProperties.GetColorOfPieceOnSquare(squareBehind);
+                            SideToMove pieceBehind = Board.PieceProperties.GetColorOfPieceOnSquare(squareBehind); //could check onesquare move first and set blocking flag instead
                             if (pieceBehind != SideToMove.None) { continue; }
 
                             //set enpassant flag
@@ -147,7 +148,6 @@ namespace Hattin.Implementations.MoveGenerators
                         {
                             possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, BoardSquare.NoSquare, isPromotion, false));
                         }
-
                     }
                 }
             }

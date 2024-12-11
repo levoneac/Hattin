@@ -1,4 +1,5 @@
 ﻿using Hattin.Engine;
+using Hattin.Extensions.Squares;
 using Hattin.Implementations.MoveGenerators;
 using Hattin.Implementations.PositionEvaluators;
 using Hattin.Interfaces;
@@ -83,7 +84,6 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black);
 
 
-
             /*
                 |R||N||B||K||Q||B||N||R|
                 |P||P||P||P||P||P||P||P|
@@ -122,3 +122,4 @@ namespace Hattin
         }
     }
 }
+//Console.WriteLine(-27.ConvertBoardIndexing(SquareIndexType.Base_120)); //the minus is considered after the conversion happens

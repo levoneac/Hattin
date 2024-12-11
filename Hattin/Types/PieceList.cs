@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using Hattin.Extensions.NormalPiece;
+using Hattin.Extensions.Squares;
 
 namespace Hattin.Types
 {
@@ -41,7 +43,7 @@ namespace Hattin.Types
 
         public SideToMove GetColorOfPieceOnSquare(BoardSquare square)
         {
-            int arrayPos = Conversions.SquareConversions.Convert120To64((int)square);
+            int arrayPos = square.ToBase64Int();
             return captureAndBlockingSquares[arrayPos];
         }
 
@@ -50,8 +52,8 @@ namespace Hattin.Types
         {
             piecePositions[(int)piece].Add(square);
 
-            int squareArrayPos = Conversions.SquareConversions.Convert120To64((int)square);
-            captureAndBlockingSquares[squareArrayPos] = Conversions.PieceAndColor.PieceToColor(piece);
+            int squareArrayPos = square.ToBase64Int();
+            captureAndBlockingSquares[squareArrayPos] = piece.ToColor();
         }
 
         //assumes that move is already verified from caller
@@ -66,11 +68,11 @@ namespace Hattin.Types
             //Only allow if no friendly piece and bool "capture" argument is true?
             piecePositions[(int)piece][indexOfFromSquare] = toSquare;
 
-            int fromSquareArrayPos = Conversions.SquareConversions.Convert120To64((int)fromSquare);
-            int toSquareArrayPos = Conversions.SquareConversions.Convert120To64((int)toSquare);
+            int fromSquareArrayPos = fromSquare.ToBase64Int();
+            int toSquareArrayPos = toSquare.ToBase64Int();
 
             captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
-            captureAndBlockingSquares[toSquareArrayPos] = Conversions.PieceAndColor.PieceToColor(piece);
+            captureAndBlockingSquares[toSquareArrayPos] = piece.ToColor();
         }
 
         //assumes that move is already verified from caller
@@ -81,7 +83,7 @@ namespace Hattin.Types
                 throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {square}");
             }
 
-            int squareArrayPos = Conversions.SquareConversions.Convert120To64((int)square);
+            int squareArrayPos = square.ToBase64Int();
             captureAndBlockingSquares[squareArrayPos] = SideToMove.None;
         }
 
