@@ -75,11 +75,13 @@ namespace Hattin
 
             board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5);
             board.EnPassantSquare = BoardSquare.E6;
-            List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GenerateKnightMoves();
+            List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GenerateBishopMoves();
             Console.Write("Moves: ");
             foreach (GeneratedMove move in kMoves)
             {
-                Console.WriteLine($"{move.FromSquare}-{move.ToSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, capture?: {move.IsCapture} ");
+                Console.Write($"{move.FromSquare}-{move.ToSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, capture?: {move.IsCapture}, attacked squares: ");
+                move.AttackedSquares.ForEach(i => Console.Write($"{i} "));
+                Console.WriteLine();
             }
             Console.WriteLine();
             board.PrintBoard(SideToMove.Black);

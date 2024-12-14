@@ -11,7 +11,7 @@ namespace Hattin.Implementations.MoveGenerators
         {
             Board = board;
         }
-        private List<GeneratedMove> GenerateSlidingMoves(NormalPiece piece, SideToMove opponentColor)
+        public List<GeneratedMove> GenerateSlidingMoves(NormalPiece piece, SideToMove opponentColor)
         {
             List<GeneratedMove> possibleMoves = [];
             BoardSquare positionAfterOffset;
@@ -31,12 +31,14 @@ namespace Hattin.Implementations.MoveGenerators
                         if (colorOfPieceOnSquare == opponentColor)
                         {
                             //set capture flag
-                            possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, BoardSquare.NoSquare, false, true));
+                            List<BoardSquare> attackedSquares = GenerateSlidingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
+                            possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, true));
                             break;
                         }
                         else if (colorOfPieceOnSquare == SideToMove.None)
                         {
-                            possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, BoardSquare.NoSquare, false, false));
+                            List<BoardSquare> attackedSquares = GenerateSlidingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
+                            possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, false));
                             positionAfterOffset += offset;
                         }
                         else
@@ -49,9 +51,42 @@ namespace Hattin.Implementations.MoveGenerators
             return possibleMoves;
         }
 
-        private List<GeneratedMove> GenerateJumpingMoves(NormalPiece piece, SideToMove opponentColor)
+        public List<BoardSquare> GenerateSlidingAttackedSquares(NormalPiece piece, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare previousPosition)
+        {
+            List<BoardSquare> attackedSquares = [];
+            BoardSquare positionAfterOffset;
+
+            foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
+            {
+                positionAfterOffset = currentPosition + offset;
+
+                while ((BoardSquare)positionAfterOffset.ToBase64Int() != BoardSquare.NoSquare)
+                {
+                    SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
+                    if (colorOfPieceOnSquare == opponentColor)
+                    {
+                        attackedSquares.Add(positionAfterOffset);
+                        break;
+                    }
+                    else if (colorOfPieceOnSquare == SideToMove.None || positionAfterOffset == previousPosition)
+                    {
+                        attackedSquares.Add(positionAfterOffset);
+                        positionAfterOffset += offset;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            return attackedSquares;
+
+        }
+
+        public List<GeneratedMove> GenerateJumpingMoves(NormalPiece piece, SideToMove opponentColor)
         {
             List<GeneratedMove> possibleMoves = [];
+            List<BoardSquare> attackedSquares = [];
             BoardSquare positionAfterOffset;
             BoardSquare checkIfNoSquare;
 
@@ -68,11 +103,11 @@ namespace Hattin.Implementations.MoveGenerators
                     if (colorOfPieceOnSquare == opponentColor)
                     {
                         //set capture flag
-                        possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, BoardSquare.NoSquare, false, true));
+                        possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, true));
                     }
                     else if (colorOfPieceOnSquare == SideToMove.None)
                     {
-                        possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, BoardSquare.NoSquare, false, false));
+                        possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, false));
                     }
 
                 }
@@ -90,6 +125,7 @@ namespace Hattin.Implementations.MoveGenerators
         public List<GeneratedMove> GeneratePawnMoves()
         {
             List<GeneratedMove> possibleMoves = [];
+            List<BoardSquare> attackedSquares = [];
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhitePawn : NormalPiece.BlackPawn;
             SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
             BoardSquare positionAfterOffset;
@@ -128,7 +164,7 @@ namespace Hattin.Implementations.MoveGenerators
                     if (offsetIndex > 1 && (colorOfPieceOnSquare == opponentColor || positionAfterOffset == Board.EnPassantSquare))
                     {
                         //set capture flag
-                        possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, BoardSquare.NoSquare, isPromotion, true));
+                        possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, isPromotion, true));
                     }
                     //else if the square is not occupied and its a normal forward move
                     else if (colorOfPieceOnSquare == SideToMove.None && offsetIndex < 2)
@@ -141,12 +177,12 @@ namespace Hattin.Implementations.MoveGenerators
                             if (pieceBehind != SideToMove.None) { continue; }
 
                             //set enpassant flag
-                            possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, squareBehind, isPromotion, false));
+                            possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, squareBehind, isPromotion, false));
                         }
 
                         else
                         {
-                            possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, BoardSquare.NoSquare, isPromotion, false));
+                            possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, isPromotion, false));
                         }
                     }
                 }

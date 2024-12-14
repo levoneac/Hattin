@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.Squares;
+using Hattin.Interfaces;
 
 namespace Hattin.Types
 {
@@ -15,6 +16,7 @@ namespace Hattin.Types
 
         //Tracks which color has a piece on each square
         private List<SideToMove> captureAndBlockingSquares;
+        private List<ColorCount> attackSquares;
 
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
         public int NumPieces { get; private set; }
@@ -22,8 +24,9 @@ namespace Hattin.Types
         {
             NumPieces = Enum.GetNames(typeof(NormalPiece)).Length; //make this take an interface? so that its not that tightly connected with NormalPiece
             piecePositions = new List<BoardSquare>[NumPieces];
-            captureAndBlockingSquares = new List<SideToMove>();
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
+            captureAndBlockingSquares = new List<SideToMove>(64);
+            attackSquares = new List<ColorCount>(64);
             for (int i = 0; i < NumPieces; i++)
             {
                 piecePositions[i] = new List<BoardSquare>();
@@ -33,6 +36,7 @@ namespace Hattin.Types
             for (int i = 0; i < 64; i++)
             {
                 captureAndBlockingSquares.Add(SideToMove.None);
+                attackSquares.Add(new ColorCount());
             }
         }
 
@@ -45,6 +49,26 @@ namespace Hattin.Types
         {
             int arrayPos = square.ToBase64Int();
             return captureAndBlockingSquares[arrayPos];
+        }
+
+        public ColorCount GetAttackCountOnSquare(BoardSquare square)
+        {
+            int arrayPos = square.ToBase64Int();
+            return attackSquares[arrayPos];
+        }
+
+        public void UpdateAttackSquares(IMoveGenerator moveGenerator)
+        {
+            NormalPiece piece;
+            for (int i = 0; i < PiecePositions.Count; i++)
+            {
+                foreach (BoardSquare square in PiecePositions[i])
+                {
+                    piece = (NormalPiece)i;
+
+                }
+            }
+
         }
 
         //assumes that move is already verified from caller
