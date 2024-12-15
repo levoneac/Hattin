@@ -1,5 +1,6 @@
 ﻿using Hattin.Engine;
 using Hattin.Extensions.SideToMove;
+using Hattin.Extensions.SquareInteraction;
 using Hattin.Extensions.Squares;
 using Hattin.Implementations.MoveGenerators;
 using Hattin.Implementations.PositionEvaluators;
@@ -73,16 +74,16 @@ namespace Hattin
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
 
-            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5);
+            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E3);
             board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
-            board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
-            board.EnPassantSquare = BoardSquare.E6;
-            List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GenerateKingMoves();
+            //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
+            //board.EnPassantSquare = BoardSquare.E6;
+            List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GeneratePawnMoves();
             Console.WriteLine("___Moves___: ");
             foreach (GeneratedMove move in kMoves)
             {
                 Console.Write($"{move.FromSquare}-{move.ToSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-                move.AttackedSquares.ForEach(i => Console.Write($"({i.Square}:{i.PieceOnSquare}) "));
+                move.AttackedSquares.ForEach(i => Console.Write($"({i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
                 Console.WriteLine();
             }
             Console.WriteLine();
