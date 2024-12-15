@@ -74,7 +74,7 @@ namespace Hattin
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
 
-            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E3);
+            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E2);
             board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
             //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
             //board.EnPassantSquare = BoardSquare.E6;
@@ -83,7 +83,7 @@ namespace Hattin
             foreach (GeneratedMove move in kMoves)
             {
                 Console.Write($"{move.FromSquare}-{move.ToSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-                move.AttackedSquares.ForEach(i => Console.Write($"({i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
+                move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
                 Console.WriteLine();
             }
             Console.WriteLine();

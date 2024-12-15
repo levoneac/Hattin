@@ -8,7 +8,7 @@ namespace Hattin.Types
         public BoardSquare EnPassantSquare { get; set; }
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
-        public bool IsCheck { get; set; }
+        public bool IsCheck { get; set; }//be aware of edgecases from promotion
         //isMate?
         //isBlocking??
         //
@@ -19,7 +19,7 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             IsPromotion = false;
             IsCapture = false;
-            IsCheck = false;
+            IsCheck = false; 
         }
 
         public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<AttackProjection> attackedSquares, BoardSquare enpassantSquare, bool isPromotion, bool isCapture)

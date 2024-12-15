@@ -4,6 +4,8 @@ using Hattin.Types;
 
 namespace Hattin.Implementations.MoveGenerators
 {
+    //TODO:
+    //refactor attackedSquares-methods to automatically choose sliding or jumping
     public class BasicMoveGenerator : IMoveGenerator
     {
         public BoardState Board { get; private set; } //make into interface later
@@ -66,17 +68,17 @@ namespace Hattin.Implementations.MoveGenerators
                     NormalPiece pieceOnSquare = Board.PieceProperties.GetPieceOnSquare(positionAfterOffset);
                     if (colorOfPieceOnSquare == opponentColor)
                     {
-                        attackedSquares.Add(new AttackProjection(positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, false));
+                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, false));
                         break;
                     }
                     else if (colorOfPieceOnSquare == SideToMove.None || positionAfterOffset == previousPosition)
                     {
-                        attackedSquares.Add(new AttackProjection(positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, false));
+                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, false));
                         positionAfterOffset += offset;
                     }
                     else if (colorOfPieceOnSquare == Board.SideToMove)
                     {
-                        attackedSquares.Add(new AttackProjection(positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, false));
+                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, false));
                         break;
                     }
                     else
@@ -133,15 +135,15 @@ namespace Hattin.Implementations.MoveGenerators
                 NormalPiece pieceOnSquare = Board.PieceProperties.GetPieceOnSquare(positionAfterOffset);
                 if (colorOfPieceOnSquare == opponentColor)
                 {
-                    attackedSquares.Add(new AttackProjection(positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, false));
+                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, false));
                 }
                 else if (colorOfPieceOnSquare == SideToMove.None || positionAfterOffset == previousPosition)
                 {
-                    attackedSquares.Add(new(positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, false));
+                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, false));
                 }
                 else if (colorOfPieceOnSquare == Board.SideToMove)
                 {
-                    attackedSquares.Add(new(positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, false));
+                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, false));
                 }
 
             }
@@ -175,6 +177,7 @@ namespace Hattin.Implementations.MoveGenerators
                 //loop over each of the offsets for each pawn
                 for (; offsetIndex < offsets.Length; offsetIndex++)
                 {
+                    List<AttackProjection> attackedSquares = [];
                     positionAfterOffset = pawnPosition + offsets[offsetIndex];
 
                     //if the move doesnt put the pawn off board
@@ -184,13 +187,32 @@ namespace Hattin.Implementations.MoveGenerators
                     if (promotionSquares.Contains(positionAfterOffset))
                     {
                         isPromotion = true;
+
+                        //Knight
+                        NormalPiece knightColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKnight : NormalPiece.BlackKnight;
+                        attackedSquares.AddRange(GenerateJumpingAttackedSquares(knightColor, opponentColor, positionAfterOffset, pawnPosition));
+
+                        //Bishop
+                        NormalPiece bishopColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteBishop : NormalPiece.BlackBishop;
+                        attackedSquares.AddRange(GenerateSlidingAttackedSquares(bishopColor, opponentColor, positionAfterOffset, pawnPosition));
+
+                        //Rook
+                        NormalPiece rookColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
+                        attackedSquares.AddRange(GenerateSlidingAttackedSquares(rookColor, opponentColor, positionAfterOffset, pawnPosition));
+
+                        //Queen
+                        //NormalPiece queenColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
+                        //attackedSquares.AddRange(GenerateSlidingAttackedSquares(queenColor, opponentColor, positionAfterOffset, pawnPosition));
+                    }
+                    else
+                    {
+                        attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset);
                     }
                     //if its an attacking move and (square is occupied by opponent or it is an enpassant square)
                     SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
                     if (offsetIndex > 1 && (colorOfPieceOnSquare == opponentColor || positionAfterOffset == Board.EnPassantSquare))
                     {
                         //set capture flag
-                        List<AttackProjection> attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset);
                         possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, isPromotion, true));
                     }
                     //else if the square is not occupied and its a normal forward move
@@ -204,13 +226,11 @@ namespace Hattin.Implementations.MoveGenerators
                             if (pieceBehind != SideToMove.None) { continue; }
 
                             //set enpassant flag
-                            List<AttackProjection> attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset);
                             possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, squareBehind, isPromotion, false));
                         }
 
                         else
                         {
-                            List<AttackProjection> attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset);
                             possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, isPromotion, false));
                         }
                     }
@@ -245,16 +265,16 @@ namespace Hattin.Implementations.MoveGenerators
                 NormalPiece pieceOnSquare = Board.PieceProperties.GetPieceOnSquare(positionAfterOffset);
                 if (colorOfPieceOnSquare == opponentColor)
                 {
-                    attackedSquares.Add(new AttackProjection(positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, isPromotion));
+                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, isPromotion));
                 }
                 //technically not a legal moves in the current position
                 else if (colorOfPieceOnSquare == Board.SideToMove)
                 {
-                    attackedSquares.Add(new AttackProjection(positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, isPromotion));
+                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, isPromotion));
                 }
                 else if (colorOfPieceOnSquare == SideToMove.None)
                 {
-                    attackedSquares.Add(new AttackProjection(positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, isPromotion));
+                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, isPromotion));
                 }
             }
             return attackedSquares;
