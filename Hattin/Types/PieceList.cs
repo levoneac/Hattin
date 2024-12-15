@@ -15,8 +15,10 @@ namespace Hattin.Types
         }
 
         //Tracks which color has a piece on each square
-        private List<SideToMove> captureAndBlockingSquares;
-        private List<ColorCount> attackSquares;
+        private List<SideToMove> captureAndBlockingSquares; //switch to array
+        private List<ColorCount> attackSquares; //switch to array
+        private NormalPiece[] squareContents;
+        
 
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
         public int NumPieces { get; private set; }
@@ -27,6 +29,7 @@ namespace Hattin.Types
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             captureAndBlockingSquares = new List<SideToMove>(64);
             attackSquares = new List<ColorCount>(64);
+            squareContents = new NormalPiece[64];
             for (int i = 0; i < NumPieces; i++)
             {
                 piecePositions[i] = new List<BoardSquare>();
@@ -37,6 +40,7 @@ namespace Hattin.Types
             {
                 captureAndBlockingSquares.Add(SideToMove.None);
                 attackSquares.Add(new ColorCount());
+                squareContents[i] = NormalPiece.Empty;
             }
         }
 
@@ -57,19 +61,24 @@ namespace Hattin.Types
             return attackSquares[arrayPos];
         }
 
-        public void UpdateAttackSquares(IMoveGenerator moveGenerator)
+        public NormalPiece GetPieceOnSquare(BoardSquare square)
         {
-            NormalPiece piece;
-            for (int i = 0; i < PiecePositions.Count; i++)
-            {
-                foreach (BoardSquare square in PiecePositions[i])
-                {
-                    piece = (NormalPiece)i;
-
-                }
-            }
-
+            int arrayPos = square.ToBase64Int();
+            return squareContents[arrayPos];
         }
+        //public void UpdateAttackSquares(IMoveGenerator moveGenerator)
+        //{
+        //    NormalPiece piece;
+        //    for (int i = 0; i < PiecePositions.Count; i++)
+        //    {
+        //        foreach (BoardSquare square in PiecePositions[i])
+        //        {
+        //            piece = (NormalPiece)i;
+        //
+        //        }
+        //    }
+        //
+        //}
 
         //assumes that move is already verified from caller
         public void AddPiece(NormalPiece piece, BoardSquare square)
@@ -78,6 +87,7 @@ namespace Hattin.Types
 
             int squareArrayPos = square.ToBase64Int();
             captureAndBlockingSquares[squareArrayPos] = piece.ToColor();
+            squareContents[squareArrayPos] = piece;
         }
 
         //assumes that move is already verified from caller
@@ -97,6 +107,9 @@ namespace Hattin.Types
 
             captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
             captureAndBlockingSquares[toSquareArrayPos] = piece.ToColor();
+
+            squareContents[fromSquareArrayPos] = NormalPiece.Empty;
+            squareContents[toSquareArrayPos] = piece;
         }
 
         //assumes that move is already verified from caller
@@ -109,6 +122,7 @@ namespace Hattin.Types
 
             int squareArrayPos = square.ToBase64Int();
             captureAndBlockingSquares[squareArrayPos] = SideToMove.None;
+            squareContents[squareArrayPos] = NormalPiece.Empty;
         }
 
         public PieceTotals CalculatePieceTotals()
@@ -119,41 +133,41 @@ namespace Hattin.Types
             for (int i = 0; i < piecePositions.Length; i++)
             {
                 int amountOfPiece = PiecePositions[i].Count;
-                switch ((NormalPiece)i)
+                switch ((NormalPiece)i) //switch to using ToValue and ToColor extensions maybe
                 {
                     case NormalPiece.BlackPawn:
-                        blackTotal += (int)NormalPieceValues.Pawn * amountOfPiece;
+                        blackTotal += (int)NormalPieceValue.Pawn * amountOfPiece;
                         break;
                     case NormalPiece.WhitePawn:
-                        whiteTotal += (int)NormalPieceValues.Pawn * amountOfPiece;
+                        whiteTotal += (int)NormalPieceValue.Pawn * amountOfPiece;
                         break;
 
                     case NormalPiece.BlackKnight:
-                        blackTotal += (int)NormalPieceValues.Knight * amountOfPiece;
+                        blackTotal += (int)NormalPieceValue.Knight * amountOfPiece;
                         break;
                     case NormalPiece.WhiteKnight:
-                        whiteTotal += (int)NormalPieceValues.Knight * amountOfPiece;
+                        whiteTotal += (int)NormalPieceValue.Knight * amountOfPiece;
                         break;
 
                     case NormalPiece.BlackBishop:
-                        blackTotal += (int)NormalPieceValues.Bishop * amountOfPiece;
+                        blackTotal += (int)NormalPieceValue.Bishop * amountOfPiece;
                         break;
                     case NormalPiece.WhiteBishop:
-                        whiteTotal += (int)NormalPieceValues.Bishop * amountOfPiece;
+                        whiteTotal += (int)NormalPieceValue.Bishop * amountOfPiece;
                         break;
 
                     case NormalPiece.BlackRook:
-                        blackTotal += (int)NormalPieceValues.Rook * amountOfPiece;
+                        blackTotal += (int)NormalPieceValue.Rook * amountOfPiece;
                         break;
                     case NormalPiece.WhiteRook:
-                        whiteTotal += (int)NormalPieceValues.Rook * amountOfPiece;
+                        whiteTotal += (int)NormalPieceValue.Rook * amountOfPiece;
                         break;
 
                     case NormalPiece.BlackQueen:
-                        blackTotal += (int)NormalPieceValues.Queen * amountOfPiece;
+                        blackTotal += (int)NormalPieceValue.Queen * amountOfPiece;
                         break;
                     case NormalPiece.WhiteQueen:
-                        whiteTotal += (int)NormalPieceValues.Queen * amountOfPiece;
+                        whiteTotal += (int)NormalPieceValue.Queen * amountOfPiece;
                         break;
                 }
             }
@@ -169,6 +183,7 @@ namespace Hattin.Types
             for (int i = 0; i < 63; i++)
             {
                 captureAndBlockingSquares[i] = SideToMove.None;
+                squareContents[i] = NormalPiece.Empty;
             }
         }
     }

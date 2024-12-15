@@ -31,13 +31,13 @@ namespace Hattin.Implementations.MoveGenerators
                         if (colorOfPieceOnSquare == opponentColor)
                         {
                             //set capture flag
-                            List<BoardSquare> attackedSquares = GenerateSlidingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
+                            List<AttackProjection> attackedSquares = GenerateSlidingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
                             possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, true));
                             break;
                         }
                         else if (colorOfPieceOnSquare == SideToMove.None)
                         {
-                            List<BoardSquare> attackedSquares = GenerateSlidingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
+                            List<AttackProjection> attackedSquares = GenerateSlidingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
                             possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, false));
                             positionAfterOffset += offset;
                         }
@@ -51,9 +51,9 @@ namespace Hattin.Implementations.MoveGenerators
             return possibleMoves;
         }
 
-        public List<BoardSquare> GenerateSlidingAttackedSquares(NormalPiece piece, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare previousPosition)
+        public List<AttackProjection> GenerateSlidingAttackedSquares(NormalPiece piece, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare previousPosition)
         {
-            List<BoardSquare> attackedSquares = [];
+            List<AttackProjection> attackedSquares = [];
             BoardSquare positionAfterOffset;
 
             foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
@@ -65,12 +65,12 @@ namespace Hattin.Implementations.MoveGenerators
                     SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
                     if (colorOfPieceOnSquare == opponentColor)
                     {
-                        attackedSquares.Add(positionAfterOffset);
+                        attackedSquares.Add(new AttackProjection(positionAfterOffset, Board.PieceProperties.GetPieceOnSquare(positionAfterOffset)));
                         break;
                     }
                     else if (colorOfPieceOnSquare == SideToMove.None || positionAfterOffset == previousPosition)
                     {
-                        attackedSquares.Add(positionAfterOffset);
+                        attackedSquares.Add(new(positionAfterOffset, NormalPiece.Empty));
                         positionAfterOffset += offset;
                     }
                     else
@@ -86,7 +86,7 @@ namespace Hattin.Implementations.MoveGenerators
         public List<GeneratedMove> GenerateJumpingMoves(NormalPiece piece, SideToMove opponentColor)
         {
             List<GeneratedMove> possibleMoves = [];
-            List<BoardSquare> attackedSquares = [];
+            List<AttackProjection> attackedSquares = [];
             BoardSquare positionAfterOffset;
             BoardSquare checkIfNoSquare;
 
@@ -125,7 +125,7 @@ namespace Hattin.Implementations.MoveGenerators
         public List<GeneratedMove> GeneratePawnMoves()
         {
             List<GeneratedMove> possibleMoves = [];
-            List<BoardSquare> attackedSquares = [];
+            List<AttackProjection> attackedSquares = [];
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhitePawn : NormalPiece.BlackPawn;
             SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
             BoardSquare positionAfterOffset;

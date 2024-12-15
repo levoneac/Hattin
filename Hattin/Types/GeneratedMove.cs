@@ -2,7 +2,7 @@ namespace Hattin.Types
 {
     public class GeneratedMove : Move
     {
-        public List<BoardSquare> AttackedSquares { get; set; }
+        public List<AttackProjection> AttackedSquares { get; set; }
         public BoardSquare EnPassantSquare { get; set; }
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
@@ -19,7 +19,7 @@ namespace Hattin.Types
             IsCapture = false;
         }
 
-        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<BoardSquare> attackedSquares, BoardSquare enpassantSquare, bool isPromotion, bool isCapture)
+        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<AttackProjection> attackedSquares, BoardSquare enpassantSquare, bool isPromotion, bool isCapture)
         : base(piece, fromSquare, toSquare)
         {
             AttackedSquares = attackedSquares;

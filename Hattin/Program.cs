@@ -80,7 +80,7 @@ namespace Hattin
             foreach (GeneratedMove move in kMoves)
             {
                 Console.Write($"{move.FromSquare}-{move.ToSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, capture?: {move.IsCapture}, attacked squares: ");
-                move.AttackedSquares.ForEach(i => Console.Write($"{i} "));
+                move.AttackedSquares.ForEach(i => Console.Write($"({i.Square}:{i.PieceOnSquare}) "));
                 Console.WriteLine();
             }
             Console.WriteLine();
