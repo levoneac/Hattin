@@ -80,13 +80,11 @@ namespace Hattin.Implementations.MoveGenerators
                 }
             }
             return attackedSquares;
-
         }
 
         public List<GeneratedMove> GenerateJumpingMoves(NormalPiece piece, SideToMove opponentColor)
         {
             List<GeneratedMove> possibleMoves = [];
-            List<AttackProjection> attackedSquares = [];
             BoardSquare positionAfterOffset;
             BoardSquare checkIfNoSquare;
 
@@ -102,17 +100,41 @@ namespace Hattin.Implementations.MoveGenerators
                     SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
                     if (colorOfPieceOnSquare == opponentColor)
                     {
-                        //set capture flag
+                        List<AttackProjection> attackedSquares = GenerateJumpingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
                         possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, true));
                     }
                     else if (colorOfPieceOnSquare == SideToMove.None)
                     {
+                        List<AttackProjection> attackedSquares = GenerateJumpingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
                         possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, false));
                     }
-
                 }
             }
             return possibleMoves;
+        }
+        public List<AttackProjection> GenerateJumpingAttackedSquares(NormalPiece piece, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare previousPosition)
+        {
+            List<AttackProjection> attackedSquares = [];
+            BoardSquare positionAfterOffset;
+
+            foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
+            {
+                positionAfterOffset = currentPosition + offset;
+
+                if ((BoardSquare)positionAfterOffset.ToBase64Int() == BoardSquare.NoSquare) { continue; }
+
+                SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
+                if (colorOfPieceOnSquare == opponentColor)
+                {
+                    attackedSquares.Add(new AttackProjection(positionAfterOffset, Board.PieceProperties.GetPieceOnSquare(positionAfterOffset)));
+                }
+                else if (colorOfPieceOnSquare == SideToMove.None || positionAfterOffset == previousPosition)
+                {
+                    attackedSquares.Add(new(positionAfterOffset, NormalPiece.Empty));
+                }
+
+            }
+            return attackedSquares;
         }
         public List<GeneratedMove> GenerateKnightMoves()
         {
