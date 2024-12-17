@@ -90,7 +90,6 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black);
 
 
-
             /*
                 |R||N||B||K||Q||B||N||R|
                 |P||P||P||P||P||P||P||P|

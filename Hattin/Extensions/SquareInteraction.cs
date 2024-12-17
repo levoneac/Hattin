@@ -1,5 +1,5 @@
 namespace Hattin.Extensions.SquareInteraction
-{ //testing if you can overload ToString (aparently cant as you can override while also being static)
+{ //testing if you can overload ToString (aparently cant as you cant override while also being static)
     public static class SquareInteractionExtensions
     {
         public static string ToShortString(this Types.SquareInteraction interaction)

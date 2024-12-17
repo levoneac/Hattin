@@ -1,3 +1,4 @@
+using Hattin.Extensions.SideToMove;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
 using Hattin.Types;
@@ -155,7 +156,7 @@ namespace Hattin.Implementations.MoveGenerators
         {
             List<GeneratedMove> possibleMoves = [];
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhitePawn : NormalPiece.BlackPawn;
-            SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+            SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             BoardSquare positionAfterOffset;
             BoardSquare checkIfNoSquare;
             BoardSquare[] startingSquares = NormalPieceStartingSquares.GetStartingSquareFromNormalPiece(pieceColor);
@@ -283,14 +284,14 @@ namespace Hattin.Implementations.MoveGenerators
         public List<GeneratedMove> GenerateKnightMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKnight : NormalPiece.BlackKnight;
-            SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+            SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             return GenerateJumpingMoves(pieceColor, opponentColor);
         }
 
         public List<GeneratedMove> GenerateBishopMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteBishop : NormalPiece.BlackBishop;
-            SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+            SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             return GenerateSlidingMoves(pieceColor, opponentColor);
 
         }
@@ -298,21 +299,21 @@ namespace Hattin.Implementations.MoveGenerators
         public List<GeneratedMove> GenerateRookMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
-            SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+            SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             return GenerateSlidingMoves(pieceColor, opponentColor);
         }
 
         public List<GeneratedMove> GenerateQueenMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
-            SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+            SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             return GenerateSlidingMoves(pieceColor, opponentColor);
         }
 
         public List<GeneratedMove> GenerateKingMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
-            SideToMove opponentColor = Board.SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
+            SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
 
             //normal moves
             List<GeneratedMove> moves = GenerateJumpingMoves(pieceColor, opponentColor);
