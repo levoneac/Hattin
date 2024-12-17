@@ -327,6 +327,18 @@ namespace Hattin.Implementations.MoveGenerators
             return moves;
         }
 
+        public List<GeneratedMove> GeneratAllLegalMoves()
+        {
+            List<GeneratedMove> allMoves = [];
+            allMoves.AddRange(GeneratePawnMoves());
+            allMoves.AddRange(GenerateBishopMoves());
+            allMoves.AddRange(GenerateKnightMoves());
+            allMoves.AddRange(GenerateRookMoves());
+            allMoves.AddRange(GenerateQueenMoves());
+            allMoves.AddRange(GenerateKingMoves());
+            return allMoves;
+        }
+
         public GeneratedMove GenerateNextValidMove()
         {
             throw new NotImplementedException();

@@ -71,6 +71,14 @@ namespace Hattin.Types
             private set { castleRights = value; }
         }
 
+        private bool isCheck;
+        public bool IsCheck
+        {
+            get { return isCheck; }
+            set { isCheck = value; }
+        }
+        
+
         private Dictionary<int, int> positionHashes;
 
         private GameResult gameResult;
@@ -91,6 +99,7 @@ namespace Hattin.Types
             SideToMove = SideToMove.White;
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
+            IsCheck = false;
             positionHashes = new Dictionary<int, int>();
 
             NewMoveEvent += PrintMove;

@@ -6,6 +6,7 @@ using Hattin.Implementations.MoveGenerators;
 using Hattin.Implementations.PositionEvaluators;
 using Hattin.Interfaces;
 using Hattin.Types;
+using Hattin.Utils;
 
 namespace Hattin
 {
@@ -78,17 +79,20 @@ namespace Hattin
             board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
             //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
             //board.EnPassantSquare = BoardSquare.E6;
-            List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GeneratePawnMoves();
+            List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GenerateKingMoves();
             Console.WriteLine("___Moves___: ");
             foreach (GeneratedMove move in kMoves)
             {
-                Console.Write($"{move.FromSquare}-{move.ToSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+                Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
                 move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
                 Console.WriteLine();
             }
             Console.WriteLine();
             board.PrintBoard(SideToMove.Black);
 
+
+            var timer = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GeneratAllLegalMoves, 1);
+            Console.WriteLine(timer.RunTests());
 
             /*
                 |R||N||B||K||Q||B||N||R|
@@ -125,6 +129,13 @@ namespace Hattin
             }
             */
 
+            //TimeFunction usage:
+            //int Test(int x, int y, int z)
+            //{
+            //    return x + y + z;
+            //}
+            //var timer = new TimeFunction<object, Func<int, int, int, int>>(null, Test, 1, 1, 5, 3);
+            //null -> the parent class of the function
         }
     }
 }

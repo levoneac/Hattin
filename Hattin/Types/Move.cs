@@ -4,20 +4,20 @@ namespace Hattin.Types
     {
         public NormalPiece Piece { get; init; }
         public BoardSquare FromSquare { get; init; }
-        public BoardSquare ToSquare { get; init; }
+        public BoardSquare DestSquare { get; init; }
 
         public Move()
         {
             Piece = NormalPiece.Empty;
             FromSquare = BoardSquare.NoSquare;
-            ToSquare = BoardSquare.NoSquare;
+            DestSquare = BoardSquare.NoSquare;
         }
 
-        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
+        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare)
         {
             Piece = piece;
             FromSquare = fromSquare;
-            ToSquare = toSquare;
+            DestSquare = destSquare;
         }
     }
 }

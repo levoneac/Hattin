@@ -24,7 +24,7 @@ namespace Hattin.Types
         public int NumPieces { get; private set; }
         public PieceList()
         {
-            NumPieces = Enum.GetNames(typeof(NormalPiece)).Length; //make this take an interface? so that its not that tightly connected with NormalPiece
+            NumPieces = Enum.GetNames(typeof(NormalPiece)).Length;
             piecePositions = new List<BoardSquare>[NumPieces];
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             captureAndBlockingSquares = new List<SideToMove>(64);
