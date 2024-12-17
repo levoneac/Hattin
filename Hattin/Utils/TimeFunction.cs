@@ -1,7 +1,7 @@
-using Hattin.Types;
-
 namespace Hattin.Utils
 {
+    //P is the parent class which contains the method F. P can be null if F is static.
+    //F is a delegate, for example: Func<int, int>, which must match the function. Currently the output is discarded.
     public class TimeFunction<P, F> where P : class where F : Delegate
     {
         public int TotalRuns { get; set; }

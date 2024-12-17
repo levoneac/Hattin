@@ -2,7 +2,7 @@ using Hattin.Types;
 
 namespace Hattin.Interfaces
 {
-    public interface IMoveGenerator : INormalPieceMoves
+    public interface IMoveGenerator
     {
         List<GeneratedMove> GeneratAllLegalMoves();
         GeneratedMove GenerateNextValidMove();
