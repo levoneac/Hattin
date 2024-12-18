@@ -103,6 +103,14 @@ namespace Hattin
             Console.WriteLine(timerResult2);
 
 
+            SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
+            Console.WriteLine();
+            SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.A8, AbsoluteDirectionalOffsets.Row, true).ForEach(s => Console.Write($"{s}, "));
+
+            SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.H8, AbsoluteDirectionalOffsets.Column, true).ForEach(s => Console.Write($"{s}, "));
+            Console.WriteLine();
+            SquareRange.GetSquaresBetween(BoardSquare.E3, BoardSquare.A3, AbsoluteDirectionalOffsets.Column, false).ForEach(s => Console.Write($"{s}, "));
+
 
             //foreach (var move in functionResult2)
             //{

@@ -12,6 +12,7 @@ namespace Hattin.Types
         Downright = -9
     }
 
+    //From whites perspective
     public enum AbsoluteDirectionalOffsets : int
     {
         Column = 1,
