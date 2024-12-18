@@ -79,8 +79,6 @@ namespace Hattin.Utils
                 squares.Insert(0, fromSquare);
                 squares.Add(toSquare);
             }
-
-            Console.WriteLine($"{fromRow}, {toRow}");
             return squares;
         }
 

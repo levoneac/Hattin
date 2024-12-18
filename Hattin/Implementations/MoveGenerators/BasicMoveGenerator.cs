@@ -327,6 +327,11 @@ namespace Hattin.Implementations.MoveGenerators
             return moves;
         }
 
+        public List<AttackProjection> GenerateAllAttackedSquares()
+        {
+            throw new NotImplementedException();
+        }
+
         public List<GeneratedMove> GenerateAllLegalMoves()
         {
             List<GeneratedMove> allMoves = [];

@@ -102,14 +102,18 @@ namespace Hattin
             var (timerResult2, functionResult2) = timer2.RunTests();
             Console.WriteLine(timerResult2);
 
+            Console.WriteLine(engineThreaded.MoveGenerator.GenerateAllAttackedSquares().Count);
+            var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 10);
+            var (timerResult3, functionResult3) = timer3.RunTests();
+            Console.WriteLine(timerResult3);
 
-            SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
-            Console.WriteLine();
-            SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.A8, AbsoluteDirectionalOffsets.Row, true).ForEach(s => Console.Write($"{s}, "));
-
-            SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.H8, AbsoluteDirectionalOffsets.Column, true).ForEach(s => Console.Write($"{s}, "));
-            Console.WriteLine();
-            SquareRange.GetSquaresBetween(BoardSquare.E3, BoardSquare.A3, AbsoluteDirectionalOffsets.Column, false).ForEach(s => Console.Write($"{s}, "));
+            //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
+            //Console.WriteLine();
+            //SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.A8, AbsoluteDirectionalOffsets.Row, true).ForEach(s => Console.Write($"{s}, "));
+            //
+            //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.H8, AbsoluteDirectionalOffsets.Column, true).ForEach(s => Console.Write($"{s}, "));
+            //Console.WriteLine();
+            //SquareRange.GetSquaresBetween(BoardSquare.E3, BoardSquare.A3, AbsoluteDirectionalOffsets.Column, false).ForEach(s => Console.Write($"{s}, "));
 
 
             //foreach (var move in functionResult2)

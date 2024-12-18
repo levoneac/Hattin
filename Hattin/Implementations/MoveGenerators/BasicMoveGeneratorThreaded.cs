@@ -1,3 +1,4 @@
+using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.SideToMove;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
@@ -165,7 +166,7 @@ namespace Hattin.Implementations.MoveGenerators
         }
 
         //nearing spaghetti
-        public void GeneratePawnMoves(object? state)
+        public void GeneratePawnMoves()
         {
             List<GeneratedMove> possibleMoves = [];
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhitePawn : NormalPiece.BlackPawn;
@@ -220,7 +221,7 @@ namespace Hattin.Implementations.MoveGenerators
                     }
                     else
                     {
-                        attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset);
+                        attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset, positionAfterOffset);
                     }
                     //if its an attacking move and (square is occupied by opponent or it is an enpassant square)
                     SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
@@ -254,7 +255,7 @@ namespace Hattin.Implementations.MoveGenerators
         }
 
         //TODO: Handle promotions
-        public List<AttackProjection> GeneratePawnAttackedSquares(NormalPiece pawnColor, SideToMove opponentColor, BoardSquare currentPosition)
+        public List<AttackProjection> GeneratePawnAttackedSquares(NormalPiece pawnColor, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare placeholder)
         {
             List<AttackProjection> attackedSquares = [];
             BoardSquare positionAfterOffset;
@@ -294,14 +295,14 @@ namespace Hattin.Implementations.MoveGenerators
             return attackedSquares;
         }
 
-        public void GenerateKnightMoves(object? state)
+        public void GenerateKnightMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKnight : NormalPiece.BlackKnight;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             LockMovesAddRange(GenerateJumpingMoves(pieceColor, opponentColor));
         }
 
-        public void GenerateBishopMoves(object? state)
+        public void GenerateBishopMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteBishop : NormalPiece.BlackBishop;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
@@ -309,21 +310,21 @@ namespace Hattin.Implementations.MoveGenerators
 
         }
 
-        public void GenerateRookMoves(object? state)
+        public void GenerateRookMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
         }
 
-        public void GenerateQueenMoves(object? state)
+        public void GenerateQueenMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
             LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
         }
 
-        public void GenerateKingMoves(object? state)
+        public void GenerateKingMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
@@ -335,7 +336,7 @@ namespace Hattin.Implementations.MoveGenerators
             //check that the king isnt in check
             if (!Board.IsCheck)
             {
-                
+
             }
             //check if squares have 0 attack coverage of enemy pieces
             //check that king and rook have not moved
@@ -344,25 +345,92 @@ namespace Hattin.Implementations.MoveGenerators
             LockMovesAddRange(moves);
         }
 
+        //Ok this one is silly
+        public List<AttackProjection> GenerateAllAttackedSquares()
+        {
+            List<AttackProjection> attackProjections = new List<AttackProjection>();
+            object attackProjectionsLock = new object();
+            List<ManualResetEvent> events = new List<ManualResetEvent>();
+
+            List<Func<NormalPiece, SideToMove, BoardSquare, BoardSquare>> jobs = [];
+
+            foreach (var sliders in NormalPieceMovement.SlidingPieces)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
+                {
+                    ManualResetEvent ensureComplete = new ManualResetEvent(false);
+                    ThreadPool.QueueUserWorkItem((object? parameters) =>
+                    {
+                        LockAttackProjectionsAddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        ensureComplete.Set();
+                    });
+                    events.Add(ensureComplete);
+                }
+            }
+
+            foreach (var jumpers in NormalPieceMovement.JumpingPieces)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
+                {
+                    ManualResetEvent ensureComplete = new ManualResetEvent(false);
+                    ThreadPool.QueueUserWorkItem((object? parameters) =>
+                    {
+                        LockAttackProjectionsAddRange(GenerateSlidingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        ensureComplete.Set();
+                    });
+                    events.Add(ensureComplete);
+                }
+            }
+
+            foreach (var pawns in NormalPieceMovement.PawnMoves)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
+                {
+                    ManualResetEvent ensureComplete = new ManualResetEvent(false);
+                    ThreadPool.QueueUserWorkItem((object? parameters) =>
+                    {
+                        LockAttackProjectionsAddRange(GenerateSlidingAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        ensureComplete.Set();
+                    });
+                    events.Add(ensureComplete);
+                }
+            }
+
+            WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
+
+            return attackProjections;
+
+
+            void LockAttackProjectionsAddRange(List<AttackProjection> attacks)
+            {
+                lock (attackProjectionsLock)
+                {
+                    attackProjections.AddRange(attacks);
+                }
+            }
+        }
+
         public List<GeneratedMove> GenerateAllLegalMoves()
         {
             Moves.Clear();
             LastGeneratedPly = Board.PlyCounter;
 
             List<ManualResetEvent> events = new List<ManualResetEvent>();
-            List<Action<object?>> jobs = new List<Action<object?>>([GeneratePawnMoves, GenerateBishopMoves, GenerateKnightMoves, GenerateRookMoves, GenerateQueenMoves, GenerateKingMoves]);
+            List<Action> jobs = new List<Action>([GeneratePawnMoves, GenerateBishopMoves, GenerateKnightMoves, GenerateRookMoves, GenerateQueenMoves, GenerateKingMoves]);
 
-            foreach (Action<object?> job in jobs)
+            foreach (Action job in jobs)
             {
                 ManualResetEvent ensureComplete = new ManualResetEvent(false);
                 ThreadPool.QueueUserWorkItem((object? parameters) =>
                 {
-                    job.Invoke(parameters);
+                    job.Invoke();
                     ensureComplete.Set();
                 });
                 events.Add(ensureComplete);
             }
             WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
+
+            //Dispose the events when done IG
 
             return Moves;
         }
