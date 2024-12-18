@@ -356,18 +356,6 @@ namespace Hattin.Implementations.MoveGenerators
             }
             WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
 
-            //ThreadPool.QueueUserWorkItem(new WaitCallback((task) => ensureComplete.Set()));
-            //
-            //ThreadPool.QueueUserWorkItem(new WaitCallback(GeneratePawnMoves));
-            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateBishopMoves));
-            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateKnightMoves));
-            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateRookMoves));
-            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateQueenMoves));
-            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateKingMoves));
-            //
-            //ensureComplete.WaitOne();
-
-
             return Moves;
         }
 

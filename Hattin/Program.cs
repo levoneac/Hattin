@@ -91,15 +91,16 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black);
 
 
-            //var timer = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GeneratAllLegalMoves, 100);
+            //var timer = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GeneratAllLegalMoves, 1000);
             //var (timerResult, functionResult) = timer.RunTests();
             //Console.WriteLine(timerResult);
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
 
-            var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GeneratAllLegalMoves, 100);
+            var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GeneratAllLegalMoves, 1000);
             var (timerResult2, functionResult2) = timer2.RunTests();
+            Console.WriteLine(timerResult2);
 
 
 
@@ -107,7 +108,6 @@ namespace Hattin
             //{
             //    Console.WriteLine($"{move.Piece}:{move.FromSquare}-{move.DestSquare}");
             //}
-            Console.WriteLine(timerResult2);
 
             //Console.WriteLine(functionResult.Count == functionResult2.Count);
 
