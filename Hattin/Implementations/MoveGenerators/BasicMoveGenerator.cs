@@ -327,7 +327,7 @@ namespace Hattin.Implementations.MoveGenerators
             return moves;
         }
 
-        public List<GeneratedMove> GeneratAllLegalMoves()
+        public List<GeneratedMove> GenerateAllLegalMoves()
         {
             List<GeneratedMove> allMoves = [];
             allMoves.AddRange(GeneratePawnMoves());

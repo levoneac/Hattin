@@ -12,10 +12,12 @@ namespace Hattin.Implementations.MoveGenerators
         public BoardState Board { get; private set; } //make into interface later
         public List<GeneratedMove> Moves { get; private set; }
         private static readonly object moveLock = new object();
+        public int LastGeneratedPly { get; private set; }
         public BasicMoveGeneratorThreaded(BoardState board)
         {
             Board = board;
             Moves = new List<GeneratedMove>();
+            LastGeneratedPly = -1;
         }
 
         private void LockMovesAddRange(List<GeneratedMove> moves)
@@ -331,6 +333,10 @@ namespace Hattin.Implementations.MoveGenerators
 
             //Castling
             //check that the king isnt in check
+            if (!Board.IsCheck)
+            {
+                
+            }
             //check if squares have 0 attack coverage of enemy pieces
             //check that king and rook have not moved
             //check that the squares between them are Empty
@@ -338,9 +344,11 @@ namespace Hattin.Implementations.MoveGenerators
             LockMovesAddRange(moves);
         }
 
-        public List<GeneratedMove> GeneratAllLegalMoves()
+        public List<GeneratedMove> GenerateAllLegalMoves()
         {
             Moves.Clear();
+            LastGeneratedPly = Board.PlyCounter;
+
             List<ManualResetEvent> events = new List<ManualResetEvent>();
             List<Action<object?>> jobs = new List<Action<object?>>([GeneratePawnMoves, GenerateBishopMoves, GenerateKnightMoves, GenerateRookMoves, GenerateQueenMoves, GenerateKingMoves]);
 

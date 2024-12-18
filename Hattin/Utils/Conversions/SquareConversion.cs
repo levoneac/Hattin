@@ -1,8 +1,8 @@
 using Hattin.Types;
 
-namespace Hattin.Conversions
+namespace Hattin.Utils.Conversions
 {
-    public class SquareConversions //struct?
+    public static class SquareConversions 
     {
         //Less safe to use these directly, but probably a bit faster
         public static readonly int[] Array64To120 = new int[64];

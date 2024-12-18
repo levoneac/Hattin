@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Text;
 using Hattin.Events.EventArguments;
 using Hattin.Interfaces;
 
@@ -199,7 +198,7 @@ namespace Hattin.Types
             {
                 for (int i = 56; i >= 0; i++)
                 {
-                    Console.Write($" {(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]} ");
+                    Console.Write($" {(FENSymbols)Board[Utils.Conversions.SquareConversions.Array64To120[i]]} ");
                     if ((i + 1) % 8 == 0)
                     {
                         Console.WriteLine();
@@ -211,7 +210,7 @@ namespace Hattin.Types
             {
                 for (int i = 7; i < 64; i--)
                 {
-                    Console.Write($" {(FENSymbols)Board[Conversions.SquareConversions.Array64To120[i]]} ");
+                    Console.Write($" {(FENSymbols)Board[Utils.Conversions.SquareConversions.Array64To120[i]]} ");
                     if (i % 8 == 0)
                     {
                         Console.WriteLine();
@@ -270,7 +269,7 @@ namespace Hattin.Types
 
                     if (Enum.TryParse(typeof(FENSymbols), elem.ToString(), false, out object piece))
                     {
-                        int realPosition = Conversions.SquareConversions.Array64To120[boardPointer];
+                        int realPosition = Utils.Conversions.SquareConversions.Array64To120[boardPointer];
                         Board[realPosition] = (NormalPiece)piece;
                         PieceProperties.AddPiece((NormalPiece)piece, (BoardSquare)realPosition);
                         //Console.WriteLine($"{(BoardSquare)realPosition}: {(NormalPiece)piece}, ({(int)boardPointer})");

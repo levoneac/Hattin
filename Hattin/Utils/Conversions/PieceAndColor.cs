@@ -1,6 +1,6 @@
 using Hattin.Types;
 
-namespace Hattin.Conversions
+namespace Hattin.Utils.Conversions
 {
     public static class PieceAndColor
     {

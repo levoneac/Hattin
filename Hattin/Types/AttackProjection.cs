@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public struct AttackProjection
+    public readonly struct AttackProjection
     {
         public NormalPiece AsPiece { get; }
         public BoardSquare Square { get; }
