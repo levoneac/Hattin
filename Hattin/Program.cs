@@ -77,7 +77,7 @@ namespace Hattin
 
             board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E2);
             board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
-            //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
+            board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
             //board.EnPassantSquare = BoardSquare.E6;
             //List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GeneratAllLegalMoves();
             //Console.WriteLine("___Moves___: ");
@@ -91,14 +91,26 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black);
 
 
-            var timer = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GeneratAllLegalMoves, 100);
-            Console.WriteLine(timer.RunTests());
+            //var timer = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GeneratAllLegalMoves, 100);
+            //var (timerResult, functionResult) = timer.RunTests();
+            //Console.WriteLine(timerResult);
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
 
-            var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GeneratAllLegalMoves, 100);
-            Console.WriteLine(timer.RunTests());
+            var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GeneratAllLegalMoves, 100);
+            var (timerResult2, functionResult2) = timer2.RunTests();
+
+
+
+            //foreach (var move in functionResult2)
+            //{
+            //    Console.WriteLine($"{move.Piece}:{move.FromSquare}-{move.DestSquare}");
+            //}
+            Console.WriteLine(timerResult2);
+
+            //Console.WriteLine(functionResult.Count == functionResult2.Count);
+
             /*
                 |R||N||B||K||Q||B||N||R|
                 |P||P||P||P||P||P||P||P|

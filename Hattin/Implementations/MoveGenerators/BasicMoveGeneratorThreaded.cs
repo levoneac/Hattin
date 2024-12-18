@@ -11,18 +11,19 @@ namespace Hattin.Implementations.MoveGenerators
     {
         public BoardState Board { get; private set; } //make into interface later
         public List<GeneratedMove> Moves { get; private set; }
-        private List<Thread> generatorThreads;
+        private static readonly object moveLock = new object();
         public BasicMoveGeneratorThreaded(BoardState board)
         {
             Board = board;
             Moves = new List<GeneratedMove>();
-            Thread pawnThread = new Thread(new ThreadStart(GeneratePawnMoves));
-            Thread bishopThread = new Thread(new ThreadStart(GenerateBishopMoves));
-            Thread knightThread = new Thread(new ThreadStart(GenerateKnightMoves));
-            Thread rookThread = new Thread(new ThreadStart(GenerateRookMoves));
-            Thread queenThread = new Thread(new ThreadStart(GenerateQueenMoves));
-            Thread kingThread = new Thread(new ThreadStart(GenerateKingMoves));
-            generatorThreads = new List<Thread>([pawnThread, bishopThread, knightThread, rookThread, queenThread, kingThread]);
+        }
+
+        private void LockMovesAddRange(List<GeneratedMove> moves)
+        {
+            lock (moveLock)
+            {
+                Moves.AddRange(moves);
+            }
         }
         public List<GeneratedMove> GenerateSlidingMoves(NormalPiece piece, SideToMove opponentColor)
         {
@@ -162,7 +163,7 @@ namespace Hattin.Implementations.MoveGenerators
         }
 
         //nearing spaghetti
-        public void GeneratePawnMoves()
+        public void GeneratePawnMoves(object? state)
         {
             List<GeneratedMove> possibleMoves = [];
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhitePawn : NormalPiece.BlackPawn;
@@ -247,7 +248,7 @@ namespace Hattin.Implementations.MoveGenerators
                     }
                 }
             }
-            Moves.AddRange(possibleMoves);
+            LockMovesAddRange(possibleMoves);
         }
 
         //TODO: Handle promotions
@@ -291,36 +292,36 @@ namespace Hattin.Implementations.MoveGenerators
             return attackedSquares;
         }
 
-        public void GenerateKnightMoves()
+        public void GenerateKnightMoves(object? state)
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKnight : NormalPiece.BlackKnight;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            Moves.AddRange(GenerateJumpingMoves(pieceColor, opponentColor));
+            LockMovesAddRange(GenerateJumpingMoves(pieceColor, opponentColor));
         }
 
-        public void GenerateBishopMoves()
+        public void GenerateBishopMoves(object? state)
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteBishop : NormalPiece.BlackBishop;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            Moves.AddRange(GenerateSlidingMoves(pieceColor, opponentColor));
+            LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
 
         }
 
-        public void GenerateRookMoves()
+        public void GenerateRookMoves(object? state)
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            Moves.AddRange(GenerateSlidingMoves(pieceColor, opponentColor));
+            LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
         }
 
-        public void GenerateQueenMoves()
+        public void GenerateQueenMoves(object? state)
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            Moves.AddRange(GenerateSlidingMoves(pieceColor, opponentColor));
+            LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
         }
 
-        public void GenerateKingMoves()
+        public void GenerateKingMoves(object? state)
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
@@ -334,16 +335,39 @@ namespace Hattin.Implementations.MoveGenerators
             //check that king and rook have not moved
             //check that the squares between them are Empty
 
-            Moves.AddRange(moves);
+            LockMovesAddRange(moves);
         }
 
         public List<GeneratedMove> GeneratAllLegalMoves()
         {
             Moves.Clear();
-            foreach (Thread thread in generatorThreads)
+            List<ManualResetEvent> events = new List<ManualResetEvent>();
+            List<Action<object?>> jobs = new List<Action<object?>>([GeneratePawnMoves, GenerateBishopMoves, GenerateKnightMoves, GenerateRookMoves, GenerateQueenMoves, GenerateKingMoves]);
+
+            foreach (Action<object?> job in jobs)
             {
-                thread.Start();
+                ManualResetEvent ensureComplete = new ManualResetEvent(false);
+                ThreadPool.QueueUserWorkItem((object? parameters) =>
+                {
+                    job.Invoke(parameters);
+                    ensureComplete.Set();
+                });
+                events.Add(ensureComplete);
             }
+            WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
+
+            //ThreadPool.QueueUserWorkItem(new WaitCallback((task) => ensureComplete.Set()));
+            //
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(GeneratePawnMoves));
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateBishopMoves));
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateKnightMoves));
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateRookMoves));
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateQueenMoves));
+            //ThreadPool.QueueUserWorkItem(new WaitCallback(GenerateKingMoves));
+            //
+            //ensureComplete.WaitOne();
+
+
             return Moves;
         }
 
