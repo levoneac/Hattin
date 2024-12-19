@@ -11,23 +11,13 @@ namespace Hattin.Implementations.MoveGenerators
     public class BasicMoveGeneratorThreaded : IMoveGenerator
     {
         public BoardState Board { get; private set; } //make into interface later
-        public List<GeneratedMove> Moves { get; private set; }
-        private static readonly object moveLock = new object();
         public int LastGeneratedPly { get; private set; }
         public BasicMoveGeneratorThreaded(BoardState board)
         {
             Board = board;
-            Moves = new List<GeneratedMove>();
             LastGeneratedPly = -1;
         }
 
-        private void LockMovesAddRange(List<GeneratedMove> moves)
-        {
-            lock (moveLock)
-            {
-                Moves.AddRange(moves);
-            }
-        }
         public List<GeneratedMove> GenerateSlidingMoves(NormalPiece piece, SideToMove opponentColor)
         {
             List<GeneratedMove> possibleMoves = [];
@@ -166,7 +156,7 @@ namespace Hattin.Implementations.MoveGenerators
         }
 
         //nearing spaghetti
-        public void GeneratePawnMoves()
+        public List<GeneratedMove> GeneratePawnMoves()
         {
             List<GeneratedMove> possibleMoves = [];
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhitePawn : NormalPiece.BlackPawn;
@@ -251,7 +241,7 @@ namespace Hattin.Implementations.MoveGenerators
                     }
                 }
             }
-            LockMovesAddRange(possibleMoves);
+            return possibleMoves;
         }
 
         //TODO: Handle promotions
@@ -295,36 +285,36 @@ namespace Hattin.Implementations.MoveGenerators
             return attackedSquares;
         }
 
-        public void GenerateKnightMoves()
+        public List<GeneratedMove> GenerateKnightMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKnight : NormalPiece.BlackKnight;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            LockMovesAddRange(GenerateJumpingMoves(pieceColor, opponentColor));
+            return GenerateJumpingMoves(pieceColor, opponentColor);
         }
 
-        public void GenerateBishopMoves()
+        public List<GeneratedMove> GenerateBishopMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteBishop : NormalPiece.BlackBishop;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
+            return GenerateSlidingMoves(pieceColor, opponentColor);
 
         }
 
-        public void GenerateRookMoves()
+        public List<GeneratedMove> GenerateRookMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
+            return GenerateSlidingMoves(pieceColor, opponentColor);
         }
 
-        public void GenerateQueenMoves()
+        public List<GeneratedMove> GenerateQueenMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
-            LockMovesAddRange(GenerateSlidingMoves(pieceColor, opponentColor));
+            return GenerateSlidingMoves(pieceColor, opponentColor);
         }
 
-        public void GenerateKingMoves()
+        public List<GeneratedMove> GenerateKingMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
@@ -342,7 +332,7 @@ namespace Hattin.Implementations.MoveGenerators
             //check that king and rook have not moved
             //check that the squares between them are Empty
 
-            LockMovesAddRange(moves);
+            return moves;
         }
 
         //Ok this one is silly
@@ -412,27 +402,37 @@ namespace Hattin.Implementations.MoveGenerators
 
         public List<GeneratedMove> GenerateAllLegalMoves()
         {
-            Moves.Clear();
+            List<GeneratedMove> Moves = new List<GeneratedMove>();
+            object moveLock = new object();
             LastGeneratedPly = Board.PlyCounter;
 
             List<ManualResetEvent> events = new List<ManualResetEvent>();
-            List<Action> jobs = new List<Action>([GeneratePawnMoves, GenerateBishopMoves, GenerateKnightMoves, GenerateRookMoves, GenerateQueenMoves, GenerateKingMoves]);
+            List<Func<List<GeneratedMove>>> jobs = new List<Func<List<GeneratedMove>>>([GeneratePawnMoves, GenerateBishopMoves, GenerateKnightMoves, GenerateRookMoves, GenerateQueenMoves, GenerateKingMoves]);
 
-            foreach (Action job in jobs)
+            foreach (Func<List<GeneratedMove>> job in jobs)
             {
                 ManualResetEvent ensureComplete = new ManualResetEvent(false);
                 ThreadPool.QueueUserWorkItem((object? parameters) =>
-                {
-                    job.Invoke();
-                    ensureComplete.Set();
-                });
+                        {
+                            LockMovesAddRange(job.Invoke());
+                            ensureComplete.Set();
+                        });
                 events.Add(ensureComplete);
             }
             WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
-
+            events.ForEach(e => e.Dispose());
             //Dispose the events when done IG
 
             return Moves;
+
+
+            void LockMovesAddRange(List<GeneratedMove> moves)
+            {
+                lock (moveLock)
+                {
+                    Moves.AddRange(moves);
+                }
+            }
         }
 
         public GeneratedMove GenerateNextValidMove()
