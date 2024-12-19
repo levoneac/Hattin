@@ -66,19 +66,14 @@ namespace Hattin.Types
             int arrayPos = square.ToBase64Int();
             return squareContents[arrayPos];
         }
-        //public void UpdateAttackSquares(IMoveGenerator moveGenerator)
-        //{
-        //    NormalPiece piece;
-        //    for (int i = 0; i < PiecePositions.Count; i++)
-        //    {
-        //        foreach (BoardSquare square in PiecePositions[i])
-        //        {
-        //            piece = (NormalPiece)i;
-        //
-        //        }
-        //    }
-        //
-        //}
+        public void UpdateAllAttackSquares(List<AttackProjection> attackProjections)
+        {
+            foreach (AttackProjection attack in attackProjections)
+            {
+                attackSquares[attack.Square.ToBase64Int()].IncrementColor(attack.AsSide);
+            }
+        
+        }
 
         //assumes that move is already verified from caller
         public void AddPiece(NormalPiece piece, BoardSquare square)

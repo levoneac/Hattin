@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
 using Hattin.Events.EventArguments;
+using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
+using Hattin.Utils.Conversions;
 
 namespace Hattin.Types
 {
@@ -76,7 +78,7 @@ namespace Hattin.Types
             get { return isCheck; }
             set { isCheck = value; }
         }
-        
+
 
         private Dictionary<int, int> positionHashes;
 
@@ -198,7 +200,7 @@ namespace Hattin.Types
             {
                 for (int i = 56; i >= 0; i++)
                 {
-                    Console.Write($" {(FENSymbols)Board[Utils.Conversions.SquareConversions.Array64To120[i]]} ");
+                    Console.Write($" {(FENSymbols)Board[SquareConversions.Array64To120[i]]} ");
                     if ((i + 1) % 8 == 0)
                     {
                         Console.WriteLine();
@@ -210,7 +212,7 @@ namespace Hattin.Types
             {
                 for (int i = 7; i < 64; i--)
                 {
-                    Console.Write($" {(FENSymbols)Board[Utils.Conversions.SquareConversions.Array64To120[i]]} ");
+                    Console.Write($" {(FENSymbols)Board[SquareConversions.Array64To120[i]]} ");
                     if (i % 8 == 0)
                     {
                         Console.WriteLine();
@@ -229,6 +231,42 @@ namespace Hattin.Types
             }
 
         }
+
+        public void PrintAttackTotals(SideToMove perspective)
+        {
+            Console.WriteLine();
+            ColorCount curCount;
+            int curTotal;
+            if (perspective == SideToMove.White)
+            {
+                for (int i = 56; i >= 0; i++)
+                {
+                    curCount = PieceProperties.GetAttackCountOnSquare((BoardSquare)SquareConversions.Array64To120[i]);
+                    curTotal = curCount.White - curCount.Black;
+                    Console.Write($" {(curTotal >= 0 ? $"+{curTotal}" : curTotal)} ");
+                    if ((i + 1) % 8 == 0)
+                    {
+                        Console.WriteLine();
+                        i -= 16;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 7; i < 64; i--)
+                {
+                    curCount = PieceProperties.GetAttackCountOnSquare((BoardSquare)SquareConversions.Array64To120[i]);
+                    curTotal = curCount.White - curCount.Black;
+                    Console.Write($" {(curTotal >= 0 ? $"+{curTotal}" : curTotal)} ");
+                    if (i % 8 == 0)
+                    {
+                        Console.WriteLine();
+                        i += 16;
+                    }
+                }
+            }
+        }
+
         public void ProcessFEN(string FEN)
         {
             FlushBoard();

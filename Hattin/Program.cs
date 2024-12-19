@@ -88,7 +88,6 @@ namespace Hattin
             //    Console.WriteLine();
             //}
             //Console.WriteLine();
-            board.PrintBoard(SideToMove.Black);
 
 
             //var timer = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GeneratAllLegalMoves, 1000);
@@ -98,14 +97,19 @@ namespace Hattin
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
 
-            var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllLegalMoves, 10);
+            var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllLegalMoves, 1);
             var (timerResult2, functionResult2) = timer2.RunTests();
             Console.WriteLine(timerResult2);
 
-            Console.WriteLine(engineThreaded.MoveGenerator.GenerateAllAttackedSquares().Count);
-            var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 10);
+
+            var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1);
             var (timerResult3, functionResult3) = timer3.RunTests();
             Console.WriteLine(timerResult3);
+
+            List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
+            board.PieceProperties.UpdateAllAttackSquares(attacks);
+            board.PrintBoard(SideToMove.Black);
+            board.PrintAttackTotals(SideToMove.Black);
 
             //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
             //Console.WriteLine();

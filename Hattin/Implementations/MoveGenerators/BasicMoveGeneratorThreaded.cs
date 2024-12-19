@@ -375,7 +375,7 @@ namespace Hattin.Implementations.MoveGenerators
                     ManualResetEvent ensureComplete = new ManualResetEvent(false);
                     ThreadPool.QueueUserWorkItem((object? parameters) =>
                     {
-                        LockAttackProjectionsAddRange(GenerateSlidingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        LockAttackProjectionsAddRange(GenerateJumpingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
                         ensureComplete.Set();
                     });
                     events.Add(ensureComplete);
@@ -389,7 +389,7 @@ namespace Hattin.Implementations.MoveGenerators
                     ManualResetEvent ensureComplete = new ManualResetEvent(false);
                     ThreadPool.QueueUserWorkItem((object? parameters) =>
                     {
-                        LockAttackProjectionsAddRange(GenerateSlidingAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        LockAttackProjectionsAddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
                         ensureComplete.Set();
                     });
                     events.Add(ensureComplete);
