@@ -348,6 +348,7 @@ namespace Hattin.Implementations.MoveGenerators
             {
                 foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
                 {
+                    //attackProjections.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
                     ManualResetEvent ensureComplete = new ManualResetEvent(false);
                     ThreadPool.QueueUserWorkItem((object? parameters) =>
                     {
@@ -362,6 +363,7 @@ namespace Hattin.Implementations.MoveGenerators
             {
                 foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
                 {
+                    //attackProjections.AddRange(GenerateJumpingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
                     ManualResetEvent ensureComplete = new ManualResetEvent(false);
                     ThreadPool.QueueUserWorkItem((object? parameters) =>
                     {
@@ -376,6 +378,7 @@ namespace Hattin.Implementations.MoveGenerators
             {
                 foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
                 {
+                    //attackProjections.AddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
                     ManualResetEvent ensureComplete = new ManualResetEvent(false);
                     ThreadPool.QueueUserWorkItem((object? parameters) =>
                     {

@@ -1,3 +1,4 @@
+using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.SideToMove;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
@@ -207,7 +208,7 @@ namespace Hattin.Implementations.MoveGenerators
                     }
                     else
                     {
-                        attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset);
+                        attackedSquares = GeneratePawnAttackedSquares(pieceColor, opponentColor, positionAfterOffset, positionAfterOffset);
                     }
                     //if its an attacking move and (square is occupied by opponent or it is an enpassant square)
                     SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
@@ -241,7 +242,7 @@ namespace Hattin.Implementations.MoveGenerators
         }
 
         //TODO: Handle promotions
-        public List<AttackProjection> GeneratePawnAttackedSquares(NormalPiece pawnColor, SideToMove opponentColor, BoardSquare currentPosition)
+        public List<AttackProjection> GeneratePawnAttackedSquares(NormalPiece pawnColor, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare placeholder)
         {
             List<AttackProjection> attackedSquares = [];
             BoardSquare positionAfterOffset;
@@ -327,9 +328,40 @@ namespace Hattin.Implementations.MoveGenerators
             return moves;
         }
 
+
         public List<AttackProjection> GenerateAllAttackedSquares()
         {
-            throw new NotImplementedException();
+            List<AttackProjection> attackProjections = new List<AttackProjection>();
+
+            List<Func<NormalPiece, SideToMove, BoardSquare, BoardSquare>> jobs = [];
+
+            foreach (var sliders in NormalPieceMovement.SlidingPieces)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
+                {
+                    attackProjections.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                }
+            }
+
+            foreach (var jumpers in NormalPieceMovement.JumpingPieces)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
+                {
+                    attackProjections.AddRange(GenerateJumpingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                }
+            }
+
+            foreach (var pawns in NormalPieceMovement.PawnMoves)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
+                {
+                    attackProjections.AddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                }
+            }
+
+            //WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
+
+            return attackProjections;
         }
 
         public List<GeneratedMove> GenerateAllLegalMoves()

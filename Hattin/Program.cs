@@ -90,21 +90,22 @@ namespace Hattin
             //Console.WriteLine();
 
 
-            //var timer = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GeneratAllLegalMoves, 1000);
-            //var (timerResult, functionResult) = timer.RunTests();
-            //Console.WriteLine(timerResult);
+            var timer = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GenerateAllAttackedSquares, 1000);
+            var (timerResult, functionResult) = timer.RunTests();
+            Console.WriteLine(timerResult);
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
 
-            var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllLegalMoves, 1);
-            var (timerResult2, functionResult2) = timer2.RunTests();
-            Console.WriteLine(timerResult2);
+            //var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllLegalMoves, 1);
+            //var (timerResult2, functionResult2) = timer2.RunTests();
+            //Console.WriteLine(timerResult2);
 
 
-            var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1);
-            var (timerResult3, functionResult3) = timer3.RunTests();
-            Console.WriteLine(timerResult3);
+            //var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
+            //var (timerResult3, functionResult3) = timer3.RunTests();
+            //Console.WriteLine(timerResult3);
+            
 
             List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             board.PieceProperties.UpdateAllAttackSquares(attacks);
