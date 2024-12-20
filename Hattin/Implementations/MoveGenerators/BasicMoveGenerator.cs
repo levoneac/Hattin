@@ -333,8 +333,6 @@ namespace Hattin.Implementations.MoveGenerators
         {
             List<AttackProjection> attackProjections = new List<AttackProjection>();
 
-            List<Func<NormalPiece, SideToMove, BoardSquare, BoardSquare>> jobs = [];
-
             foreach (var sliders in NormalPieceMovement.SlidingPieces)
             {
                 foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
@@ -358,9 +356,6 @@ namespace Hattin.Implementations.MoveGenerators
                     attackProjections.AddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
                 }
             }
-
-            //WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
-
             return attackProjections;
         }
 

@@ -335,59 +335,65 @@ namespace Hattin.Implementations.MoveGenerators
             return moves;
         }
 
-        //Ok this one is silly
-        public List<AttackProjection> GenerateAllAttackedSquares()
+        //Slower than non-threaded
+        public List<AttackProjection> GenerateAllAttackedSquaresThreaded()
         {
             List<AttackProjection> attackProjections = new List<AttackProjection>();
             object attackProjectionsLock = new object();
             List<ManualResetEvent> events = new List<ManualResetEvent>();
 
-            List<Func<NormalPiece, SideToMove, BoardSquare, BoardSquare>> jobs = [];
-
-            foreach (var sliders in NormalPieceMovement.SlidingPieces)
+            ManualResetEvent ensureCompleteSliding = new ManualResetEvent(false);
+            ThreadPool.QueueUserWorkItem((object? parameters) =>
             {
-                foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
+                List<AttackProjection> aggregate = new List<AttackProjection>();
+                foreach (var sliders in NormalPieceMovement.SlidingPieces)
                 {
-                    //attackProjections.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
-                    ManualResetEvent ensureComplete = new ManualResetEvent(false);
-                    ThreadPool.QueueUserWorkItem((object? parameters) =>
+                    foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
                     {
-                        LockAttackProjectionsAddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
-                        ensureComplete.Set();
-                    });
-                    events.Add(ensureComplete);
+                        //attackProjections.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        aggregate.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                    }
                 }
-            }
+                LockAttackProjectionsAddRange(aggregate);
+                ensureCompleteSliding.Set();
+            });
+            events.Add(ensureCompleteSliding);
 
-            foreach (var jumpers in NormalPieceMovement.JumpingPieces)
+            ManualResetEvent ensureCompleteJumping = new ManualResetEvent(false);
+            ThreadPool.QueueUserWorkItem((object? parameters) =>
             {
-                foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
+                List<AttackProjection> aggregate = new List<AttackProjection>();
+                foreach (var jumpers in NormalPieceMovement.JumpingPieces)
                 {
-                    //attackProjections.AddRange(GenerateJumpingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
-                    ManualResetEvent ensureComplete = new ManualResetEvent(false);
-                    ThreadPool.QueueUserWorkItem((object? parameters) =>
+                    foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
                     {
-                        LockAttackProjectionsAddRange(GenerateJumpingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
-                        ensureComplete.Set();
-                    });
-                    events.Add(ensureComplete);
+                        //attackProjections.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        aggregate.AddRange(GenerateJumpingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                    }
                 }
-            }
+                LockAttackProjectionsAddRange(aggregate);
+                ensureCompleteJumping.Set();
+            });
+            events.Add(ensureCompleteJumping);
 
-            foreach (var pawns in NormalPieceMovement.PawnMoves)
+
+            ManualResetEvent ensureCompletePawns = new ManualResetEvent(false);
+            ThreadPool.QueueUserWorkItem((object? parameters) =>
             {
-                foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
+                List<AttackProjection> aggregate = new List<AttackProjection>();
+                foreach (var pawns in NormalPieceMovement.PawnMoves)
                 {
-                    //attackProjections.AddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
-                    ManualResetEvent ensureComplete = new ManualResetEvent(false);
-                    ThreadPool.QueueUserWorkItem((object? parameters) =>
+                    foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
                     {
-                        LockAttackProjectionsAddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
-                        ensureComplete.Set();
-                    });
-                    events.Add(ensureComplete);
+                        //attackProjections.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                        aggregate.AddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                    }
                 }
-            }
+                LockAttackProjectionsAddRange(aggregate);
+                ensureCompletePawns.Set();
+            });
+            events.Add(ensureCompletePawns);
+
 
             WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
 
@@ -401,6 +407,36 @@ namespace Hattin.Implementations.MoveGenerators
                     attackProjections.AddRange(attacks);
                 }
             }
+        }
+
+        public List<AttackProjection> GenerateAllAttackedSquares()
+        {
+            List<AttackProjection> attackProjections = new List<AttackProjection>();
+
+            foreach (var sliders in NormalPieceMovement.SlidingPieces)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
+                {
+                    attackProjections.AddRange(GenerateSlidingAttackedSquares(sliders, sliders.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                }
+            }
+
+            foreach (var jumpers in NormalPieceMovement.JumpingPieces)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
+                {
+                    attackProjections.AddRange(GenerateJumpingAttackedSquares(jumpers, jumpers.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                }
+            }
+
+            foreach (var pawns in NormalPieceMovement.PawnMoves)
+            {
+                foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
+                {
+                    attackProjections.AddRange(GeneratePawnAttackedSquares(pawns, pawns.ToColor().ToOppositeColor(), square, BoardSquare.NoSquare));
+                }
+            }
+            return attackProjections;
         }
 
         public List<GeneratedMove> GenerateAllLegalMoves()

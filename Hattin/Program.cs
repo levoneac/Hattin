@@ -90,9 +90,9 @@ namespace Hattin
             //Console.WriteLine();
 
 
-            var timer = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GenerateAllAttackedSquares, 1000);
-            var (timerResult, functionResult) = timer.RunTests();
-            Console.WriteLine(timerResult);
+            //var timer = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GenerateAllAttackedSquares, 1000);
+            //var (timerResult, functionResult) = timer.RunTests();
+            //Console.WriteLine(timerResult);
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
@@ -102,9 +102,9 @@ namespace Hattin
             //Console.WriteLine(timerResult2);
 
 
-            //var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
-            //var (timerResult3, functionResult3) = timer3.RunTests();
-            //Console.WriteLine(timerResult3);
+            var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
+            var (timerResult3, functionResult3) = timer3.RunTests();
+            Console.WriteLine(timerResult3);
             
 
             List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
