@@ -78,12 +78,14 @@ namespace Hattin
             board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E2);
             board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
             board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
+            board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.F1, BoardSquare.E2);
+            board.MovePiece(NormalPiece.BlackKing, BoardSquare.E7, BoardSquare.E8);
             //board.EnPassantSquare = BoardSquare.E6;
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
 
-            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateBishopMoves();
+            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateKingMoves();
             Console.WriteLine("___Moves___: ");
             foreach (GeneratedMove move in kMoves)
             {
@@ -116,10 +118,7 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black);
             board.PrintAttackTotals(SideToMove.Black);
 
-            Type t = typeof(NormalPieceCastleSquares);
-            BoardSquare[] square = (BoardSquare[])t.GetField("WhiteKingsideCastle").GetValue(t);
-            Console.WriteLine(square[0]);
-
+  
             //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
             //Console.WriteLine();
             //SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.A8, AbsoluteDirectionalOffsets.Row, true).ForEach(s => Console.Write($"{s}, "));

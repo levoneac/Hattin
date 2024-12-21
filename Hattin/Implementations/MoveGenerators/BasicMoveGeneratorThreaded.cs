@@ -3,6 +3,7 @@ using Hattin.Extensions.SideToMove;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
 using Hattin.Types;
+using Hattin.Utils;
 
 namespace Hattin.Implementations.MoveGenerators
 {
@@ -314,6 +315,13 @@ namespace Hattin.Implementations.MoveGenerators
             return GenerateSlidingMoves(pieceColor, opponentColor);
         }
 
+        public List<AttackProjection> GenerateCastleAttackSquares(BoardSquare kingDest, BoardSquare rookDest)
+        {
+            return new List<AttackProjection>();
+        }
+
+        //refactor
+        //Assumes that Board.CastleRights is properly updated when king or rook has moved for example
         public List<GeneratedMove> GenerateCastlingMoves(NormalPiece pieceColor, SideToMove opponentColor)
         {
             List<GeneratedMove> moves = new List<GeneratedMove>();
@@ -321,32 +329,84 @@ namespace Hattin.Implementations.MoveGenerators
             {
                 return moves;
             }
+
             if (pieceColor.ToColor() == SideToMove.White)
             {
                 if (Board.CastleRights.HasFlag(CastleRights.WhiteKingsideCastle))
                 {
-                    Type t = typeof(NormalPieceCastleSquares);
-                    BoardSquare[] square = (BoardSquare[])t.GetField("WhiteKingsideCastle").GetValue(t);
-                    Console.WriteLine(square[0]);
+                    bool canCastle = true;
+                    foreach (BoardSquare square in NormalPieceCastleSquares.WhiteKingsideCastle)
+                    {
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        {
+                            canCastle = false;
+                            break;
+                        }
+                    }
+                    if (canCastle)
+                    {
+                        List<AttackProjection> attackProjections = GenerateCastleAttackSquares(BoardSquare.G1, BoardSquare.F1);
+                        moves.Add(new GeneratedMove(NormalPiece.WhiteKing, BoardSquare.E1, BoardSquare.G1, attackProjections, rookCastleSquare: BoardSquare.F1));
+                    }
+
                 }
                 if (Board.CastleRights.HasFlag(CastleRights.WhiteQueensideCastle))
                 {
-
+                    bool canCastle = true;
+                    foreach (BoardSquare square in NormalPieceCastleSquares.WhiteQueensideCastle)
+                    {
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        {
+                            canCastle = false;
+                            break;
+                        }
+                    }
+                    if (canCastle)
+                    {
+                        List<AttackProjection> attackProjections = GenerateCastleAttackSquares(BoardSquare.C1, BoardSquare.D1);
+                        moves.Add(new GeneratedMove(NormalPiece.WhiteKing, BoardSquare.C1, BoardSquare.G1, attackProjections, rookCastleSquare: BoardSquare.D1));
+                    }
                 }
             }
             else if (pieceColor.ToColor() == SideToMove.Black)
             {
                 if (Board.CastleRights.HasFlag(CastleRights.BlackKingsideCastle))
                 {
-
+                    bool canCastle = true;
+                    foreach (BoardSquare square in NormalPieceCastleSquares.BlackKingsideCastle)
+                    {
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        {
+                            canCastle = false;
+                            break;
+                        }
+                    }
+                    if (canCastle)
+                    {
+                        List<AttackProjection> attackProjections = GenerateCastleAttackSquares(BoardSquare.G8, BoardSquare.F8);
+                        moves.Add(new GeneratedMove(NormalPiece.BlackKing, BoardSquare.G8, BoardSquare.G1, attackProjections, rookCastleSquare: BoardSquare.F8));
+                    }
                 }
                 if (Board.CastleRights.HasFlag(CastleRights.BlackQueensideCastle))
                 {
-
+                    bool canCastle = true;
+                    foreach (BoardSquare square in NormalPieceCastleSquares.BlackQueensideCastle)
+                    {
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        {
+                            canCastle = false;
+                            break;
+                        }
+                    }
+                    if (canCastle)
+                    {
+                        List<AttackProjection> attackProjections = GenerateCastleAttackSquares(BoardSquare.C8, BoardSquare.D8);
+                        moves.Add(new GeneratedMove(NormalPiece.WhiteKing, BoardSquare.C8, BoardSquare.G1, attackProjections, rookCastleSquare: BoardSquare.D8));
+                    }
                 }
             }
             return moves;
-        }   
+        }
 
         public List<GeneratedMove> GenerateKingMoves()
         {
@@ -355,6 +415,7 @@ namespace Hattin.Implementations.MoveGenerators
 
             //normal moves
             List<GeneratedMove> moves = GenerateJumpingMoves(pieceColor, opponentColor);
+            moves.AddRange(GenerateCastlingMoves(pieceColor, opponentColor));
 
             //Castling
             //check that the king isnt in check

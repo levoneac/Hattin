@@ -22,14 +22,14 @@ namespace Hattin.Types
             IsCheck = false; 
         }
 
-        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<AttackProjection> attackedSquares, BoardSquare enpassantSquare, bool isPromotion, bool isCapture)
-        : base(piece, fromSquare, toSquare)
+        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<AttackProjection> attackedSquares, BoardSquare enpassantSquare = BoardSquare.NoSquare, bool isPromotion = false, bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
+        : base(piece, fromSquare, toSquare, rookCastleSquare)
         {
             AttackedSquares = attackedSquares;
             EnPassantSquare = enpassantSquare;
             IsPromotion = isPromotion;
             IsCapture = isCapture;
-            
+
             NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
             IsCheck = attackedSquares.Any(i => i.PieceOnSquare == opponentKingColor) == true;
         }
