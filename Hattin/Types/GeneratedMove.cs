@@ -29,7 +29,9 @@ namespace Hattin.Types
             EnPassantSquare = enpassantSquare;
             IsPromotion = isPromotion;
             IsCapture = isCapture;
-            IsCheck = attackedSquares.Any(i => i.PieceOnSquare.ToValue() == NormalPieceValue.King) == true;
+            
+            NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
+            IsCheck = attackedSquares.Any(i => i.PieceOnSquare == opponentKingColor) == true;
         }
     }
 }

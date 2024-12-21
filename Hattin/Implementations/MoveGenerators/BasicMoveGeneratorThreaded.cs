@@ -314,6 +314,40 @@ namespace Hattin.Implementations.MoveGenerators
             return GenerateSlidingMoves(pieceColor, opponentColor);
         }
 
+        public List<GeneratedMove> GenerateCastlingMoves(NormalPiece pieceColor, SideToMove opponentColor)
+        {
+            List<GeneratedMove> moves = new List<GeneratedMove>();
+            if (Board.IsCheck)
+            {
+                return moves;
+            }
+            if (pieceColor.ToColor() == SideToMove.White)
+            {
+                if (Board.CastleRights.HasFlag(CastleRights.WhiteKingsideCastle))
+                {
+                    Type t = typeof(NormalPieceCastleSquares);
+                    BoardSquare[] square = (BoardSquare[])t.GetField("WhiteKingsideCastle").GetValue(t);
+                    Console.WriteLine(square[0]);
+                }
+                if (Board.CastleRights.HasFlag(CastleRights.WhiteQueensideCastle))
+                {
+
+                }
+            }
+            else if (pieceColor.ToColor() == SideToMove.Black)
+            {
+                if (Board.CastleRights.HasFlag(CastleRights.BlackKingsideCastle))
+                {
+
+                }
+                if (Board.CastleRights.HasFlag(CastleRights.BlackQueensideCastle))
+                {
+
+                }
+            }
+            return moves;
+        }   
+
         public List<GeneratedMove> GenerateKingMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
@@ -324,10 +358,7 @@ namespace Hattin.Implementations.MoveGenerators
 
             //Castling
             //check that the king isnt in check
-            if (!Board.IsCheck)
-            {
 
-            }
             //check if squares have 0 attack coverage of enemy pieces
             //check that king and rook have not moved
             //check that the squares between them are Empty

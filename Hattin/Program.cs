@@ -79,23 +79,26 @@ namespace Hattin
             board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
             board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
             //board.EnPassantSquare = BoardSquare.E6;
-            //List<GeneratedMove> kMoves = engine0_1.MoveGenerator.GeneratAllLegalMoves();
-            //Console.WriteLine("___Moves___: ");
-            //foreach (GeneratedMove move in kMoves)
-            //{
-            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-            //    move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
-            //    Console.WriteLine();
-            //}
-            //Console.WriteLine();
+
+            IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
+            HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
+
+            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateBishopMoves();
+            Console.WriteLine("___Moves___: ");
+            foreach (GeneratedMove move in kMoves)
+            {
+                Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+                move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
+                Console.WriteLine();
+            }
+            Console.WriteLine();
 
 
             //var timer = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GenerateAllAttackedSquares, 1000);
             //var (timerResult, functionResult) = timer.RunTests();
             //Console.WriteLine(timerResult);
 
-            IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
-            HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
+
 
             //var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllLegalMoves, 1);
             //var (timerResult2, functionResult2) = timer2.RunTests();
@@ -105,12 +108,17 @@ namespace Hattin
             var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
             var (timerResult3, functionResult3) = timer3.RunTests();
             Console.WriteLine(timerResult3);
-            
+
+
 
             List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             board.PieceProperties.UpdateAllAttackSquares(attacks);
             board.PrintBoard(SideToMove.Black);
             board.PrintAttackTotals(SideToMove.Black);
+
+            Type t = typeof(NormalPieceCastleSquares);
+            BoardSquare[] square = (BoardSquare[])t.GetField("WhiteKingsideCastle").GetValue(t);
+            Console.WriteLine(square[0]);
 
             //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
             //Console.WriteLine();
