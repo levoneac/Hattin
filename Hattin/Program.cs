@@ -77,13 +77,16 @@ namespace Hattin
 
             board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E2);
             board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
-            board.MovePiece(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.E7);
-            board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.F1, BoardSquare.E2);
-            board.MovePiece(NormalPiece.BlackKing, BoardSquare.E7, BoardSquare.E8);
+            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5);
+            board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.C1, BoardSquare.G5);
+            //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E7, BoardSquare.E8);
             //board.EnPassantSquare = BoardSquare.E6;
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
+
+            List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
+            board.PieceProperties.UpdateAllAttackSquares(attacks);
 
             List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateKingMoves();
             Console.WriteLine("___Moves___: ");
@@ -113,8 +116,7 @@ namespace Hattin
 
 
 
-            List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
-            board.PieceProperties.UpdateAllAttackSquares(attacks);
+            
             board.PrintBoard(SideToMove.Black);
             board.PrintAttackTotals(SideToMove.Black);
 

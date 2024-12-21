@@ -58,7 +58,7 @@ namespace Hattin.Implementations.MoveGenerators
             }
             return possibleMoves;
         }
-        
+
         //previousPosition is used as a way to ignore the piece on the given square in the board state
         //blockedSquare is used to signal that the given square is now blocked (useful for castling when the king now blocks the rook on the other side)
         public List<AttackProjection> GenerateSlidingAttackedSquares(NormalPiece piece, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare previousPosition, BoardSquare blockedSquare = BoardSquare.NoSquare)
@@ -69,7 +69,7 @@ namespace Hattin.Implementations.MoveGenerators
             foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
             {
                 positionAfterOffset = currentPosition + offset;
-                if(positionAfterOffset == blockedSquare){ continue; }
+                if (positionAfterOffset == blockedSquare) { continue; }
 
                 while ((BoardSquare)positionAfterOffset.ToBase64Int() != BoardSquare.NoSquare)
                 {
@@ -137,7 +137,7 @@ namespace Hattin.Implementations.MoveGenerators
             foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
             {
                 positionAfterOffset = currentPosition + offset;
-                if(positionAfterOffset == blockedSquare){ continue; }
+                if (positionAfterOffset == blockedSquare) { continue; }
 
                 if ((BoardSquare)positionAfterOffset.ToBase64Int() == BoardSquare.NoSquare) { continue; }
 
@@ -325,7 +325,7 @@ namespace Hattin.Implementations.MoveGenerators
             List<AttackProjection> attackProjections = GenerateSlidingAttackedSquares(rook, opponentColor, rookDest, Board.PieceProperties.GetPiecePositions(king)[0], kingDest); //rook moves
             attackProjections.AddRange(GenerateJumpingAttackedSquares(king, opponentColor, kingDest, BoardSquare.NoSquare, rookDest));//king moves
             return attackProjections;
-            
+
         }
 
         //refactor
@@ -416,22 +416,48 @@ namespace Hattin.Implementations.MoveGenerators
             return moves;
         }
 
+        public List<GeneratedMove> GenerateKingNormalMoves(NormalPiece piece, SideToMove opponentColor)
+        {
+            List<GeneratedMove> possibleMoves = [];
+            BoardSquare positionAfterOffset;
+            BoardSquare checkIfNoSquare;
+
+            foreach (BoardSquare piecePosition in Board.PieceProperties.PiecePositions[(int)piece])
+            {
+                foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
+                {
+                    positionAfterOffset = piecePosition + offset;
+
+                    checkIfNoSquare = (BoardSquare)positionAfterOffset.ToBase64Int();
+                    if (checkIfNoSquare == BoardSquare.NoSquare) { continue; }
+
+                    ColorCount attackCounts = Board.PieceProperties.GetAttackCountOnSquare(positionAfterOffset);
+                    if (opponentColor == SideToMove.White && attackCounts.White > 0) { continue; }
+                    else if (opponentColor == SideToMove.Black && attackCounts.Black > 0) { continue; }
+
+                    SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
+                    if (colorOfPieceOnSquare == opponentColor)
+                    {
+                        List<AttackProjection> attackedSquares = GenerateJumpingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
+                        possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, true));
+                    }
+                    else if (colorOfPieceOnSquare == SideToMove.None)
+                    {
+                        List<AttackProjection> attackedSquares = GenerateJumpingAttackedSquares(piece, opponentColor, positionAfterOffset, piecePosition);
+                        possibleMoves.Add(new GeneratedMove(piece, piecePosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, false, false));
+                    }
+                }
+            }
+            return possibleMoves;
+        }
+
         public List<GeneratedMove> GenerateKingMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             SideToMove opponentColor = Board.SideToMove.ToOppositeColor();
 
-            //normal moves
-            List<GeneratedMove> moves = GenerateJumpingMoves(pieceColor, opponentColor);
+            List<GeneratedMove> moves = GenerateKingNormalMoves(pieceColor, opponentColor);
             moves.AddRange(GenerateCastlingMoves(pieceColor, opponentColor));
-
-            //Castling
-            //check that the king isnt in check
-
-            //check if squares have 0 attack coverage of enemy pieces
-            //check that king and rook have not moved
-            //check that the squares between them are Empty
-
             return moves;
         }
 
