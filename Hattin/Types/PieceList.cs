@@ -16,7 +16,7 @@ namespace Hattin.Types
 
         //Tracks which color has a piece on each square
         private List<SideToMove> captureAndBlockingSquares; //switch to array
-        private List<ColorCount> attackSquares; //switch to array
+        private List<AttackInformation> attackSquares; //switch to array
         private NormalPiece[] squareContents;
         
 
@@ -28,7 +28,7 @@ namespace Hattin.Types
             piecePositions = new List<BoardSquare>[NumPieces];
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             captureAndBlockingSquares = new List<SideToMove>(64);
-            attackSquares = new List<ColorCount>(64);
+            attackSquares = new List<AttackInformation>(64);
             squareContents = new NormalPiece[64];
             for (int i = 0; i < NumPieces; i++)
             {
@@ -39,7 +39,7 @@ namespace Hattin.Types
             for (int i = 0; i < 64; i++)
             {
                 captureAndBlockingSquares.Add(SideToMove.None);
-                attackSquares.Add(new ColorCount());
+                attackSquares.Add(new AttackInformation{ AttackTotals = new ColorCount(), Data = new List<AttackProjection>()});
                 squareContents[i] = NormalPiece.Empty;
             }
         }
@@ -55,7 +55,7 @@ namespace Hattin.Types
             return captureAndBlockingSquares[arrayPos];
         }
 
-        public ColorCount GetAttackCountOnSquare(BoardSquare square)
+        public AttackInformation GetAttackCountOnSquare(BoardSquare square)
         {
             int arrayPos = square.ToBase64Int();
             return attackSquares[arrayPos];
@@ -68,11 +68,13 @@ namespace Hattin.Types
         }
         public void UpdateAllAttackSquares(List<AttackProjection> attackProjections)
         {
+            AttackInformation curItem;
             foreach (AttackProjection attack in attackProjections)
             {
-                attackSquares[attack.Square.ToBase64Int()].IncrementColor(attack.AsSide);
+                curItem = attackSquares[attack.Square.ToBase64Int()];
+                curItem.AttackTotals.IncrementColor(attack.AsSide);
+                curItem.Data.Add(attack);
             }
-        
         }
 
         //assumes that move is already verified from caller

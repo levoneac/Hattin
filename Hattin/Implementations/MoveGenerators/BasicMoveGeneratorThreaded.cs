@@ -345,7 +345,7 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.WhiteKingsideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
                         {
                             canCastle = false;
                             break;
@@ -363,7 +363,7 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.WhiteQueensideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
                         {
                             canCastle = false;
                             break;
@@ -383,7 +383,7 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.BlackKingsideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
                         {
                             canCastle = false;
                             break;
@@ -400,7 +400,7 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.BlackQueensideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
                         {
                             canCastle = false;
                             break;
@@ -431,7 +431,7 @@ namespace Hattin.Implementations.MoveGenerators
                     checkIfNoSquare = (BoardSquare)positionAfterOffset.ToBase64Int();
                     if (checkIfNoSquare == BoardSquare.NoSquare) { continue; }
 
-                    ColorCount attackCounts = Board.PieceProperties.GetAttackCountOnSquare(positionAfterOffset);
+                    ColorCount attackCounts = Board.PieceProperties.GetAttackCountOnSquare(positionAfterOffset).AttackTotals;
                     if (opponentColor == SideToMove.White && attackCounts.White > 0) { continue; }
                     else if (opponentColor == SideToMove.Black && attackCounts.Black > 0) { continue; }
 

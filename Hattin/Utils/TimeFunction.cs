@@ -27,7 +27,7 @@ namespace Hattin.Utils
                 //Console.WriteLine(((List<GeneratedMove>)Function.Method.Invoke(ParentClass, Parameters))[0].Piece);
                 Function.Method.Invoke(ParentClass, Parameters);
             }
-            R res = (R)Function.Method.Invoke(ParentClass, Parameters);
+            R res = (R)(Function.Method.Invoke(ParentClass, Parameters) ?? new object());
             timeWatch.Stop();
             return (timeWatch.Elapsed, res);
         }

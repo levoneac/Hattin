@@ -58,8 +58,8 @@ namespace Hattin
             board.PrintBoard(SideToMove.Black, false);
             Console.WriteLine(board.GetPositionHash());
             board.GetMoveHistory();
-            board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.D3);
-            board.MovePiece(NormalPiece.WhitePawn, BoardSquare.D2, BoardSquare.D5);
+            //board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.D3);
+            //board.MovePiece(NormalPiece.WhitePawn, BoardSquare.D2, BoardSquare.D5);
 
             //board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
             for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
@@ -75,28 +75,28 @@ namespace Hattin
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
 
-            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E2);
-            board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
-            board.MovePiece(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5);
-            board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.C1, BoardSquare.G5);
+            //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E2);
+            //board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
+            //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5);
+            //board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.C1, BoardSquare.G5);
             //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E7, BoardSquare.E8);
             //board.EnPassantSquare = BoardSquare.E6;
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
 
-            List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
-            board.PieceProperties.UpdateAllAttackSquares(attacks);
 
-            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateKingMoves();
-            Console.WriteLine("___Moves___: ");
-            foreach (GeneratedMove move in kMoves)
-            {
-                Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-                move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
-                Console.WriteLine();
-            }
-            Console.WriteLine();
+            //
+            //
+            //List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateKingMoves();
+            //Console.WriteLine("___Moves___: ");
+            //foreach (GeneratedMove move in kMoves)
+            //{
+            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+            //    move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
+            //    Console.WriteLine();
+            //}
+            //Console.WriteLine();
 
 
             //var timer = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GenerateAllAttackedSquares, 1000);
@@ -110,17 +110,19 @@ namespace Hattin
             //Console.WriteLine(timerResult2);
 
 
-            var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
-            var (timerResult3, functionResult3) = timer3.RunTests();
-            Console.WriteLine(timerResult3);
+            //var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
+            //var (timerResult3, functionResult3) = timer3.RunTests();
+            //Console.WriteLine(timerResult3);
 
 
+            engineThreaded.PlayUntillPly(30);
 
-            
+            List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
+            board.PieceProperties.UpdateAllAttackSquares(attacks);
             board.PrintBoard(SideToMove.Black);
             board.PrintAttackTotals(SideToMove.Black);
 
-  
+
             //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
             //Console.WriteLine();
             //SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.A8, AbsoluteDirectionalOffsets.Row, true).ForEach(s => Console.Write($"{s}, "));

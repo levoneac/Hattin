@@ -165,8 +165,6 @@ namespace Hattin.Implementations.MoveGenerators
 
             foreach (BoardSquare pawnPosition in Board.PieceProperties.PiecePositions[(int)pieceColor])
             {
-                bool prevIsBlocked = false;
-                bool isCapture = false;
                 bool isPromotion = false;
                 int offsetIndex = 1; //if pawn is not on starting square, skip the first index of offsets. Maybe find a clearer way to represent this
                 if (startingSquares.Contains(pawnPosition))
