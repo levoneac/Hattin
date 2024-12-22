@@ -4,7 +4,7 @@ namespace Hattin.Types
 {
     public class GeneratedMove : Move
     {
-        public List<AttackProjection> AttackedSquares { get; set; }
+        public List<List<AttackProjection>> AttackedSquares { get; set; }
         public BoardSquare EnPassantSquare { get; set; }
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
@@ -21,9 +21,10 @@ namespace Hattin.Types
             IsPromotion = false;
             IsCapture = false;
             IsCheck = false;
+            CheckPath = [];
         }
 
-        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<AttackProjection> attackedSquares, BoardSquare enpassantSquare = BoardSquare.NoSquare, bool isPromotion = false, bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
+        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares, BoardSquare enpassantSquare = BoardSquare.NoSquare, bool isPromotion = false, bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
         : base(piece, fromSquare, toSquare, rookCastleSquare)
         {
             AttackedSquares = attackedSquares;
@@ -34,7 +35,7 @@ namespace Hattin.Types
 
             NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
 
-            var checks = attackedSquares.Select(i => i.PieceOnSquare == opponentKingColor);
+            //var checks = attackedSquares.Select(i => i.PieceOnSquare == opponentKingColor);
         }
     }
 }

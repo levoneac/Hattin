@@ -66,17 +66,20 @@ namespace Hattin.Types
             int arrayPos = square.ToBase64Int();
             return squareContents[arrayPos];
         }
-        public void UpdateAllAttackSquares(List<AttackProjection> attackProjections)
+        public void UpdateAllAttackSquares(List<List<AttackProjection>> attackProjections)
         {
             AttackInformation curItem;
-            foreach (AttackProjection attack in attackProjections)
+            foreach (List<AttackProjection> moveSequence in attackProjections)
             {
-                curItem = attackSquares[attack.Square.ToBase64Int()];
-                if (attack.XRayLevel == 0)
+                foreach (AttackProjection attack in moveSequence)
                 {
-                    curItem.AttackTotals.IncrementColor(attack.AsSide);
+                    curItem = attackSquares[attack.Square.ToBase64Int()];
+                    if (attack.XRayLevel == 0 && attack.Interaction != SquareInteraction.OwnSquare)
+                    {
+                        curItem.AttackTotals.IncrementColor(attack.AsSide);
+                    }
+                    curItem.Data.Add(attack);
                 }
-                curItem.Data.Add(attack);
             }
         }
 

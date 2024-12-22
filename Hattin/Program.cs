@@ -115,10 +115,10 @@ namespace Hattin
 
             //engineThreaded.PlayUntillPly(30);
 
-            List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
+            List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             board.PieceProperties.UpdateAllAttackSquares(attacks);
-            board.PrintBoard(SideToMove.Black);
-            board.PrintAttackTotals(SideToMove.Black);
+            board.PrintBoard(SideToMove.White);
+            board.PrintAttackTotals(SideToMove.White);
 
 
             //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
