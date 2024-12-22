@@ -50,9 +50,7 @@ namespace Hattin
 
             ulong d = (ulong)new Random().NextInt64();
             BoardState board = new BoardState();
-            IMoveGenerator generator = new BasicMoveGenerator(board);
             IPositionEvaluator evaluator = new BasicPositionEvaluator();
-            HattinEngine0_1 engine0_1 = new HattinEngine0_1(board, generator, evaluator);
             board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
             board.PrintBoard(SideToMove.White, false);
             board.PrintBoard(SideToMove.Black, false);
@@ -115,7 +113,7 @@ namespace Hattin
             //Console.WriteLine(timerResult3);
 
 
-            engineThreaded.PlayUntillPly(30);
+            //engineThreaded.PlayUntillPly(30);
 
             List<AttackProjection> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             board.PieceProperties.UpdateAllAttackSquares(attacks);

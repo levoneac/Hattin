@@ -11,12 +11,18 @@ namespace Hattin.Implementations.MoveGenerators
     //refactor attackedSquares-methods to automatically choose sliding or jumping
     public class BasicMoveGeneratorThreaded : IMoveGenerator
     {
+        public delegate bool SearchConstraint(GeneratedMove move);
         public BoardState Board { get; private set; } //make into interface later
         public int LastGeneratedPly { get; private set; }
         public BasicMoveGeneratorThreaded(BoardState board)
         {
             Board = board;
             LastGeneratedPly = -1;
+        }
+        public bool Test(SearchConstraint t)
+        {
+            t(new GeneratedMove());
+            return true;
         }
 
         public List<GeneratedMove> GenerateSlidingMoves(NormalPiece piece, SideToMove opponentColor)
@@ -65,36 +71,41 @@ namespace Hattin.Implementations.MoveGenerators
         {
             List<AttackProjection> attackedSquares = [];
             BoardSquare positionAfterOffset;
+            int curSequence = 0;
+            int xRayLevel = 0;
 
             foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
             {
                 positionAfterOffset = currentPosition + offset;
                 if (positionAfterOffset == blockedSquare) { continue; }
-
                 while ((BoardSquare)positionAfterOffset.ToBase64Int() != BoardSquare.NoSquare)
                 {
                     SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
                     NormalPiece pieceOnSquare = Board.PieceProperties.GetPieceOnSquare(positionAfterOffset);
                     if (colorOfPieceOnSquare == opponentColor)
                     {
-                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, false));
-                        break;
+                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, curSequence, false, xRayLevel));
+                        positionAfterOffset += offset;
+                        xRayLevel++;
                     }
                     else if (colorOfPieceOnSquare == SideToMove.None || positionAfterOffset == previousPosition)
                     {
-                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, false));
+                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, curSequence, false, xRayLevel));
                         positionAfterOffset += offset;
                     }
                     else if (colorOfPieceOnSquare == Board.SideToMove)
                     {
-                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, false));
-                        break;
+                        attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, curSequence, false, xRayLevel));
+                        positionAfterOffset += offset;
+                        xRayLevel++;
                     }
                     else
                     {
                         break;
                     }
                 }
+                xRayLevel = 0;
+                curSequence++;
             }
             return attackedSquares;
         }
@@ -133,7 +144,7 @@ namespace Hattin.Implementations.MoveGenerators
         {
             List<AttackProjection> attackedSquares = [];
             BoardSquare positionAfterOffset;
-
+            int curSequence = 0;
             foreach (int offset in NormalPieceOffsets.GetOffsetFromNormalPiece(piece))
             {
                 positionAfterOffset = currentPosition + offset;
@@ -145,17 +156,17 @@ namespace Hattin.Implementations.MoveGenerators
                 NormalPiece pieceOnSquare = Board.PieceProperties.GetPieceOnSquare(positionAfterOffset);
                 if (colorOfPieceOnSquare == opponentColor)
                 {
-                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, false));
+                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, curSequence, false));
                 }
                 else if (colorOfPieceOnSquare == SideToMove.None || positionAfterOffset == previousPosition)
                 {
-                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, false));
+                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, curSequence, false));
                 }
                 else if (colorOfPieceOnSquare == Board.SideToMove)
                 {
-                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, false));
+                    attackedSquares.Add(new AttackProjection(piece, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, curSequence, false));
                 }
-
+                curSequence++;
             }
             return attackedSquares;
         }
@@ -173,8 +184,6 @@ namespace Hattin.Implementations.MoveGenerators
 
             foreach (BoardSquare pawnPosition in Board.PieceProperties.PiecePositions[(int)pieceColor])
             {
-                bool prevIsBlocked = false;
-                bool isCapture = false;
                 bool isPromotion = false;
                 int offsetIndex = 1; //if pawn is not on starting square, skip the first index of offsets. Maybe find a clearer way to represent this
                 if (startingSquares.Contains(pawnPosition))
@@ -257,6 +266,7 @@ namespace Hattin.Implementations.MoveGenerators
             bool isPromotion = false;
             BoardSquare[] promotionSquares = NormalPiecePromotionSquares.GetPromotionSquareFromNormalPiece(pawnColor);
             int[] offsets = NormalPieceOffsets.GetOffsetFromNormalPiece(pawnColor);
+            int curSequence = 0;
 
             //offsetindex = 2 because we only check attacking moves
             for (int offsetIndex = 2; offsetIndex < offsets.Length; offsetIndex++)
@@ -275,17 +285,18 @@ namespace Hattin.Implementations.MoveGenerators
                 NormalPiece pieceOnSquare = Board.PieceProperties.GetPieceOnSquare(positionAfterOffset);
                 if (colorOfPieceOnSquare == opponentColor)
                 {
-                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, isPromotion));
+                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, pieceOnSquare, SquareInteraction.Attacking, curSequence, isPromotion));
                 }
                 //technically not a legal moves in the current position
                 else if (colorOfPieceOnSquare == Board.SideToMove)
                 {
-                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, isPromotion));
+                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, pieceOnSquare, SquareInteraction.Defending, curSequence, isPromotion));
                 }
                 else if (colorOfPieceOnSquare == SideToMove.None)
                 {
-                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, isPromotion));
+                    attackedSquares.Add(new AttackProjection(pawnColor, positionAfterOffset, NormalPiece.Empty, SquareInteraction.ControllingEmpty, curSequence, isPromotion));
                 }
+                curSequence++;
             }
             return attackedSquares;
         }
@@ -565,7 +576,7 @@ namespace Hattin.Implementations.MoveGenerators
             return attackProjections;
         }
 
-        public List<GeneratedMove> GenerateAllLegalMoves()
+        public List<GeneratedMove> GenerateAllLegalMoves(List<Func<GeneratedMove, bool>>? constraints)
         {
             List<GeneratedMove> Moves = new List<GeneratedMove>();
             object moveLock = new object();
@@ -586,7 +597,8 @@ namespace Hattin.Implementations.MoveGenerators
             }
             WaitHandle.WaitAll(events.ToArray(), Timeout.Infinite);
             events.ForEach(e => e.Dispose());
-            //Dispose the events when done IG
+
+
 
             return Moves;
 

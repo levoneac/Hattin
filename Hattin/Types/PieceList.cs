@@ -18,7 +18,7 @@ namespace Hattin.Types
         private List<SideToMove> captureAndBlockingSquares; //switch to array
         private List<AttackInformation> attackSquares; //switch to array
         private NormalPiece[] squareContents;
-        
+
 
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
         public int NumPieces { get; private set; }
@@ -39,7 +39,7 @@ namespace Hattin.Types
             for (int i = 0; i < 64; i++)
             {
                 captureAndBlockingSquares.Add(SideToMove.None);
-                attackSquares.Add(new AttackInformation{ AttackTotals = new ColorCount(), Data = new List<AttackProjection>()});
+                attackSquares.Add(new AttackInformation { AttackTotals = new ColorCount(), Data = new List<AttackProjection>() });
                 squareContents[i] = NormalPiece.Empty;
             }
         }
@@ -72,7 +72,10 @@ namespace Hattin.Types
             foreach (AttackProjection attack in attackProjections)
             {
                 curItem = attackSquares[attack.Square.ToBase64Int()];
-                curItem.AttackTotals.IncrementColor(attack.AsSide);
+                if (attack.XRayLevel == 0)
+                {
+                    curItem.AttackTotals.IncrementColor(attack.AsSide);
+                }
                 curItem.Data.Add(attack);
             }
         }

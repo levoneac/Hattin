@@ -9,6 +9,7 @@ namespace Hattin.Types
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
         public bool IsCheck { get; set; }//be aware of edgecases from promotion
+        public List<BoardSquare> CheckPath { get; set; }
         //isMate?
         //isBlocking??
         //
@@ -19,7 +20,7 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             IsPromotion = false;
             IsCapture = false;
-            IsCheck = false; 
+            IsCheck = false;
         }
 
         public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<AttackProjection> attackedSquares, BoardSquare enpassantSquare = BoardSquare.NoSquare, bool isPromotion = false, bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
@@ -29,9 +30,11 @@ namespace Hattin.Types
             EnPassantSquare = enpassantSquare;
             IsPromotion = isPromotion;
             IsCapture = isCapture;
+            CheckPath = new List<BoardSquare>();
 
             NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
-            IsCheck = attackedSquares.Any(i => i.PieceOnSquare == opponentKingColor) == true;
+
+            var checks = attackedSquares.Select(i => i.PieceOnSquare == opponentKingColor);
         }
     }
 }

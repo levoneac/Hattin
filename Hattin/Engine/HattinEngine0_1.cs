@@ -15,11 +15,28 @@ namespace Hattin.Engine
             PositionEvaluator = positionEvaluator;
         }
 
+        private List<Func<GeneratedMove, bool>> GetConstraintFuncs()
+        {
+            List<Func<GeneratedMove, bool>> funcs = new List<Func<GeneratedMove, bool>>();
+
+            if (Board.IsCheck)
+            {
+                funcs.Add(StopCheck);
+            }
+
+            return funcs;
+
+
+            bool StopCheck(GeneratedMove move)
+            {
+                return true;
+            }
+        }
 
         public void PlayNextMove()
         {
-            List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves();
-            GeneratedMove chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count-1)] ?? new GeneratedMove();
+            List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
+            GeneratedMove chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
             Move outputMove = new Move(chosenMove.Piece, chosenMove.FromSquare, chosenMove.DestSquare);
             Board.MovePiece(outputMove);
         }

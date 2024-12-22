@@ -8,6 +8,8 @@ namespace Hattin.Implementations.MoveGenerators
 {
     //TODO:
     //refactor attackedSquares-methods to automatically choose sliding or jumping
+    [Obsolete("Use threaded version instead")]
+    [Ignore]
     public class BasicMoveGenerator : IMoveGenerator
     {
         public BoardState Board { get; private set; } //make into interface later
@@ -357,7 +359,7 @@ namespace Hattin.Implementations.MoveGenerators
             return attackProjections;
         }
 
-        public List<GeneratedMove> GenerateAllLegalMoves()
+        public List<GeneratedMove> GenerateAllLegalMoves(List<Func<GeneratedMove, bool>>? constraints)
         {
             List<GeneratedMove> allMoves = [];
             allMoves.AddRange(GeneratePawnMoves());
