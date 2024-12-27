@@ -4,6 +4,8 @@ namespace Hattin.Types
     {
         Attacking,
         Defending,
-        ControllingEmpty
+        ControllingEmpty,
+        OwnSquare
+
     }
 }

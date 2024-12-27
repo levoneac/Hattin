@@ -16,9 +16,9 @@ namespace Hattin.Types
 
         //Tracks which color has a piece on each square
         private List<SideToMove> captureAndBlockingSquares; //switch to array
-        private List<ColorCount> attackSquares; //switch to array
+        private List<AttackInformation> attackSquares; //switch to array
         private NormalPiece[] squareContents;
-        
+
 
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
         public int NumPieces { get; private set; }
@@ -28,7 +28,7 @@ namespace Hattin.Types
             piecePositions = new List<BoardSquare>[NumPieces];
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             captureAndBlockingSquares = new List<SideToMove>(64);
-            attackSquares = new List<ColorCount>(64);
+            attackSquares = new List<AttackInformation>(64);
             squareContents = new NormalPiece[64];
             for (int i = 0; i < NumPieces; i++)
             {
@@ -39,7 +39,7 @@ namespace Hattin.Types
             for (int i = 0; i < 64; i++)
             {
                 captureAndBlockingSquares.Add(SideToMove.None);
-                attackSquares.Add(new ColorCount());
+                attackSquares.Add(new AttackInformation { AttackTotals = new ColorCount(), Data = new List<AttackProjection>() });
                 squareContents[i] = NormalPiece.Empty;
             }
         }
@@ -55,7 +55,7 @@ namespace Hattin.Types
             return captureAndBlockingSquares[arrayPos];
         }
 
-        public ColorCount GetAttackCountOnSquare(BoardSquare square)
+        public AttackInformation GetAttackCountOnSquare(BoardSquare square)
         {
             int arrayPos = square.ToBase64Int();
             return attackSquares[arrayPos];
@@ -66,13 +66,21 @@ namespace Hattin.Types
             int arrayPos = square.ToBase64Int();
             return squareContents[arrayPos];
         }
-        public void UpdateAllAttackSquares(List<AttackProjection> attackProjections)
+        public void UpdateAllAttackSquares(List<List<AttackProjection>> attackProjections)
         {
-            foreach (AttackProjection attack in attackProjections)
+            AttackInformation curItem;
+            foreach (List<AttackProjection> moveSequence in attackProjections)
             {
-                attackSquares[attack.Square.ToBase64Int()].IncrementColor(attack.AsSide);
+                foreach (AttackProjection attack in moveSequence)
+                {
+                    curItem = attackSquares[attack.Square.ToBase64Int()];
+                    if (attack.XRayLevel == 0 && attack.Interaction != SquareInteraction.OwnSquare)
+                    {
+                        curItem.AttackTotals.IncrementColor(attack.AsSide);
+                    }
+                    curItem.Data.Add(attack);
+                }
             }
-        
         }
 
         //assumes that move is already verified from caller
