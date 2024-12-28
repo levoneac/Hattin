@@ -120,6 +120,11 @@ namespace Hattin
             board.PrintBoard(SideToMove.White);
             board.PrintAttackTotals(SideToMove.White);
 
+            foreach (var item in board.PieceProperties.GetAttackedSquaresFromSquare(BoardSquare.D2))
+            {
+                Console.WriteLine(item.Square);
+            }
+
 
             //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
             //Console.WriteLine();

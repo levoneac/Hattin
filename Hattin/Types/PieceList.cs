@@ -16,8 +16,10 @@ namespace Hattin.Types
 
         //Tracks which color has a piece on each square
         private List<SideToMove> captureAndBlockingSquares; //switch to array
-        private List<AttackInformation> attackSquares; //switch to array
+        private List<AttackInformation> attackInformation; //switch to array
         private NormalPiece[] squareContents;
+        private List<AttackProjection>[] attackingSquares; //an array of length 64 that contains lists of sqaures attacked from it
+        private List<AttackProjection>[] attackedFrom; //an array of lenght 64 that contains lists of where the source of the attack comes from
 
 
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
@@ -28,8 +30,10 @@ namespace Hattin.Types
             piecePositions = new List<BoardSquare>[NumPieces];
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             captureAndBlockingSquares = new List<SideToMove>(64);
-            attackSquares = new List<AttackInformation>(64);
+            attackInformation = new List<AttackInformation>(64);
             squareContents = new NormalPiece[64];
+            attackingSquares = new List<AttackProjection>[64];
+            attackedFrom = new List<AttackProjection>[64];
             for (int i = 0; i < NumPieces; i++)
             {
                 piecePositions[i] = new List<BoardSquare>();
@@ -39,8 +43,10 @@ namespace Hattin.Types
             for (int i = 0; i < 64; i++)
             {
                 captureAndBlockingSquares.Add(SideToMove.None);
-                attackSquares.Add(new AttackInformation { AttackTotals = new ColorCount(), Data = new List<AttackProjection>() });
+                attackInformation.Add(new AttackInformation { AttackTotals = new ColorCount(), Data = new List<AttackProjection>() });
                 squareContents[i] = NormalPiece.Empty;
+                attackingSquares[i] = new List<AttackProjection>();
+                attackedFrom[i] = new List<AttackProjection>();
             }
         }
 
@@ -58,7 +64,7 @@ namespace Hattin.Types
         public AttackInformation GetAttackCountOnSquare(BoardSquare square)
         {
             int arrayPos = square.ToBase64Int();
-            return attackSquares[arrayPos];
+            return attackInformation[arrayPos];
         }
 
         public NormalPiece GetPieceOnSquare(BoardSquare square)
@@ -66,20 +72,54 @@ namespace Hattin.Types
             int arrayPos = square.ToBase64Int();
             return squareContents[arrayPos];
         }
+
+        public List<AttackProjection> GetAttackedSquaresFromSquare(BoardSquare square)
+        {
+            int arrayPos = square.ToBase64Int();
+            return attackingSquares[arrayPos];
+        }
+
+        public List<AttackProjection> GetAttackSourceFromSquare(BoardSquare square)
+        {
+            int arrayPos = square.ToBase64Int();
+            return attackedFrom[arrayPos];
+        }
         public void UpdateAllAttackSquares(List<List<AttackProjection>> attackProjections)
         {
+            FlushAttackInformation();
             AttackInformation curItem;
             foreach (List<AttackProjection> moveSequence in attackProjections)
             {
+                BoardSquare sourceSquare = moveSequence[0].Square;
                 foreach (AttackProjection attack in moveSequence)
                 {
-                    curItem = attackSquares[attack.Square.ToBase64Int()];
-                    if (attack.XRayLevel == 0 && attack.Interaction != SquareInteraction.OwnSquare)
+                    curItem = attackInformation[attack.Square.ToBase64Int()];
+                    if (attack.Interaction != SquareInteraction.OwnSquare)
                     {
-                        curItem.AttackTotals.IncrementColor(attack.AsSide);
+                        if (attack.XRayLevel == 0)
+                        {
+                            curItem.AttackTotals.IncrementColor(attack.AsSide);
+                        }
+
+                        //Need to be cleared or updated
+                        attackedFrom[attack.Square.ToBase64Int()].Add(moveSequence[0]);
+                        attackingSquares[sourceSquare.ToBase64Int()].Add(attack);
                     }
+
                     curItem.Data.Add(attack);
                 }
+            }
+        }
+
+        private void FlushAttackInformation()
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                attackInformation[i].Data.Clear();
+                attackInformation[i].AttackTotals.Black = 0;
+                attackInformation[i].AttackTotals.White = 0;
+                attackedFrom[i].Clear();
+                attackingSquares[i].Clear();
             }
         }
 
