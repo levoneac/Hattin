@@ -9,8 +9,10 @@ namespace Hattin.Types
         public readonly BoardSquare PinnedAgainstSquare { get; init; }
         public readonly NormalPiece PinnedAgainstPiece { get; init; }
         public readonly bool IsAbsolute { get; init; }
+        public readonly BoardSquare[] AllowedSquares { get; init; }
 
-        public Pin(BoardSquare pinnedByPieceSquare, NormalPiece pinnedByPiece, BoardSquare pinnedPieceSquare, NormalPiece pinnedPiece, BoardSquare pinnedAgainstSquare, NormalPiece pinnedAgainstPiece, bool isAbsolute)
+        public Pin(BoardSquare pinnedByPieceSquare, NormalPiece pinnedByPiece, BoardSquare pinnedPieceSquare, NormalPiece pinnedPiece,
+            BoardSquare pinnedAgainstSquare, NormalPiece pinnedAgainstPiece, bool isAbsolute, BoardSquare[] allowedSquares)
         {
             PinnedByPieceSquare = pinnedByPieceSquare;
             PinnedByPiece = pinnedByPiece;
@@ -19,6 +21,7 @@ namespace Hattin.Types
             PinnedAgainstSquare = pinnedAgainstSquare;
             PinnedAgainstPiece = pinnedAgainstPiece;
             IsAbsolute = isAbsolute;
+            AllowedSquares = allowedSquares;
         }
     }
 }

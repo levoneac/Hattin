@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
+using Hattin.Utils;
 
 namespace Hattin.Types
 {
@@ -131,8 +132,8 @@ namespace Hattin.Types
                         {
                             if (attackedSquare.XRayLevel == 0 && attackedSquare.Interaction == SquareInteraction.Attacking)
                             {
-                                pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare,
-                                    pinnedToPiece, pinnedToPieceType, pinnedToPieceType.ToValue() == NormalPieceValue.King));
+                                pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare, pinnedToPiece, pinnedToPieceType,
+                                    pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, Directions.Auto, true).ToArray()));
                             }
                         }
                     }

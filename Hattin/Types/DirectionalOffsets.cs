@@ -25,6 +25,7 @@ namespace Hattin.Types
     {
         Column,
         Row,
-        Diagonal
+        Diagonal,
+        Auto
     }
 }

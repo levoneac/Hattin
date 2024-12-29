@@ -61,7 +61,7 @@ namespace Hattin
             //Console.WriteLine(timerResult3);
 
 
-            engineThreaded.PlayUntillPly(6);
+            engineThreaded.PlayUntillPly(20);
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);
@@ -72,7 +72,14 @@ namespace Hattin
             //SAVE FOR LOGGING LATER
             foreach (var pin in board.PieceProperties.GetPinnedPieces([NormalPiece.WhiteKing, NormalPiece.BlackKing]))
             {
-                Console.WriteLine($"{pin.PinnedPiece} on {pin.PinnedPieceSquare} is pinned against {pin.PinnedAgainstPiece} on {pin.PinnedAgainstSquare} by the {pin.PinnedByPiece} on {pin.PinnedByPieceSquare} Absolute?: {pin.IsAbsolute}");
+                Console.WriteLine();
+                Console.Write($"{pin.PinnedPiece} on {pin.PinnedPieceSquare} is pinned against {pin.PinnedAgainstPiece} on {pin.PinnedAgainstSquare} " +
+                     $"by the {pin.PinnedByPiece} on {pin.PinnedByPieceSquare} Absolute?: {pin.IsAbsolute}, Allowed Moves:");
+                foreach (var square in pin.AllowedSquares)
+                {
+                    Console.Write($"{square}, ");
+                }
+                Console.WriteLine();
             }
             List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GeneratePawnMoves();
 

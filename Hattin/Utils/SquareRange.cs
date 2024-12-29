@@ -7,6 +7,7 @@ namespace Hattin.Utils
     {
         public static List<BoardSquare> GetSquaresBetween(BoardSquare fromSquare, BoardSquare toSquare, Directions direction, bool inclusive)
         {
+            if (direction == Directions.Auto) { direction = InferDirection(fromSquare, toSquare); }
             if (fromSquare == BoardSquare.NoSquare)
             {
                 throw new ArgumentException($"Nosquare not allowed", nameof(fromSquare));
@@ -28,6 +29,16 @@ namespace Hattin.Utils
                     return GetDiagonalBetween(fromSquare, toSquare, inclusive);
             }
             return new List<BoardSquare>();
+        }
+
+        public static Directions InferDirection(BoardSquare fromSquare, BoardSquare toSquare)
+        {
+            string fromSquareName = Enum.GetName(typeof(BoardSquare), fromSquare) ?? throw new ArgumentException($"fromSquare is invalid", nameof(fromSquare));
+            string toSquareName = Enum.GetName(typeof(BoardSquare), toSquare) ?? throw new ArgumentException($"toSquare is invalid", nameof(toSquare));
+
+            if (fromSquareName[0] == toSquareName[0]) { return Directions.Column; }
+            if (fromSquareName[1] == toSquareName[1]) { return Directions.Row; }
+            return Directions.Diagonal;
         }
 
         private static List<BoardSquare> GetDiagonalBetween(BoardSquare fromSquare, BoardSquare toSquare, bool inclusive)
