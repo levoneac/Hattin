@@ -20,4 +20,11 @@ namespace Hattin.Types
         DiagonalRight = 11,
         DiagonalLeft = 9
     }
+
+    public enum Directions : int
+    {
+        Column,
+        Row,
+        Diagonal
+    }
 }

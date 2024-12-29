@@ -61,10 +61,10 @@ namespace Hattin
             //Console.WriteLine(timerResult3);
 
 
-            //engineThreaded.PlayUntillPly(30);
+            engineThreaded.PlayUntillPly(6);
 
-            List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
-            board.PieceProperties.UpdateAllAttackSquares(attacks);
+            //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
+            //board.PieceProperties.UpdateAllAttackSquares(attacks);
             board.PrintBoard(SideToMove.White);
             board.PrintAttackTotals(SideToMove.White);
 
@@ -74,24 +74,19 @@ namespace Hattin
             {
                 Console.WriteLine($"{pin.PinnedPiece} on {pin.PinnedPieceSquare} is pinned against {pin.PinnedAgainstPiece} on {pin.PinnedAgainstSquare} by the {pin.PinnedByPiece} on {pin.PinnedByPieceSquare} Absolute?: {pin.IsAbsolute}");
             }
-            //foreach (GeneratedMove move in kMoves)
-            //{
-            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-            //    move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
-            //    Console.WriteLine();
-            //}
-            //Console.WriteLine();
+            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GeneratePawnMoves();
 
 
-
-            //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
-            //Console.WriteLine();
-            //SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.A8, AbsoluteDirectionalOffsets.Row, true).ForEach(s => Console.Write($"{s}, "));
-            //
-            //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.H8, AbsoluteDirectionalOffsets.Column, true).ForEach(s => Console.Write($"{s}, "));
-            //Console.WriteLine();
-            //SquareRange.GetSquaresBetween(BoardSquare.E3, BoardSquare.A3, AbsoluteDirectionalOffsets.Column, false).ForEach(s => Console.Write($"{s}, "));
-
+            foreach (GeneratedMove move in kMoves)
+            {
+                Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+                move.AttackedSquares.ForEach(seq => seq.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) ")));
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+            //SquareRange.GetSquaresBetween(BoardSquare.F5, BoardSquare.B1, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
+            //SquareRange.GetSquaresBetween(BoardSquare.B1, BoardSquare.F5, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
+            //^SAVE FOR LOGGING LATER^
 
             /*
                 |R||N||B||K||Q||B||N||R|

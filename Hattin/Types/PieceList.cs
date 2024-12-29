@@ -20,6 +20,7 @@ namespace Hattin.Types
         private NormalPiece[] squareContents;
         private List<AttackProjection>[] attackingSquares; //an array of length 64 that contains lists of sqaures attacked from it
         private List<AttackProjection>[] attackedFrom; //an array of lenght 64 that contains lists of where the source of the attack comes from
+        public bool AttackSquaresInitialized { get; private set; }
 
 
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
@@ -34,6 +35,7 @@ namespace Hattin.Types
             squareContents = new NormalPiece[64];
             attackingSquares = new List<AttackProjection>[64];
             attackedFrom = new List<AttackProjection>[64];
+            AttackSquaresInitialized = false;
             for (int i = 0; i < NumPieces; i++)
             {
                 piecePositions[i] = new List<BoardSquare>();
@@ -110,8 +112,10 @@ namespace Hattin.Types
                     curItem.Data.Add(attack);
                 }
             }
+            AttackSquaresInitialized = true;
         }
 
+        //Can be used for discovery attack search maybe?
         public List<Pin> GetPinnedPieces(NormalPiece[] pinnedAgainst)
         {
             List<Pin> pinnedSquares = new List<Pin>();
@@ -122,7 +126,7 @@ namespace Hattin.Types
                 {
                     foreach (AttackProjection source in attackedFrom[pinnedToPiece.ToBase64Int()])
                     {
-                        if (pinnedToPieceType.ToColor() == source.AsPiece.ToColor()) { continue; }
+                        if (pinnedToPieceType.ToColor() == source.AsPiece.ToColor()) { continue; } //discovery possible
                         foreach (AttackProjection attackedSquare in attackingSquares[source.Square.ToBase64Int()])
                         {
                             if (attackedSquare.XRayLevel == 0 && attackedSquare.Interaction == SquareInteraction.Attacking)

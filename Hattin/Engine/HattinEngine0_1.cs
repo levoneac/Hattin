@@ -35,6 +35,10 @@ namespace Hattin.Engine
 
         public void PlayNextMove()
         {
+            if (Board.PieceProperties.AttackSquaresInitialized == false)
+            {
+                Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
+            }
             List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
             GeneratedMove chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
             Move outputMove = new Move(chosenMove.Piece, chosenMove.FromSquare, chosenMove.DestSquare);

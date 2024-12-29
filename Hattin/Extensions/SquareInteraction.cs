@@ -7,13 +7,16 @@ namespace Hattin.Extensions.SquareInteraction
             switch (interaction)
             {
                 case Types.SquareInteraction.Attacking:
-                return "A";
+                    return "A";
 
                 case Types.SquareInteraction.Defending:
-                return "D";
+                    return "D";
 
                 case Types.SquareInteraction.ControllingEmpty:
-                return "C";
+                    return "C";
+
+                case Types.SquareInteraction.OwnSquare:
+                    return "O";
             }
             return "";
         }
