@@ -84,6 +84,8 @@ namespace Hattin.Types
             int arrayPos = square.ToBase64Int();
             return attackedFrom[arrayPos];
         }
+
+        //Make inremental later
         public void UpdateAllAttackSquares(List<List<AttackProjection>> attackProjections)
         {
             FlushAttackInformation();
@@ -101,7 +103,6 @@ namespace Hattin.Types
                             curItem.AttackTotals.IncrementColor(attack.AsSide);
                         }
 
-                        //Need to be cleared or updated
                         attackedFrom[attack.Square.ToBase64Int()].Add(moveSequence[0]);
                         attackingSquares[sourceSquare.ToBase64Int()].Add(attack);
                     }
@@ -109,6 +110,32 @@ namespace Hattin.Types
                     curItem.Data.Add(attack);
                 }
             }
+        }
+
+        public List<Pin> GetPinnedPieces(NormalPiece[] pinnedAgainst)
+        {
+            List<Pin> pinnedSquares = new List<Pin>();
+
+            foreach (NormalPiece pinnedToPieceType in pinnedAgainst)
+            {
+                foreach (BoardSquare pinnedToPiece in PiecePositions[(int)pinnedToPieceType])
+                {
+                    foreach (AttackProjection source in attackedFrom[pinnedToPiece.ToBase64Int()])
+                    {
+                        if (pinnedToPieceType.ToColor() == source.AsPiece.ToColor()) { continue; }
+                        foreach (AttackProjection attackedSquare in attackingSquares[source.Square.ToBase64Int()])
+                        {
+                            if (attackedSquare.XRayLevel == 0 && attackedSquare.Interaction == SquareInteraction.Attacking)
+                            {
+                                pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare,
+                                    pinnedToPiece, pinnedToPieceType, pinnedToPieceType.ToValue() == NormalPieceValue.King));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return pinnedSquares;
         }
 
         private void FlushAttackInformation()

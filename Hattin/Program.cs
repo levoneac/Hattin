@@ -15,40 +15,6 @@ namespace Hattin
     {
         public static void Main(string[] args)
         {
-            /*
-                //Lists dont copy the item, its still a reference
-                //Simple types (primitives?) like ints do get copied and cant be changed from outside
-                List<int[]> a = new();
-                int[] b = new int[1];
-                int x = 21;
-                b[0] = x;
-                a.Add(b);
-                Console.WriteLine(a[0][0]); //21
-                x = 21344;
-                b[0] = 4124;
-                Console.WriteLine(a[0][0]); //4124
-            */
-
-            BitBoard bb = new();
-            // /bb.Board = 256 + 512 + 1024 + 2048 + 4096 + 8192 + 16384 + 32768;
-            // /bb.PrintBitBoard();
-            // bb.Board |= 1UL << Conversions.SquareConversions.Array120To64[(int)BoardSquares.H8];
-            // /bb.PrintBitBoard();
-            // /bb.SetBitPieceBase_120(23);
-            // /bb.PrintBitBoard();
-            // /Console.WriteLine(bb.CountSetBits());
-            // /BitBoard.PrintBitBoard(bb.GetLastSetBit());
-            // /Console.WriteLine(bb.LastSetBitIndex());
-            // /bb.PopLastSetBit();
-            // /bb.PrintBitBoard();
-            // /bb.PopLastSetBit();
-            // /bb.PrintBitBoard();
-            // /bb.PopLastSetBit();
-            // /bb.PrintBitBoard();
-            // /bb.PopLastSetBit();
-            // /bb.PrintBitBoard();
-
-            ulong d = (ulong)new Random().NextInt64();
             BoardState board = new BoardState();
             IPositionEvaluator evaluator = new BasicPositionEvaluator();
             board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
@@ -73,8 +39,8 @@ namespace Hattin
             Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
 
-            //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E2);
-            //board.MovePiece(NormalPiece.WhiteKnight, BoardSquare.F3, BoardSquare.H4);
+            board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5));
+            board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.F1, BoardSquare.B5));
             //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5);
             //board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.C1, BoardSquare.G5);
             //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E7, BoardSquare.E8);
@@ -88,24 +54,6 @@ namespace Hattin
             //
             //List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateKingMoves();
             //Console.WriteLine("___Moves___: ");
-            //foreach (GeneratedMove move in kMoves)
-            //{
-            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-            //    move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
-            //    Console.WriteLine();
-            //}
-            //Console.WriteLine();
-
-
-            //var timer = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engine0_1.MoveGenerator, engine0_1.MoveGenerator.GenerateAllAttackedSquares, 1000);
-            //var (timerResult, functionResult) = timer.RunTests();
-            //Console.WriteLine(timerResult);
-
-
-
-            //var timer2 = new TimeFunction<IMoveGenerator, Func<List<GeneratedMove>>, List<GeneratedMove>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllLegalMoves, 1);
-            //var (timerResult2, functionResult2) = timer2.RunTests();
-            //Console.WriteLine(timerResult2);
 
 
             //var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
@@ -120,10 +68,20 @@ namespace Hattin
             board.PrintBoard(SideToMove.White);
             board.PrintAttackTotals(SideToMove.White);
 
-            foreach (var item in board.PieceProperties.GetAttackedSquaresFromSquare(BoardSquare.D2))
+
+            //SAVE FOR LOGGING LATER
+            foreach (var pin in board.PieceProperties.GetPinnedPieces([NormalPiece.WhiteKing, NormalPiece.BlackKing]))
             {
-                Console.WriteLine(item.Square);
+                Console.WriteLine($"{pin.PinnedPiece} on {pin.PinnedPieceSquare} is pinned against {pin.PinnedAgainstPiece} on {pin.PinnedAgainstSquare} by the {pin.PinnedByPiece} on {pin.PinnedByPieceSquare} Absolute?: {pin.IsAbsolute}");
             }
+            //foreach (GeneratedMove move in kMoves)
+            //{
+            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+            //    move.AttackedSquares.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) "));
+            //    Console.WriteLine();
+            //}
+            //Console.WriteLine();
+
 
 
             //SquareRange.GetSquaresBetween(BoardSquare.A8, BoardSquare.A1, AbsoluteDirectionalOffsets.Row, false).ForEach(s => Console.Write($"{s}, "));
@@ -134,13 +92,6 @@ namespace Hattin
             //Console.WriteLine();
             //SquareRange.GetSquaresBetween(BoardSquare.E3, BoardSquare.A3, AbsoluteDirectionalOffsets.Column, false).ForEach(s => Console.Write($"{s}, "));
 
-
-            //foreach (var move in functionResult2)
-            //{
-            //    Console.WriteLine($"{move.Piece}:{move.FromSquare}-{move.DestSquare}");
-            //}
-
-            //Console.WriteLine(functionResult.Count == functionResult2.Count);
 
             /*
                 |R||N||B||K||Q||B||N||R|
@@ -153,37 +104,6 @@ namespace Hattin
                 |r||n||b||k||q||b||n||r|
             */
 
-
-            /*
-            Console.WriteLine();
-            for (int i = 0; i < 64; i++)
-            {
-                if (i % 8 == 0 && i != 0)
-                {
-                    Console.WriteLine();
-                }
-                Console.Write("|" + Conversions.SquareConversions.Array64To120[i] + "|");
-            }
-
-            Console.WriteLine();
-            for (int i = 21; i < 99; i++)
-            {
-                int conv = Conversions.SquareConversions.Array120To64[i];
-                if (conv % 8 == 0 && conv != 112)
-                {
-                    Console.WriteLine();
-                }
-                Console.Write("|" + conv + "|");
-            }
-            */
-
-            //TimeFunction usage:
-            //int Test(int x, int y, int z)
-            //{
-            //    return x + y + z;
-            //}
-            //var timer = new TimeFunction<object, Func<int, int, int, int>>(null, Test, 1, 1, 5, 3);
-            //null -> the parent class of the function
         }
     }
 }
