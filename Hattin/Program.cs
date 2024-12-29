@@ -61,11 +61,12 @@ namespace Hattin
             //Console.WriteLine(timerResult3);
 
 
-            engineThreaded.PlayUntillPly(20);
+            engineThreaded.PlayUntillPly(100);
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);
             board.PrintBoard(SideToMove.White);
+            board.PieceProperties.UpdateAllAttackSquares(engineThreaded.MoveGenerator.GenerateAllAttackedSquares());
             board.PrintAttackTotals(SideToMove.White);
 
 
@@ -81,16 +82,16 @@ namespace Hattin
                 }
                 Console.WriteLine();
             }
-            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GeneratePawnMoves();
-
-
-            foreach (GeneratedMove move in kMoves)
-            {
-                Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-                move.AttackedSquares.ForEach(seq => seq.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) ")));
-                Console.WriteLine();
-            }
-            Console.WriteLine();
+            //List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GeneratePawnMoves();
+            //
+            //
+            //foreach (GeneratedMove move in kMoves)
+            //{
+            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+            //    move.AttackedSquares.ForEach(seq => seq.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) ")));
+            //    Console.WriteLine();
+            //}
+            //Console.WriteLine();
             //SquareRange.GetSquaresBetween(BoardSquare.F5, BoardSquare.B1, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
             //SquareRange.GetSquaresBetween(BoardSquare.B1, BoardSquare.F5, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
             //^SAVE FOR LOGGING LATER^

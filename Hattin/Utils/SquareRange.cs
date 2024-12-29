@@ -5,6 +5,7 @@ namespace Hattin.Utils
 {
     public static class SquareRange
     {
+        //Lists CAN be empty
         public static List<BoardSquare> GetSquaresBetween(BoardSquare fromSquare, BoardSquare toSquare, Directions direction, bool inclusive)
         {
             if (direction == Directions.Auto) { direction = InferDirection(fromSquare, toSquare); }
@@ -36,8 +37,10 @@ namespace Hattin.Utils
             string fromSquareName = Enum.GetName(typeof(BoardSquare), fromSquare) ?? throw new ArgumentException($"fromSquare is invalid", nameof(fromSquare));
             string toSquareName = Enum.GetName(typeof(BoardSquare), toSquare) ?? throw new ArgumentException($"toSquare is invalid", nameof(toSquare));
 
-            if (fromSquareName[0] == toSquareName[0]) { return Directions.Column; }
-            if (fromSquareName[1] == toSquareName[1]) { return Directions.Row; }
+            if (char.Equals(fromSquareName[0], toSquareName[0])) { return Directions.Row; }
+            if (char.Equals(fromSquareName[1], toSquareName[1])) { return Directions.Column; }
+
+            //if its not any of these we hope its diagonal (throws appropriate error if its not)
             return Directions.Diagonal;
         }
 
@@ -55,12 +58,12 @@ namespace Hattin.Utils
             AbsoluteDirectionalOffsets offset;
             if (fromSquareName[0] > toSquareName[0]) { offset = AbsoluteDirectionalOffsets.DiagonalLeft; }
             else if (fromSquareName[0] < toSquareName[0]) { offset = AbsoluteDirectionalOffsets.DiagonalRight; }
-            else { throw new ArgumentException($"the squares cannot be on the same Column", nameof(fromSquare)); }
+            else { throw new ArgumentException($"the squares {lowestSquare} and {highestSquare} cannot be on the same Column", nameof(fromSquare)); }
 
             int yDirection;
             if (fromSquareName[1] > toSquareName[1]) { yDirection = 1; }
             else if (fromSquareName[1] < toSquareName[1]) { yDirection = 1; }
-            else { throw new ArgumentException($"the squares cannot be on the same Row", nameof(fromSquare)); }
+            else { throw new ArgumentException($"the squares {lowestSquare} and {highestSquare} cannot be on the same Row", nameof(fromSquare)); }
 
             int numSquares = Math.Abs(fromSquareName[1] - toSquareName[1]) - 1;
             BoardSquare curSquare = lowestSquare + ((int)offset) * yDirection;
@@ -70,7 +73,7 @@ namespace Hattin.Utils
                 squares.Add(curSquare);
                 curSquare += ((int)offset) * yDirection;
             }
-            if (curSquare != highestSquare) { throw new ArgumentException($"The squares are not on the same diagonal", nameof(fromSquare)); }
+            if (curSquare != highestSquare) { throw new ArgumentException($"The squares {fromSquare} and {toSquare} are not on the same Diagonal", nameof(fromSquare)); }
 
             if (inclusive)
             {
