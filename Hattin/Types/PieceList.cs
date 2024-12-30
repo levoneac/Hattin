@@ -115,6 +115,18 @@ namespace Hattin.Types
             }
             AttackSquaresInitialized = true;
         }
+        public List<BoardSquare> GetCheckSource(SideToMove sideToMove)
+        {
+            NormalPiece king = sideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
+            List<AttackProjection> attackSources = attackedFrom[PiecePositions[(int)king][0].ToBase64Int()];
+            return (List<BoardSquare>)attackSources.Where(i => i.XRayLevel == 0).Select(i => i.Square);
+        }
+
+        public List<BoardSquare> GetAttackSource(BoardSquare attackedSquare, int maxXRayLevel = 0)
+        {
+            List<AttackProjection> attackSources = attackedFrom[attackedSquare.ToBase64Int()];
+            return (List<BoardSquare>)attackSources.Where(i => i.XRayLevel == maxXRayLevel).Select(i => i.Square);
+        }
 
         //Can be used for discovery attack search maybe?
         public List<Pin> GetPinnedPieces(NormalPiece[] pinnedAgainst)
@@ -147,7 +159,6 @@ namespace Hattin.Types
                     }
                 }
             }
-
             return pinnedSquares;
         }
 
