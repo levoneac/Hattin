@@ -6,7 +6,7 @@ namespace Hattin.Utils
     public static class SquareRange
     {
         //Lists CAN be empty
-        public static List<BoardSquare> GetSquaresBetween(BoardSquare fromSquare, BoardSquare toSquare, Directions direction, bool inclusive)
+        public static List<BoardSquare> GetSquaresBetween(BoardSquare fromSquare, BoardSquare toSquare, bool inclusive, Directions direction = Directions.Auto)
         {
             if (direction == Directions.Auto) { direction = InferDirection(fromSquare, toSquare); }
             if (fromSquare == BoardSquare.NoSquare)

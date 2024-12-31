@@ -61,7 +61,7 @@ namespace Hattin
             //Console.WriteLine(timerResult3);
 
 
-            engineThreaded.PlayUntillPly(100);
+            engineThreaded.PlayUntillPly(10);
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);
@@ -82,6 +82,9 @@ namespace Hattin
                 }
                 Console.WriteLine();
             }
+
+            List<BoardSquare> arrayOverlap = ListMethods.GetArrayOverlap(SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.H8, true), SquareRange.GetSquaresBetween(BoardSquare.G1, BoardSquare.A7, true));
+            arrayOverlap.ForEach(s => Console.Write($"{s}, "));
             //List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GeneratePawnMoves();
             //
             //
