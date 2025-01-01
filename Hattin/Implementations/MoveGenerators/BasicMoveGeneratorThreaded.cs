@@ -25,7 +25,7 @@ namespace Hattin.Implementations.MoveGenerators
         public List<GeneratedMove> GenerateSlidingMoves(NormalPiece piece, SideToMove opponentColor)
         {
             List<GeneratedMove> possibleMoves = [];
-       
+
             BoardSquare positionAfterOffset;
 
             //foreach square where a given piece is placed
@@ -487,7 +487,7 @@ namespace Hattin.Implementations.MoveGenerators
             ThreadPool.QueueUserWorkItem((object? parameters) =>
             {
                 List<List<AttackProjection>> aggregate = new List<List<AttackProjection>>();
-                foreach (var sliders in NormalPieceMovement.SlidingPieces)
+                foreach (var sliders in NormalPieceClassifications.SlidingPieces)
                 {
                     foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
                     {
@@ -504,7 +504,7 @@ namespace Hattin.Implementations.MoveGenerators
             ThreadPool.QueueUserWorkItem((object? parameters) =>
             {
                 List<List<AttackProjection>> aggregate = new List<List<AttackProjection>>();
-                foreach (var jumpers in NormalPieceMovement.JumpingPieces)
+                foreach (var jumpers in NormalPieceClassifications.JumpingPieces)
                 {
                     foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
                     {
@@ -522,7 +522,7 @@ namespace Hattin.Implementations.MoveGenerators
             ThreadPool.QueueUserWorkItem((object? parameters) =>
             {
                 List<List<AttackProjection>> aggregate = new List<List<AttackProjection>>();
-                foreach (var pawns in NormalPieceMovement.PawnMoves)
+                foreach (var pawns in NormalPieceClassifications.PawnMoves)
                 {
                     foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
                     {
@@ -554,7 +554,7 @@ namespace Hattin.Implementations.MoveGenerators
         {
             List<List<AttackProjection>> attackProjections = new List<List<AttackProjection>>();
 
-            foreach (var sliders in NormalPieceMovement.SlidingPieces)
+            foreach (var sliders in NormalPieceClassifications.SlidingPieces)
             {
                 foreach (var square in Board.PieceProperties.PiecePositions[(int)sliders])
                 {
@@ -562,7 +562,7 @@ namespace Hattin.Implementations.MoveGenerators
                 }
             }
 
-            foreach (var jumpers in NormalPieceMovement.JumpingPieces)
+            foreach (var jumpers in NormalPieceClassifications.JumpingPieces)
             {
                 foreach (var square in Board.PieceProperties.PiecePositions[(int)jumpers])
                 {
@@ -570,7 +570,7 @@ namespace Hattin.Implementations.MoveGenerators
                 }
             }
 
-            foreach (var pawns in NormalPieceMovement.PawnMoves)
+            foreach (var pawns in NormalPieceClassifications.PawnMoves)
             {
                 foreach (var square in Board.PieceProperties.PiecePositions[(int)pawns])
                 {
@@ -580,7 +580,7 @@ namespace Hattin.Implementations.MoveGenerators
             return attackProjections;
         }
 
-        public List<GeneratedMove> GenerateAllLegalMoves(List<Func<GeneratedMove, bool>>? constraints)
+        public List<GeneratedMove> GenerateAllLegalMoves(Func<List<GeneratedMove>, List<GeneratedMove>>? constraints)
         {
             List<GeneratedMove> Moves = new List<GeneratedMove>();
             object moveLock = new object();
@@ -603,8 +603,7 @@ namespace Hattin.Implementations.MoveGenerators
             events.ForEach(e => e.Dispose());
 
 
-
-            return Moves;
+            return constraints?.Invoke(Moves) ?? Moves;
 
 
             void LockMovesAddRange(List<GeneratedMove> moves)

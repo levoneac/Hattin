@@ -1,4 +1,5 @@
 using Hattin.Extensions.NormalPiece;
+using Hattin.Utils;
 
 namespace Hattin.Types
 {
@@ -31,9 +32,24 @@ namespace Hattin.Types
             EnPassantSquare = enpassantSquare;
             IsPromotion = isPromotion;
             IsCapture = isCapture;
-            CheckPath = new List<BoardSquare>();
 
             NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
+
+            //maybe move out into movegenerator for more efficiency
+            foreach (var attackDirection in attackedSquares)
+            {
+                AttackProjection kingAttack = attackDirection.FirstOrDefault(sq => sq.PieceOnSquare == opponentKingColor, new AttackProjection());
+                if (kingAttack.AsPiece != NormalPiece.Empty && kingAttack.XRayLevel == 0)
+                {
+                    IsCheck = true;
+                    CheckPath = SquareRange.GetSquaresBetween(fromSquare, kingAttack.Square, true);
+                    break;
+                }
+            }
+            if (CheckPath is null)
+            {
+                CheckPath = new List<BoardSquare>();
+            }
 
             //var checks = attackedSquares.Select(i => i.PieceOnSquare == opponentKingColor);
         }

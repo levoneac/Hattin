@@ -119,13 +119,13 @@ namespace Hattin.Types
         {
             NormalPiece king = sideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             List<AttackProjection> attackSources = attackedFrom[PiecePositions[(int)king][0].ToBase64Int()];
-            return (List<BoardSquare>)attackSources.Where(i => i.XRayLevel == 0).Select(i => i.Square);
+            return attackSources.Where(i => i.XRayLevel == 0).Select(i => i.Square).ToList();
         }
 
         public List<BoardSquare> GetAttackSource(BoardSquare attackedSquare, int maxXRayLevel = 0)
         {
             List<AttackProjection> attackSources = attackedFrom[attackedSquare.ToBase64Int()];
-            return (List<BoardSquare>)attackSources.Where(i => i.XRayLevel == maxXRayLevel).Select(i => i.Square);
+            return attackSources.Where(i => i.XRayLevel == maxXRayLevel).Select(i => i.Square).ToList();
         }
 
         //Can be used for discovery attack search maybe?
@@ -139,7 +139,7 @@ namespace Hattin.Types
                 {
                     foreach (AttackProjection source in attackedFrom[pinnedToPiece.ToBase64Int()])
                     {
-                        if (NormalPieceMovement.GetMovementfuncFromPiece(source.AsPiece) != NormalPieceMovement.SlidingPieces) { continue; }
+                        if (NormalPieceClassifications.GetMovementfuncFromPiece(source.AsPiece) != NormalPieceClassifications.SlidingPieces) { continue; }
                         if (pinnedToPieceType.ToColor() == source.AsPiece.ToColor()) { continue; } //discovery possible
                         List<BoardSquare> possiblePinSquares = SquareRange.GetSquaresBetween(pinnedToPiece, source.Square, true);
                         foreach (AttackProjection attackedSquare in attackingSquares[source.Square.ToBase64Int()])

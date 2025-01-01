@@ -34,8 +34,8 @@ namespace Hattin.Utils
 
         public static Directions InferDirection(BoardSquare fromSquare, BoardSquare toSquare)
         {
-            string fromSquareName = Enum.GetName(typeof(BoardSquare), fromSquare) ?? throw new ArgumentException($"fromSquare is invalid", nameof(fromSquare));
-            string toSquareName = Enum.GetName(typeof(BoardSquare), toSquare) ?? throw new ArgumentException($"toSquare is invalid", nameof(toSquare));
+            string fromSquareName = Enum.GetName(typeof(BoardSquare), fromSquare) ?? throw new ArgumentException($"({fromSquare}) is invalid for fromSquare", nameof(fromSquare));
+            string toSquareName = Enum.GetName(typeof(BoardSquare), toSquare) ?? throw new ArgumentException($"({toSquare}) is invalid for toSquare", nameof(toSquare));
 
             if (char.Equals(fromSquareName[0], toSquareName[0])) { return Directions.Row; }
             if (char.Equals(fromSquareName[1], toSquareName[1])) { return Directions.Column; }

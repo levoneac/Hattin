@@ -1,5 +1,7 @@
+using Hattin.Extensions.NormalPiece;
 using Hattin.Interfaces;
 using Hattin.Types;
+using Hattin.Utils;
 
 namespace Hattin.Engine
 {
@@ -7,30 +9,25 @@ namespace Hattin.Engine
     {
         public BoardState Board { get; private set; }
         public IMoveGenerator MoveGenerator { get; private set; }
+        public IMoveConstraintBuilder MoveConstraintBuilder { get; private set; }
         public IPositionEvaluator PositionEvaluator { get; private set; }
-        public HattinEngine0_1(BoardState board, IMoveGenerator moveGenerator, IPositionEvaluator positionEvaluator)
+        public HattinEngine0_1(BoardState board, IMoveGenerator moveGenerator, IMoveConstraintBuilder moveConstraintBuilder, IPositionEvaluator positionEvaluator)
         {
             Board = board;
             MoveGenerator = moveGenerator;
+            MoveConstraintBuilder = moveConstraintBuilder;
             PositionEvaluator = positionEvaluator;
         }
 
-        private List<Func<GeneratedMove, bool>> GetConstraintFuncs()
+        private Func<List<GeneratedMove>, List<GeneratedMove>> GetConstraintFuncs()
         {
-            List<Func<GeneratedMove, bool>> funcs = new List<Func<GeneratedMove, bool>>();
-
+            MoveConstraintBuilder.Reset();
             if (Board.IsCheck)
             {
-                funcs.Add(StopCheck);
+                MoveConstraintBuilder.SetStopCheck();
             }
 
-            return funcs;
-
-
-            bool StopCheck(GeneratedMove move)
-            {
-                return true;
-            }
+            return MoveConstraintBuilder.GetConstraintFunction();
         }
 
         public void PlayNextMove()

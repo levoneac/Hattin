@@ -2,6 +2,7 @@
 using Hattin.Extensions.SideToMove;
 using Hattin.Extensions.SquareInteraction;
 using Hattin.Extensions.Squares;
+using Hattin.Implementations.MoveConstraintBuilders;
 using Hattin.Implementations.MoveGenerators;
 using Hattin.Implementations.PositionEvaluators;
 using Hattin.Interfaces;
@@ -17,6 +18,7 @@ namespace Hattin
         {
             BoardState board = new BoardState();
             IPositionEvaluator evaluator = new BasicPositionEvaluator();
+            IMoveConstraintBuilder constraintBuilder = new BasicMoveConstraintBuilder(board);
             board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
             board.PrintBoard(SideToMove.White, false);
             board.PrintBoard(SideToMove.Black, false);
@@ -41,13 +43,15 @@ namespace Hattin
 
             board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5));
             board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.F1, BoardSquare.B5));
+            board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5));
+            board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.B5, BoardSquare.D7));
             //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5);
             //board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.C1, BoardSquare.G5);
             //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E7, BoardSquare.E8);
             //board.EnPassantSquare = BoardSquare.E6;
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
-            HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, evaluator);
+            HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, constraintBuilder, evaluator);
 
 
             //
@@ -61,11 +65,13 @@ namespace Hattin
             //Console.WriteLine(timerResult3);
 
 
-            engineThreaded.PlayUntillPly(10);
+            //engineThreaded.PlayUntillPly(10);
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);
             board.PrintBoard(SideToMove.White);
+
+
             board.PieceProperties.UpdateAllAttackSquares(engineThreaded.MoveGenerator.GenerateAllAttackedSquares());
             board.PrintAttackTotals(SideToMove.White);
 
@@ -83,18 +89,19 @@ namespace Hattin
                 Console.WriteLine();
             }
 
-            List<BoardSquare> arrayOverlap = ListMethods.GetArrayOverlap(SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.H8, true), SquareRange.GetSquaresBetween(BoardSquare.G1, BoardSquare.A7, true));
-            arrayOverlap.ForEach(s => Console.Write($"{s}, "));
-            //List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GeneratePawnMoves();
-            //
-            //
-            //foreach (GeneratedMove move in kMoves)
-            //{
-            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-            //    move.AttackedSquares.ForEach(seq => seq.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) ")));
-            //    Console.WriteLine();
-            //}
-            //Console.WriteLine();
+            //List<BoardSquare> arrayOverlap = ListMethods.GetArrayOverlap(SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.H8, true), SquareRange.GetSquaresBetween(BoardSquare.G1, BoardSquare.A7, true));
+            //NormalPieceClassifications.JumpingPieces.ToList().ForEach(s => Console.Write($"{s}, "));
+            //constraintBuilder.SetStopCheck();
+            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateAllLegalMoves(constraintBuilder.GetConstraintFunction());
+
+
+            foreach (GeneratedMove move in kMoves)
+            {
+                Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+                //move.AttackedSquares.ForEach(seq => seq.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) ")));
+                Console.WriteLine();
+            }
+            Console.WriteLine();
             //SquareRange.GetSquaresBetween(BoardSquare.F5, BoardSquare.B1, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
             //SquareRange.GetSquaresBetween(BoardSquare.B1, BoardSquare.F5, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
             //^SAVE FOR LOGGING LATER^

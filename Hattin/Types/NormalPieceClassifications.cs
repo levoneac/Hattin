@@ -1,10 +1,17 @@
 namespace Hattin.Types
 {
-    public static class NormalPieceMovement
+    public static class NormalPieceClassifications
     {
-        public static NormalPiece[] SlidingPieces = [NormalPiece.WhiteBishop, NormalPiece.BlackBishop, NormalPiece.BlackRook, NormalPiece.WhiteRook, NormalPiece.WhiteQueen, NormalPiece.BlackQueen];
-        public static NormalPiece[] JumpingPieces = [NormalPiece.WhiteKnight, NormalPiece.BlackKnight, NormalPiece.WhiteKing, NormalPiece.BlackKing];
-        public static NormalPiece[] PawnMoves = [NormalPiece.WhitePawn, NormalPiece.BlackPawn];
+
+        public static NormalPiece[] Kings = [NormalPiece.WhiteKing, NormalPiece.BlackKing];
+        public static NormalPiece[] Queens = [NormalPiece.WhiteQueen, NormalPiece.BlackQueen];
+        public static NormalPiece[] Rooks = [NormalPiece.WhiteRook, NormalPiece.BlackRook];
+        public static NormalPiece[] Bishops = [NormalPiece.WhiteBishop, NormalPiece.BlackBishop];
+        public static NormalPiece[] Knights = [NormalPiece.WhiteKnight, NormalPiece.BlackKnight];
+        public static NormalPiece[] Pawns = [NormalPiece.WhitePawn, NormalPiece.BlackPawn];
+        public static NormalPiece[] SlidingPieces = [.. Bishops, .. Rooks, .. Queens];
+        public static NormalPiece[] JumpingPieces = [.. Knights, .. Kings];
+        public static NormalPiece[] PawnMoves = Pawns;
 
         public static NormalPiece[] GetMovementfuncFromPiece(NormalPiece piece)
         {
