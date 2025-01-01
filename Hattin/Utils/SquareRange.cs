@@ -28,6 +28,9 @@ namespace Hattin.Utils
 
                 case Directions.Diagonal:
                     return GetDiagonalBetween(fromSquare, toSquare, inclusive);
+
+                case Directions.Knight:
+                    return new List<BoardSquare>([fromSquare, toSquare]);
             }
             return new List<BoardSquare>();
         }
@@ -39,9 +42,14 @@ namespace Hattin.Utils
 
             if (char.Equals(fromSquareName[0], toSquareName[0])) { return Directions.Row; }
             if (char.Equals(fromSquareName[1], toSquareName[1])) { return Directions.Column; }
-
+            if (IsKnightMove(fromSquare, toSquare)) { return Directions.Knight; }
             //if its not any of these we hope its diagonal (throws appropriate error if its not)
             return Directions.Diagonal;
+        }
+
+        public static bool IsKnightMove(BoardSquare fromSquare, BoardSquare toSquare)
+        {
+            return NormalPieceOffsets.Knight.Contains(fromSquare - toSquare);
         }
 
         private static List<BoardSquare> GetDiagonalBetween(BoardSquare fromSquare, BoardSquare toSquare, bool inclusive)

@@ -42,14 +42,11 @@ namespace Hattin.Types
                 if (kingAttack.AsPiece != NormalPiece.Empty && kingAttack.XRayLevel == 0)
                 {
                     IsCheck = true;
-                    CheckPath = SquareRange.GetSquaresBetween(fromSquare, kingAttack.Square, true);
+                    //CheckPath = SquareRange.GetSquaresBetween(fromSquare, kingAttack.Square, true);
                     break;
                 }
             }
-            if (CheckPath is null)
-            {
-                CheckPath = new List<BoardSquare>();
-            }
+            CheckPath ??= new List<BoardSquare>();
 
             //var checks = attackedSquares.Select(i => i.PieceOnSquare == opponentKingColor);
         }

@@ -26,6 +26,7 @@ namespace Hattin.Types
         Column,
         Row,
         Diagonal,
+        Knight,
         Auto
     }
 }

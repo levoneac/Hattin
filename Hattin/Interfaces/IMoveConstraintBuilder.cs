@@ -6,6 +6,6 @@ namespace Hattin.Interfaces
     {
         void Reset();
         void SetStopCheck();
-        Func<List<GeneratedMove>, List<GeneratedMove>> GetConstraintFunction();
+        Func<List<GeneratedMove>, List<GeneratedMove>>? GetConstraintFunction();
     }
 }

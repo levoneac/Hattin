@@ -65,7 +65,7 @@ namespace Hattin
             //Console.WriteLine(timerResult3);
 
 
-            //engineThreaded.PlayUntillPly(10);
+            engineThreaded.PlayUntillPly(1000);
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);
@@ -92,16 +92,16 @@ namespace Hattin
             //List<BoardSquare> arrayOverlap = ListMethods.GetArrayOverlap(SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.H8, true), SquareRange.GetSquaresBetween(BoardSquare.G1, BoardSquare.A7, true));
             //NormalPieceClassifications.JumpingPieces.ToList().ForEach(s => Console.Write($"{s}, "));
             //constraintBuilder.SetStopCheck();
-            List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateAllLegalMoves(constraintBuilder.GetConstraintFunction());
-
-
-            foreach (GeneratedMove move in kMoves)
-            {
-                Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
-                //move.AttackedSquares.ForEach(seq => seq.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) ")));
-                Console.WriteLine();
-            }
-            Console.WriteLine();
+            //List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateAllLegalMoves(constraintBuilder.GetConstraintFunction());
+            //
+            //
+            //foreach (GeneratedMove move in kMoves)
+            //{
+            //    Console.Write($"{move.FromSquare}-{move.DestSquare}, EP-square: {move.EnPassantSquare}, promotion?: {move.IsPromotion}, check?: {move.IsCheck}, capture?: {move.IsCapture}, attacked squares: ");
+            //    //move.AttackedSquares.ForEach(seq => seq.ForEach(i => Console.Write($"({i.AsPiece}->{i.Square}:{i.PieceOnSquare}-{i.Interaction.ToShortString()}{(i.IsPromotion ? "++" : "")}) ")));
+            //    Console.WriteLine();
+            //}
+            //Console.WriteLine();
             //SquareRange.GetSquaresBetween(BoardSquare.F5, BoardSquare.B1, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
             //SquareRange.GetSquaresBetween(BoardSquare.B1, BoardSquare.F5, Directions.Diagonal, true).ForEach(sq => Console.Write($"{sq}, "));
             //^SAVE FOR LOGGING LATER^

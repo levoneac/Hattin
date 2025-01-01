@@ -44,9 +44,16 @@ namespace Hattin.Implementations.MoveConstraintBuilders
             }
         }
 
-        public Func<List<GeneratedMove>, List<GeneratedMove>> GetConstraintFunction()
+        public Func<List<GeneratedMove>, List<GeneratedMove>>? GetConstraintFunction()
         {
-            return ConstraintFilter;
+            if (CurrentCollection.Count > 0)
+            {
+                return ConstraintFilter;
+            }
+            else
+            {
+                return null;
+            }
 
             List<GeneratedMove> ConstraintFilter(List<GeneratedMove> moves)
             {

@@ -38,8 +38,20 @@ namespace Hattin.Engine
             }
             List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
             GeneratedMove chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
+            if (chosenMove.Piece == NormalPiece.Empty)
+            {
+                throw new Exception("$GAME OVER");
+            }
             Move outputMove = new Move(chosenMove.Piece, chosenMove.FromSquare, chosenMove.DestSquare);
             Board.MovePiece(outputMove);
+            if (chosenMove.IsCheck)
+            {
+                Board.IsCheck = true;
+            }
+            else
+            {
+                Board.IsCheck = false;
+            }
         }
 
         public void PlayUntillPly(int plyCount)
