@@ -1,14 +1,16 @@
 using Hattin.Extensions.NormalPiece;
+using Hattin.Utils;
 
 namespace Hattin.Types
 {
     public class GeneratedMove : Move
     {
-        public List<AttackProjection> AttackedSquares { get; set; }
+        public List<List<AttackProjection>> AttackedSquares { get; set; }
         public BoardSquare EnPassantSquare { get; set; }
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
         public bool IsCheck { get; set; }//be aware of edgecases from promotion
+        public List<BoardSquare> CheckPath { get; set; }
         //isMate?
         //isBlocking??
         //
@@ -19,10 +21,11 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             IsPromotion = false;
             IsCapture = false;
-            IsCheck = false; 
+            IsCheck = false;
+            CheckPath = [];
         }
 
-        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<AttackProjection> attackedSquares, BoardSquare enpassantSquare = BoardSquare.NoSquare, bool isPromotion = false, bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
+        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares, BoardSquare enpassantSquare = BoardSquare.NoSquare, bool isPromotion = false, bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
         : base(piece, fromSquare, toSquare, rookCastleSquare)
         {
             AttackedSquares = attackedSquares;
@@ -31,7 +34,21 @@ namespace Hattin.Types
             IsCapture = isCapture;
 
             NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
-            IsCheck = attackedSquares.Any(i => i.PieceOnSquare == opponentKingColor) == true;
+
+            //maybe move out into movegenerator for more efficiency
+            foreach (var attackDirection in attackedSquares)
+            {
+                AttackProjection kingAttack = attackDirection.FirstOrDefault(sq => sq.PieceOnSquare == opponentKingColor, new AttackProjection());
+                if (kingAttack.AsPiece != NormalPiece.Empty && kingAttack.XRayLevel == 0)
+                {
+                    IsCheck = true;
+                    //CheckPath = SquareRange.GetSquaresBetween(fromSquare, kingAttack.Square, true);
+                    break;
+                }
+            }
+            CheckPath ??= new List<BoardSquare>();
+
+            //var checks = attackedSquares.Select(i => i.PieceOnSquare == opponentKingColor);
         }
     }
 }

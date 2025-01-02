@@ -5,8 +5,10 @@ namespace Hattin.Utils
 {
     public static class SquareRange
     {
-        public static List<BoardSquare> GetSquaresBetween(BoardSquare fromSquare, BoardSquare toSquare, AbsoluteDirectionalOffsets direction, bool inclusive)
+        //Lists CAN be empty
+        public static List<BoardSquare> GetSquaresBetween(BoardSquare fromSquare, BoardSquare toSquare, bool inclusive, Directions direction = Directions.Auto)
         {
+            if (direction == Directions.Auto) { direction = InferDirection(fromSquare, toSquare); }
             if (fromSquare == BoardSquare.NoSquare)
             {
                 throw new ArgumentException($"Nosquare not allowed", nameof(fromSquare));
@@ -18,14 +20,75 @@ namespace Hattin.Utils
 
             switch (direction)
             {
-                case AbsoluteDirectionalOffsets.Row:
+                case Directions.Row:
                     return GetRowBetween(fromSquare, toSquare, inclusive);
 
-                case AbsoluteDirectionalOffsets.Column:
+                case Directions.Column:
                     return GetColumnBetween(fromSquare, toSquare, inclusive);
 
+                case Directions.Diagonal:
+                    return GetDiagonalBetween(fromSquare, toSquare, inclusive);
+
+                case Directions.Knight:
+                    return new List<BoardSquare>([fromSquare, toSquare]);
             }
             return new List<BoardSquare>();
+        }
+
+        public static Directions InferDirection(BoardSquare fromSquare, BoardSquare toSquare)
+        {
+            string fromSquareName = Enum.GetName(typeof(BoardSquare), fromSquare) ?? throw new ArgumentException($"({fromSquare}) is invalid for fromSquare", nameof(fromSquare));
+            string toSquareName = Enum.GetName(typeof(BoardSquare), toSquare) ?? throw new ArgumentException($"({toSquare}) is invalid for toSquare", nameof(toSquare));
+
+            if (char.Equals(fromSquareName[0], toSquareName[0])) { return Directions.Row; }
+            if (char.Equals(fromSquareName[1], toSquareName[1])) { return Directions.Column; }
+            if (IsKnightMove(fromSquare, toSquare)) { return Directions.Knight; }
+            //if its not any of these we hope its diagonal (throws appropriate error if its not)
+            return Directions.Diagonal;
+        }
+
+        public static bool IsKnightMove(BoardSquare fromSquare, BoardSquare toSquare)
+        {
+            return NormalPieceOffsets.Knight.Contains(fromSquare - toSquare);
+        }
+
+        private static List<BoardSquare> GetDiagonalBetween(BoardSquare fromSquare, BoardSquare toSquare, bool inclusive)
+        {
+            List<BoardSquare> squares = new List<BoardSquare>();
+
+            //Lower as in lower in a range from A1 to H8
+            BoardSquare highestSquare = (BoardSquare)Math.Max((int)fromSquare, (int)toSquare);
+            BoardSquare lowestSquare = (BoardSquare)Math.Min((int)fromSquare, (int)toSquare);
+
+            string fromSquareName = Enum.GetName(typeof(BoardSquare), lowestSquare) ?? throw new ArgumentException($"fromSquare is invalid", nameof(fromSquare));
+            string toSquareName = Enum.GetName(typeof(BoardSquare), highestSquare) ?? throw new ArgumentException($"toSquare is invalid", nameof(toSquare));
+
+            AbsoluteDirectionalOffsets offset;
+            if (fromSquareName[0] > toSquareName[0]) { offset = AbsoluteDirectionalOffsets.DiagonalLeft; }
+            else if (fromSquareName[0] < toSquareName[0]) { offset = AbsoluteDirectionalOffsets.DiagonalRight; }
+            else { throw new ArgumentException($"the squares {lowestSquare} and {highestSquare} cannot be on the same Column", nameof(fromSquare)); }
+
+            int yDirection;
+            if (fromSquareName[1] > toSquareName[1]) { yDirection = 1; }
+            else if (fromSquareName[1] < toSquareName[1]) { yDirection = 1; }
+            else { throw new ArgumentException($"the squares {lowestSquare} and {highestSquare} cannot be on the same Row", nameof(fromSquare)); }
+
+            int numSquares = Math.Abs(fromSquareName[1] - toSquareName[1]) - 1;
+            BoardSquare curSquare = lowestSquare + ((int)offset) * yDirection;
+
+            for (int i = 0; i < numSquares; i++)
+            {
+                squares.Add(curSquare);
+                curSquare += ((int)offset) * yDirection;
+            }
+            if (curSquare != highestSquare) { throw new ArgumentException($"The squares {fromSquare} and {toSquare} are not on the same Diagonal", nameof(fromSquare)); }
+
+            if (inclusive)
+            {
+                squares.Add(lowestSquare);
+                squares.Add(highestSquare);
+            }
+            return squares;
         }
 
         //Minor issue: GetRow is always ascending while GetColumn goes from fromSquare to toSquare as the user specified

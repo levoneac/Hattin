@@ -8,6 +8,8 @@ namespace Hattin.Implementations.MoveGenerators
 {
     //TODO:
     //refactor attackedSquares-methods to automatically choose sliding or jumping
+    [Obsolete("Use threaded version instead")]
+    [Ignore]
     public class BasicMoveGenerator : IMoveGenerator
     {
         public BoardState Board { get; private set; } //make into interface later
@@ -165,8 +167,6 @@ namespace Hattin.Implementations.MoveGenerators
 
             foreach (BoardSquare pawnPosition in Board.PieceProperties.PiecePositions[(int)pieceColor])
             {
-                bool prevIsBlocked = false;
-                bool isCapture = false;
                 bool isPromotion = false;
                 int offsetIndex = 1; //if pawn is not on starting square, skip the first index of offsets. Maybe find a clearer way to represent this
                 if (startingSquares.Contains(pawnPosition))
@@ -359,7 +359,7 @@ namespace Hattin.Implementations.MoveGenerators
             return attackProjections;
         }
 
-        public List<GeneratedMove> GenerateAllLegalMoves()
+        public List<GeneratedMove> GenerateAllLegalMoves(List<Func<GeneratedMove, bool>>? constraints)
         {
             List<GeneratedMove> allMoves = [];
             allMoves.AddRange(GeneratePawnMoves());

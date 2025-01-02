@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Hattin.Events.EventArguments;
+using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
 using Hattin.Utils.Conversions;
@@ -143,7 +144,54 @@ namespace Hattin.Types
             Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
         }
 
-        public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
+        public void UpdateCastleRights(Move move)
+        {
+            //SideToMove pieceColor = move.Piece.ToColor();
+            //NormalPieceValue piece = move.Piece.ToValue();
+            BoardSquare pieceSquare = move.FromSquare;
+            if (pieceSquare == BoardSquare.E1)
+            {
+                castleRights &= ~(CastleRights.WhiteKingsideCastle & CastleRights.WhiteQueensideCastle);
+            }
+            else if (pieceSquare == BoardSquare.E8)
+            {
+                castleRights &= ~(CastleRights.BlackKingsideCastle & CastleRights.BlackQueensideCastle);
+            }
+            else if (pieceSquare == BoardSquare.A1)
+            {
+                castleRights &= ~CastleRights.WhiteQueensideCastle;
+            }
+            else if (pieceSquare == BoardSquare.H1)
+            {
+                castleRights &= ~CastleRights.WhiteKingsideCastle;
+            }
+            else if (pieceSquare == BoardSquare.A8)
+            {
+                castleRights &= ~CastleRights.BlackQueensideCastle;
+            }
+            else if (pieceSquare == BoardSquare.H8)
+            {
+                castleRights &= ~CastleRights.BlackKingsideCastle;
+            }
+
+            //if (piece == NormalPieceValue.King)
+            //{
+            //    if (pieceColor == SideToMove.White)
+            //    {
+            //        castleRights &= ~(CastleRights.WhiteKingsideCastle & CastleRights.WhiteQueensideCastle);
+            //    }
+            //    else if (pieceColor == SideToMove.Black)
+            //    {
+            //        castleRights &= ~(CastleRights.BlackKingsideCastle & CastleRights.BlackQueensideCastle);
+            //    }
+            //}
+            //else if (piece == NormalPieceValue.Rook)
+            //{
+            //    if(pieceSquare == )
+            //}
+        }
+
+        public void MovePiece(Move move) //NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare
         {
             //check if capture, check, etc..
             //This function should return an object that has f.ex. enpassantsquare, if its a check, if its a capture
@@ -151,12 +199,12 @@ namespace Hattin.Types
 
             //if(!moveProperties.isValid){throw error}
 
-            pieceProperties.MovePiece(piece, fromSquare, toSquare);
-
-            LastestMove = new Move(piece, fromSquare, toSquare);
-            Board[(int)fromSquare] = NormalPiece.Empty;
-            Board[(int)toSquare] = piece;
-            moveHistory.Add(LastestMove);
+            pieceProperties.MovePiece(move.Piece, move.FromSquare, move.DestSquare);
+            UpdateCastleRights(move);
+            //LastestMove = new Move(piece, fromSquare, toSquare);
+            Board[(int)move.FromSquare] = NormalPiece.Empty;
+            Board[(int)move.DestSquare] = move.Piece;
+            moveHistory.Add(move);
 
             PlyCounter++;
 
@@ -165,7 +213,7 @@ namespace Hattin.Types
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
             //EnpassantSquare = moveProperties.enpassantSquare;
-            NewMoveEventArgs eventArgs = new NewMoveEventArgs(piece, fromSquare, toSquare);
+            NewMoveEventArgs eventArgs = new NewMoveEventArgs(move.Piece, move.FromSquare, move.DestSquare);
             OnNewMoveEvent(eventArgs);
         }
 
@@ -241,7 +289,7 @@ namespace Hattin.Types
             {
                 for (int i = 56; i >= 0; i++)
                 {
-                    curCount = PieceProperties.GetAttackCountOnSquare((BoardSquare)SquareConversions.Array64To120[i]);
+                    curCount = PieceProperties.GetAttackCountOnSquare((BoardSquare)SquareConversions.Array64To120[i]).AttackTotals;
                     curTotal = curCount.White - curCount.Black;
                     Console.Write($" {(curTotal >= 0 ? $"+{curTotal}" : curTotal)} ");
                     if ((i + 1) % 8 == 0)
@@ -255,7 +303,7 @@ namespace Hattin.Types
             {
                 for (int i = 7; i < 64; i--)
                 {
-                    curCount = PieceProperties.GetAttackCountOnSquare((BoardSquare)SquareConversions.Array64To120[i]);
+                    curCount = PieceProperties.GetAttackCountOnSquare((BoardSquare)SquareConversions.Array64To120[i]).AttackTotals;
                     curTotal = curCount.White - curCount.Black;
                     Console.Write($" {(curTotal >= 0 ? $"+{curTotal}" : curTotal)} ");
                     if (i % 8 == 0)
@@ -305,7 +353,7 @@ namespace Hattin.Types
                 else if (char.IsLetter(elem))
                 {
 
-                    if (Enum.TryParse(typeof(FENSymbols), elem.ToString(), false, out object piece))
+                    if (Enum.TryParse(typeof(FENSymbols), elem.ToString(), false, out object? piece))
                     {
                         int realPosition = Utils.Conversions.SquareConversions.Array64To120[boardPointer];
                         Board[realPosition] = (NormalPiece)piece;
@@ -391,7 +439,7 @@ namespace Hattin.Types
             }
             else
             {
-                if (Enum.TryParse(typeof(BoardSquare), FENparts[3], true, out object square))
+                if (Enum.TryParse(typeof(BoardSquare), FENparts[3], true, out object? square))
                 {
                     EnPassantSquare = (BoardSquare)square;
                 }

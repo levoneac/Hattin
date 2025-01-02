@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
+using Hattin.Utils;
 
 namespace Hattin.Types
 {
@@ -16,9 +17,12 @@ namespace Hattin.Types
 
         //Tracks which color has a piece on each square
         private List<SideToMove> captureAndBlockingSquares; //switch to array
-        private List<ColorCount> attackSquares; //switch to array
+        private List<AttackInformation> attackInformation; //switch to array
         private NormalPiece[] squareContents;
-        
+        private List<AttackProjection>[] attackingSquares; //an array of length 64 that contains lists of sqaures attacked from it
+        private List<AttackProjection>[] attackedFrom; //an array of lenght 64 that contains lists of where the source of the attack comes from
+        public bool AttackSquaresInitialized { get; private set; }
+
 
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
         public int NumPieces { get; private set; }
@@ -28,8 +32,11 @@ namespace Hattin.Types
             piecePositions = new List<BoardSquare>[NumPieces];
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             captureAndBlockingSquares = new List<SideToMove>(64);
-            attackSquares = new List<ColorCount>(64);
+            attackInformation = new List<AttackInformation>(64);
             squareContents = new NormalPiece[64];
+            attackingSquares = new List<AttackProjection>[64];
+            attackedFrom = new List<AttackProjection>[64];
+            AttackSquaresInitialized = false;
             for (int i = 0; i < NumPieces; i++)
             {
                 piecePositions[i] = new List<BoardSquare>();
@@ -39,8 +46,10 @@ namespace Hattin.Types
             for (int i = 0; i < 64; i++)
             {
                 captureAndBlockingSquares.Add(SideToMove.None);
-                attackSquares.Add(new ColorCount());
+                attackInformation.Add(new AttackInformation { AttackTotals = new ColorCount(), Data = new List<AttackProjection>() });
                 squareContents[i] = NormalPiece.Empty;
+                attackingSquares[i] = new List<AttackProjection>();
+                attackedFrom[i] = new List<AttackProjection>();
             }
         }
 
@@ -55,10 +64,10 @@ namespace Hattin.Types
             return captureAndBlockingSquares[arrayPos];
         }
 
-        public ColorCount GetAttackCountOnSquare(BoardSquare square)
+        public AttackInformation GetAttackCountOnSquare(BoardSquare square)
         {
             int arrayPos = square.ToBase64Int();
-            return attackSquares[arrayPos];
+            return attackInformation[arrayPos];
         }
 
         public NormalPiece GetPieceOnSquare(BoardSquare square)
@@ -66,13 +75,104 @@ namespace Hattin.Types
             int arrayPos = square.ToBase64Int();
             return squareContents[arrayPos];
         }
-        public void UpdateAllAttackSquares(List<AttackProjection> attackProjections)
+
+        public List<AttackProjection> GetAttackedSquaresFromSquare(BoardSquare square)
         {
-            foreach (AttackProjection attack in attackProjections)
+            int arrayPos = square.ToBase64Int();
+            return attackingSquares[arrayPos];
+        }
+
+        public List<AttackProjection> GetAttackSourceFromSquare(BoardSquare square)
+        {
+            int arrayPos = square.ToBase64Int();
+            return attackedFrom[arrayPos];
+        }
+
+        //Make inremental later
+        public void UpdateAllAttackSquares(List<List<AttackProjection>> attackProjections)
+        {
+            FlushAttackInformation();
+            AttackInformation curItem;
+            foreach (List<AttackProjection> moveSequence in attackProjections)
             {
-                attackSquares[attack.Square.ToBase64Int()].IncrementColor(attack.AsSide);
+                BoardSquare sourceSquare = moveSequence[0].Square;
+                foreach (AttackProjection attack in moveSequence)
+                {
+                    curItem = attackInformation[attack.Square.ToBase64Int()];
+                    if (attack.Interaction != SquareInteraction.OwnSquare)
+                    {
+                        if (attack.XRayLevel == 0)
+                        {
+                            curItem.AttackTotals.IncrementColor(attack.AsSide);
+                        }
+
+                        attackedFrom[attack.Square.ToBase64Int()].Add(moveSequence[0]);
+                        attackingSquares[sourceSquare.ToBase64Int()].Add(attack);
+                    }
+
+                    curItem.Data.Add(attack);
+                }
             }
-        
+            AttackSquaresInitialized = true;
+        }
+        public List<BoardSquare> GetCheckSource(SideToMove sideToMove)
+        {
+            NormalPiece king = sideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
+            List<AttackProjection> attackSources = attackedFrom[PiecePositions[(int)king][0].ToBase64Int()];
+            return attackSources.Where(i => i.XRayLevel == 0 && i.AsPiece.ToColor() != sideToMove).Select(i => i.Square).ToList();
+        }
+
+        public List<BoardSquare> GetAttackSource(BoardSquare attackedSquare, int maxXRayLevel = 0)
+        {
+            List<AttackProjection> attackSources = attackedFrom[attackedSquare.ToBase64Int()];
+            return attackSources.Where(i => i.XRayLevel == maxXRayLevel).Select(i => i.Square).ToList();
+        }
+
+        //Can be used for discovery attack search maybe?
+        public List<Pin> GetPinnedPieces(NormalPiece[] pinnedAgainst)
+        {
+            List<Pin> pinnedSquares = new List<Pin>();
+
+            foreach (NormalPiece pinnedToPieceType in pinnedAgainst)
+            {
+                foreach (BoardSquare pinnedToPiece in PiecePositions[(int)pinnedToPieceType])
+                {
+                    foreach (AttackProjection source in attackedFrom[pinnedToPiece.ToBase64Int()])
+                    {
+                        if (NormalPieceClassifications.GetMovementfuncFromPiece(source.AsPiece) != NormalPieceClassifications.SlidingPieces) { continue; }
+                        if (pinnedToPieceType.ToColor() == source.AsPiece.ToColor()) { continue; } //discovery possible
+                        List<BoardSquare> possiblePinSquares = SquareRange.GetSquaresBetween(pinnedToPiece, source.Square, true);
+                        foreach (AttackProjection attackedSquare in attackingSquares[source.Square.ToBase64Int()])
+                        {
+                            if (possiblePinSquares.Contains(attackedSquare.Square) && attackedSquare.XRayLevel == 0 && attackedSquare.Interaction == SquareInteraction.Attacking)
+                            {
+                                if (attackedSquare.PieceOnSquare.ToValue() == NormalPieceValue.King) { continue; }
+                                //checks if there are any other squares with a piece inbetween the possible pin and the pinnedToPiece
+                                if (SquareRange.GetSquaresBetween(attackedSquare.Square, pinnedToPiece, false).Any(i => squareContents[i.ToBase64Int()] != NormalPiece.Empty)) { continue; }
+
+                                pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare, pinnedToPiece, pinnedToPieceType,
+                                    pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, true)));
+
+                                continue;
+                            }
+
+                        }
+                    }
+                }
+            }
+            return pinnedSquares;
+        }
+
+        private void FlushAttackInformation()
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                attackInformation[i].Data.Clear();
+                attackInformation[i].AttackTotals.Black = 0;
+                attackInformation[i].AttackTotals.White = 0;
+                attackedFrom[i].Clear();
+                attackingSquares[i].Clear();
+            }
         }
 
         //assumes that move is already verified from caller
@@ -91,7 +191,7 @@ namespace Hattin.Types
             int indexOfFromSquare = piecePositions[(int)piece].IndexOf(fromSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)
             {
-                throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {fromSquare}");
+                throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {fromSquare} (moving to {toSquare})");
             }
             //Should there be checks to see if this square is occupied by other pieces?
             //Only allow if no friendly piece and bool "capture" argument is true?
@@ -99,6 +199,11 @@ namespace Hattin.Types
 
             int fromSquareArrayPos = fromSquare.ToBase64Int();
             int toSquareArrayPos = toSquare.ToBase64Int();
+
+            if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
+            {
+                RemovePiece(squareContents[toSquareArrayPos], toSquare);
+            }
 
             captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
             captureAndBlockingSquares[toSquareArrayPos] = piece.ToColor();
