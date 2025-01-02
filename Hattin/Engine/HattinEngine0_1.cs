@@ -30,10 +30,10 @@ namespace Hattin.Engine
             return MoveConstraintBuilder.GetConstraintFunction();
         }
 
-
+        //Testing move gen
         public void PlayNextMove()
         {
-
+            //Make incremental later
             Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
 
             List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
@@ -51,8 +51,13 @@ namespace Hattin.Engine
                 Board.PrintBoard(SideToMove.White);
                 throw new Exception("$GAME OVER");
             }
-            Move outputMove = new Move(chosenMove.Piece, chosenMove.FromSquare, chosenMove.DestSquare);
-            Board.MovePiece(outputMove);
+            if (chosenMove.IsPromotion)
+            {
+                NormalPiece piece = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
+                chosenMove.PromoteTo = piece;
+            }
+
+            Board.MovePiece(chosenMove);
             if (chosenMove.IsCheck)
             {
                 Board.IsCheck = true;

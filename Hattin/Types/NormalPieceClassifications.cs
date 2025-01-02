@@ -9,6 +9,7 @@ namespace Hattin.Types
         public static NormalPiece[] Bishops = [NormalPiece.WhiteBishop, NormalPiece.BlackBishop];
         public static NormalPiece[] Knights = [NormalPiece.WhiteKnight, NormalPiece.BlackKnight];
         public static NormalPiece[] Pawns = [NormalPiece.WhitePawn, NormalPiece.BlackPawn];
+        public static NormalPiece[] Promoteable = [.. Knights, .. Bishops, .. Rooks, .. Queens];
         public static NormalPiece[] SlidingPieces = [.. Bishops, .. Rooks, .. Queens];
         public static NormalPiece[] JumpingPieces = [.. Knights, .. Kings];
         public static NormalPiece[] PawnMoves = Pawns;

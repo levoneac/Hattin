@@ -186,34 +186,42 @@ namespace Hattin.Types
         }
 
         //assumes that move is already verified from caller
-        public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
+        public void MovePiece(Move move)
         {
-            if (squareContents[toSquare.ToBase64Int()].ToValue() == NormalPieceValue.King)
+            if (squareContents[move.DestSquare.ToBase64Int()].ToValue() == NormalPieceValue.King)
             {
-                throw new ArgumentException($"King on {toSquare} cannot be captured", nameof(toSquare));
+                throw new ArgumentException($"King on {move.DestSquare} cannot be captured", nameof(move.DestSquare));
             }
-            int indexOfFromSquare = piecePositions[(int)piece].IndexOf(fromSquare); //LINQ should be side effect free, so you cant change inplace afaik
+            int indexOfFromSquare = piecePositions[(int)move.Piece].IndexOf(move.FromSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)
             {
-                throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {fromSquare} (moving to {toSquare})");
+                throw new ArgumentOutOfRangeException(nameof(move.Piece), $"There is no {move.Piece} on square {move.FromSquare} (moving to {move.DestSquare})");
             }
-            //Should there be checks to see if this square is occupied by other pieces?
-            //Only allow if no friendly piece and bool "capture" argument is true?
-            piecePositions[(int)piece][indexOfFromSquare] = toSquare;
 
-            int fromSquareArrayPos = fromSquare.ToBase64Int();
-            int toSquareArrayPos = toSquare.ToBase64Int();
+            if (move.PromoteTo != NormalPiece.Empty)
+            {
+                RemovePiece(move.Piece, move.FromSquare);
+                piecePositions[(int)move.PromoteTo].Add(move.DestSquare);
+            }
+            else
+            {
+                piecePositions[(int)move.Piece][indexOfFromSquare] = move.DestSquare;
+            }
+
+
+            int fromSquareArrayPos = move.FromSquare.ToBase64Int();
+            int toSquareArrayPos = move.DestSquare.ToBase64Int();
 
             if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
             {
-                RemovePiece(squareContents[toSquareArrayPos], toSquare);
+                RemovePiece(squareContents[toSquareArrayPos], move.DestSquare);
             }
 
             captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
-            captureAndBlockingSquares[toSquareArrayPos] = piece.ToColor();
+            captureAndBlockingSquares[toSquareArrayPos] = move.Piece.ToColor();
 
             squareContents[fromSquareArrayPos] = NormalPiece.Empty;
-            squareContents[toSquareArrayPos] = piece;
+            squareContents[toSquareArrayPos] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
         }
 
         //assumes that move is already verified from caller

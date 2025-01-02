@@ -141,7 +141,7 @@ namespace Hattin.Types
 
         public void PrintMove(object? sender, NewMoveEventArgs eventArgs)
         {
-            Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
+            Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.DestSquare}");
         }
 
         public void UpdateCastleRights(Move move)
@@ -199,11 +199,11 @@ namespace Hattin.Types
 
             //if(!moveProperties.isValid){throw error}
 
-            pieceProperties.MovePiece(move.Piece, move.FromSquare, move.DestSquare);
+            pieceProperties.MovePiece(move);
             if (castleRights != 0) { UpdateCastleRights(move); }
             //LastestMove = new Move(piece, fromSquare, toSquare);
             Board[(int)move.FromSquare] = NormalPiece.Empty;
-            Board[(int)move.DestSquare] = move.Piece;
+            Board[(int)move.DestSquare] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
             moveHistory.Add(move);
 
             PlyCounter++;
@@ -213,7 +213,7 @@ namespace Hattin.Types
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
             //EnpassantSquare = moveProperties.enpassantSquare;
-            NewMoveEventArgs eventArgs = new NewMoveEventArgs(move.Piece, move.FromSquare, move.DestSquare);
+            NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             OnNewMoveEvent(eventArgs);
         }
 
