@@ -188,6 +188,10 @@ namespace Hattin.Types
         //assumes that move is already verified from caller
         public void MovePiece(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare)
         {
+            if (squareContents[toSquare.ToBase64Int()].ToValue() == NormalPieceValue.King)
+            {
+                throw new ArgumentException($"King on {toSquare} cannot be captured", nameof(toSquare));
+            }
             int indexOfFromSquare = piecePositions[(int)piece].IndexOf(fromSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)
             {

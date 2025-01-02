@@ -151,11 +151,11 @@ namespace Hattin.Types
             BoardSquare pieceSquare = move.FromSquare;
             if (pieceSquare == BoardSquare.E1)
             {
-                castleRights &= ~(CastleRights.WhiteKingsideCastle & CastleRights.WhiteQueensideCastle);
+                castleRights &= ~(CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle);
             }
             else if (pieceSquare == BoardSquare.E8)
             {
-                castleRights &= ~(CastleRights.BlackKingsideCastle & CastleRights.BlackQueensideCastle);
+                castleRights &= ~(CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle);
             }
             else if (pieceSquare == BoardSquare.A1)
             {
@@ -200,7 +200,7 @@ namespace Hattin.Types
             //if(!moveProperties.isValid){throw error}
 
             pieceProperties.MovePiece(move.Piece, move.FromSquare, move.DestSquare);
-            UpdateCastleRights(move);
+            if (castleRights != 0) { UpdateCastleRights(move); }
             //LastestMove = new Move(piece, fromSquare, toSquare);
             Board[(int)move.FromSquare] = NormalPiece.Empty;
             Board[(int)move.DestSquare] = move.Piece;
