@@ -44,6 +44,33 @@ namespace Hattin.Implementations.MoveConstraintBuilders
             }
         }
 
+        public void SetPinRestriction()
+        {
+            List<Pin> pins = Board.PieceProperties.GetPinnedPieces(NormalPieceClassifications.Kings);
+            Dictionary<BoardSquare, List<BoardSquare>> pinnedLookup = new Dictionary<BoardSquare, List<BoardSquare>>();
+            foreach (var pin in pins)
+            {
+                pinnedLookup[pin.PinnedPieceSquare] = pin.AllowedSquares;
+            }
+            if (pinnedLookup.Count > 0)
+            {
+                CurrentCollection.Add(IsPinRestricted);
+            }
+
+            bool IsPinRestricted(GeneratedMove move)
+            {
+                if (pinnedLookup.TryGetValue(move.FromSquare, out List<BoardSquare>? allowedSquares))
+                {
+                    if (allowedSquares?.Contains(move.DestSquare) ?? false)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+                return true;
+            }
+        }
+
         public Func<List<GeneratedMove>, List<GeneratedMove>>? GetConstraintFunction()
         {
             if (CurrentCollection.Count > 0)

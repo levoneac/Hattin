@@ -44,11 +44,8 @@ namespace Hattin
             board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5));
             board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.F1, BoardSquare.B5));
             board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5));
-            board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.B5, BoardSquare.D7));
-            //board.MovePiece(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5);
-            //board.MovePiece(NormalPiece.WhiteBishop, BoardSquare.C1, BoardSquare.G5);
-            //board.MovePiece(NormalPiece.BlackKing, BoardSquare.E7, BoardSquare.E8);
-            //board.EnPassantSquare = BoardSquare.E6;
+            //board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.B5, BoardSquare.D7));
+            //board.MovePiece(new Move(NormalPiece.WhiteKnight, BoardSquare.B1, BoardSquare.A3));
 
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, constraintBuilder, evaluator);
@@ -91,7 +88,7 @@ namespace Hattin
 
             //List<BoardSquare> arrayOverlap = ListMethods.GetArrayOverlap(SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.H8, true), SquareRange.GetSquaresBetween(BoardSquare.G1, BoardSquare.A7, true));
             //NormalPieceClassifications.JumpingPieces.ToList().ForEach(s => Console.Write($"{s}, "));
-            //constraintBuilder.SetStopCheck();
+            //constraintBuilder.SetPinRestriction();
             //List<GeneratedMove> kMoves = engineThreaded.MoveGenerator.GenerateAllLegalMoves(constraintBuilder.GetConstraintFunction());
             //
             //

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Hattin.Events.EventArguments;
+using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
 using Hattin.Utils.Conversions;
@@ -143,6 +144,53 @@ namespace Hattin.Types
             Console.WriteLine($"Move {eventArgs.Piece} from {eventArgs.FromSquare} to {eventArgs.ToSquare}");
         }
 
+        public void UpdateCastleRights(Move move)
+        {
+            //SideToMove pieceColor = move.Piece.ToColor();
+            //NormalPieceValue piece = move.Piece.ToValue();
+            BoardSquare pieceSquare = move.FromSquare;
+            if (pieceSquare == BoardSquare.E1)
+            {
+                castleRights &= ~(CastleRights.WhiteKingsideCastle & CastleRights.WhiteQueensideCastle);
+            }
+            else if (pieceSquare == BoardSquare.E8)
+            {
+                castleRights &= ~(CastleRights.BlackKingsideCastle & CastleRights.BlackQueensideCastle);
+            }
+            else if (pieceSquare == BoardSquare.A1)
+            {
+                castleRights &= ~CastleRights.WhiteQueensideCastle;
+            }
+            else if (pieceSquare == BoardSquare.H1)
+            {
+                castleRights &= ~CastleRights.WhiteKingsideCastle;
+            }
+            else if (pieceSquare == BoardSquare.A8)
+            {
+                castleRights &= ~CastleRights.BlackQueensideCastle;
+            }
+            else if (pieceSquare == BoardSquare.H8)
+            {
+                castleRights &= ~CastleRights.BlackKingsideCastle;
+            }
+
+            //if (piece == NormalPieceValue.King)
+            //{
+            //    if (pieceColor == SideToMove.White)
+            //    {
+            //        castleRights &= ~(CastleRights.WhiteKingsideCastle & CastleRights.WhiteQueensideCastle);
+            //    }
+            //    else if (pieceColor == SideToMove.Black)
+            //    {
+            //        castleRights &= ~(CastleRights.BlackKingsideCastle & CastleRights.BlackQueensideCastle);
+            //    }
+            //}
+            //else if (piece == NormalPieceValue.Rook)
+            //{
+            //    if(pieceSquare == )
+            //}
+        }
+
         public void MovePiece(Move move) //NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare
         {
             //check if capture, check, etc..
@@ -152,7 +200,7 @@ namespace Hattin.Types
             //if(!moveProperties.isValid){throw error}
 
             pieceProperties.MovePiece(move.Piece, move.FromSquare, move.DestSquare);
-
+            UpdateCastleRights(move);
             //LastestMove = new Move(piece, fromSquare, toSquare);
             Board[(int)move.FromSquare] = NormalPiece.Empty;
             Board[(int)move.DestSquare] = move.Piece;

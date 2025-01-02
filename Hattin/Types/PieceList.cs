@@ -119,7 +119,7 @@ namespace Hattin.Types
         {
             NormalPiece king = sideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             List<AttackProjection> attackSources = attackedFrom[PiecePositions[(int)king][0].ToBase64Int()];
-            return attackSources.Where(i => i.XRayLevel == 0).Select(i => i.Square).ToList();
+            return attackSources.Where(i => i.XRayLevel == 0 && i.AsPiece.ToColor() != sideToMove).Select(i => i.Square).ToList();
         }
 
         public List<BoardSquare> GetAttackSource(BoardSquare attackedSquare, int maxXRayLevel = 0)
@@ -146,11 +146,12 @@ namespace Hattin.Types
                         {
                             if (possiblePinSquares.Contains(attackedSquare.Square) && attackedSquare.XRayLevel == 0 && attackedSquare.Interaction == SquareInteraction.Attacking)
                             {
+                                if (attackedSquare.PieceOnSquare.ToValue() == NormalPieceValue.King) { continue; }
                                 //checks if there are any other squares with a piece inbetween the possible pin and the pinnedToPiece
                                 if (SquareRange.GetSquaresBetween(attackedSquare.Square, pinnedToPiece, false).Any(i => squareContents[i.ToBase64Int()] != NormalPiece.Empty)) { continue; }
 
                                 pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare, pinnedToPiece, pinnedToPieceType,
-                                    pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, true).ToArray()));
+                                    pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, true)));
 
                                 continue;
                             }
@@ -190,7 +191,7 @@ namespace Hattin.Types
             int indexOfFromSquare = piecePositions[(int)piece].IndexOf(fromSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)
             {
-                throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {fromSquare}");
+                throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {fromSquare} (moving to {toSquare})");
             }
             //Should there be checks to see if this square is occupied by other pieces?
             //Only allow if no friendly piece and bool "capture" argument is true?
@@ -198,6 +199,11 @@ namespace Hattin.Types
 
             int fromSquareArrayPos = fromSquare.ToBase64Int();
             int toSquareArrayPos = toSquare.ToBase64Int();
+
+            if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
+            {
+                RemovePiece(squareContents[toSquareArrayPos], toSquare);
+            }
 
             captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
             captureAndBlockingSquares[toSquareArrayPos] = piece.ToColor();

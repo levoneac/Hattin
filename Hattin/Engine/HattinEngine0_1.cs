@@ -19,27 +19,36 @@ namespace Hattin.Engine
             PositionEvaluator = positionEvaluator;
         }
 
-        private Func<List<GeneratedMove>, List<GeneratedMove>> GetConstraintFuncs()
+        private Func<List<GeneratedMove>, List<GeneratedMove>>? GetConstraintFuncs()
         {
             MoveConstraintBuilder.Reset();
             if (Board.IsCheck)
             {
                 MoveConstraintBuilder.SetStopCheck();
             }
-
+            MoveConstraintBuilder.SetPinRestriction();
             return MoveConstraintBuilder.GetConstraintFunction();
         }
 
+
         public void PlayNextMove()
         {
-            if (Board.PieceProperties.AttackSquaresInitialized == false)
-            {
-                Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
-            }
+
+            Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
+
             List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
-            GeneratedMove chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
+            GeneratedMove chosenMove;
+            if (generatedMoves.Count > 0)
+            {
+                chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
+            }
+            else
+            {
+                chosenMove = new GeneratedMove();
+            }
             if (chosenMove.Piece == NormalPiece.Empty)
             {
+                Board.PrintBoard(SideToMove.White);
                 throw new Exception("$GAME OVER");
             }
             Move outputMove = new Move(chosenMove.Piece, chosenMove.FromSquare, chosenMove.DestSquare);
@@ -59,6 +68,7 @@ namespace Hattin.Engine
             while (Board.PlyCounter <= plyCount)
             {
                 PlayNextMove();
+                Board.PrintBoard(SideToMove.White);
             }
         }
     }
