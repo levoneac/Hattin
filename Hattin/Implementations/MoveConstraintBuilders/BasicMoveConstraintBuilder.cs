@@ -7,7 +7,6 @@ namespace Hattin.Implementations.MoveConstraintBuilders
 {
     public class BasicMoveConstraintBuilder : IMoveConstraintBuilder
     {
-        //Probably not very multithreading safe with these inner function. Needs some more investigation when that time comes
         private List<Func<GeneratedMove, bool>> CurrentCollection { get; set; }
         private BoardState Board { get; set; }
         public BasicMoveConstraintBuilder(BoardState board)
@@ -20,6 +19,8 @@ namespace Hattin.Implementations.MoveConstraintBuilders
             CurrentCollection.Clear();
         }
 
+        //C# aparently has closures, so the variables of the outer function are still in scope for the inner function after the return
+        //Maybe it would be more efficient to save checkAvertingSquares in a property of this class, but for now it works
         public void SetStopCheck()
         {
             NormalPiece king = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;

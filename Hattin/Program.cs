@@ -1,14 +1,18 @@
-﻿using Hattin.Engine;
+﻿using Hattin.Implementations.Engine;
 using Hattin.Extensions.SideToMove;
 using Hattin.Extensions.SquareInteraction;
 using Hattin.Extensions.Squares;
+using Hattin.Implementations.Controllers;
 using Hattin.Implementations.MoveConstraintBuilders;
 using Hattin.Implementations.MoveGenerators;
+using Hattin.Implementations.Controllers;
 using Hattin.Implementations.PositionEvaluators;
 using Hattin.Interfaces;
 using Hattin.Types;
 using Hattin.Utils;
 
+
+using System.ComponentModel;
 namespace Hattin
 {
 
@@ -60,9 +64,8 @@ namespace Hattin
             //var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
             //var (timerResult3, functionResult3) = timer3.RunTests();
             //Console.WriteLine(timerResult3);
-
-
-            engineThreaded.PlayUntillPly(1000);
+            IUCIController parser = new UCIController(engineThreaded);
+            parser.StartListening();
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);
