@@ -6,8 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetType>exe</TargetType>
   </PropertyGroup>
     <ItemGroup>
       <Compile Remove=".\Implementations\MoveGenerators\BasicMoveGenerator.cs" />
     </ItemGroup>
+
 </Project>

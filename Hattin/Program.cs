@@ -13,6 +13,7 @@ using Hattin.Utils;
 
 
 using System.ComponentModel;
+using Hattin.Implementations.Parsers;
 namespace Hattin
 {
 
@@ -23,31 +24,31 @@ namespace Hattin
             BoardState board = new BoardState();
             IPositionEvaluator evaluator = new BasicPositionEvaluator();
             IMoveConstraintBuilder constraintBuilder = new BasicMoveConstraintBuilder(board);
-            board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
-            board.PrintBoard(SideToMove.White, false);
-            board.PrintBoard(SideToMove.Black, false);
-            Console.WriteLine(board.GetPositionHash());
-            board.GetMoveHistory();
-            //board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.D3);
-            //board.MovePiece(NormalPiece.WhitePawn, BoardSquare.D2, BoardSquare.D5);
+            //board.ProcessFEN("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2 ");
+            //board.PrintBoard(SideToMove.White, false);
+            //board.PrintBoard(SideToMove.Black, false);
+            //Console.WriteLine(board.GetPositionHash());
+            //board.GetMoveHistory();
+            ////board.MovePiece(NormalPiece.BlackKnight, BoardSquare.G8, BoardSquare.D3);
+            ////board.MovePiece(NormalPiece.WhitePawn, BoardSquare.D2, BoardSquare.D5);
+            //
+            ////board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
+            //for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
+            //{
+            //    Console.Write($"{(NormalPiece)i}: ");
+            //    for (int j = 0; j < board.PieceProperties.PiecePositions[i].Count; j++)
+            //    {
+            //        Console.Write($"{board.PieceProperties.PiecePositions[i][j]}, ");
+            //    }
+            //    Console.WriteLine();
+            //}
+            //PieceTotals total = board.PieceProperties.CalculatePieceTotals();
+            //Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
-            //board.PieceProperties.RemovePiece(NormalPiece.BlackPawn, BoardSquare.H7);
-            for (int i = 0; i < board.PieceProperties.PiecePositions.Count; i++)
-            {
-                Console.Write($"{(NormalPiece)i}: ");
-                for (int j = 0; j < board.PieceProperties.PiecePositions[i].Count; j++)
-                {
-                    Console.Write($"{board.PieceProperties.PiecePositions[i][j]}, ");
-                }
-                Console.WriteLine();
-            }
-            PieceTotals total = board.PieceProperties.CalculatePieceTotals();
-            Console.WriteLine("white: {0}, black: {1}", total.white, total.black);
 
-
-            board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5));
-            board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.F1, BoardSquare.B5));
-            board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5));
+            //board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.E7, BoardSquare.E5));
+            //board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.F1, BoardSquare.B5));
+            //board.MovePiece(new Move(NormalPiece.BlackPawn, BoardSquare.H7, BoardSquare.H5));
             //board.MovePiece(new Move(NormalPiece.WhiteBishop, BoardSquare.B5, BoardSquare.D7));
             //board.MovePiece(new Move(NormalPiece.WhiteKnight, BoardSquare.B1, BoardSquare.A3));
 
@@ -64,8 +65,9 @@ namespace Hattin
             //var timer3 = new TimeFunction<IMoveGenerator, Func<List<AttackProjection>>, List<AttackProjection>>(engineThreaded.MoveGenerator, engineThreaded.MoveGenerator.GenerateAllAttackedSquares, 1000);
             //var (timerResult3, functionResult3) = timer3.RunTests();
             //Console.WriteLine(timerResult3);
-            IUCIController parser = new UCIController(engineThreaded);
-            parser.StartListening();
+
+            UCIController controller = new UCIController(engineThreaded);
+            controller.StartListening();
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);

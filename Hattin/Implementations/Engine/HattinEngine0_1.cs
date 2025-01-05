@@ -80,24 +80,27 @@ namespace Hattin.Implementations.Engine
         }
 
         //Dummy function for testing right now
-        public void AnalyzeCurrent(int numberOfOptions, CancellationToken cancellationToken)
+        public void AnalyzeCurrent(AnalyzedPosition analyzedPosition)
         {
-            while (Board.PlyCounter <= 1000 && !cancellationToken.IsCancellationRequested)
-            {
-                PlayChosenMove(GetNextMove());
-                Board.PrintBoard(SideToMove.White);
-                Thread.Sleep(3000);
-            }
+            GeneratedMove chosenMove = GetNextMove();
+            analyzedPosition.BestMove = new MoveEvaluation(chosenMove, 1.0f);
+            analyzedPosition.IsDone = true;
+            return;
+            //while (Board.PlyCounter <= 1000 && !analyzedPosition.StopToken.IsCancellationRequested)
+            //{
+            //    PlayChosenMove(GetNextMove());
+            //    Board.PrintBoard(SideToMove.White);
+            //    Thread.Sleep(3000);
+            //}
         }
 
         public void AnalyzeCurrent(object? options)
         {
-            if (options is null)
+            if (options is null || options.GetType() != typeof(AnalyzedPosition))
             {
-                throw new ArgumentNullException(nameof(options), $"This function is just a wrapper for the main AnalyzeCurrent and requires a tuple of int and CancellationToken");
+                throw new ArgumentNullException(nameof(options), $"This function is just a wrapper for the main AnalyzeCurrent and requires an AnalyzedPosition instance");
             }
-            var (numberOfOptions, cancellationToken) = (ValueTuple<int, CancellationToken>)options;
-            AnalyzeCurrent(numberOfOptions, cancellationToken);
+            AnalyzeCurrent((AnalyzedPosition)options);
         }
     }
 }

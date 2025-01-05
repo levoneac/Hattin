@@ -1,11 +1,10 @@
-using System.Buffers.Text;
+using Hattin.Types;
 
 namespace Hattin.Interfaces
 {
-    public interface IUCIController
+    public interface IUCIParser
     {
-        public void StartListening();
-        public string? ParseInput(string input);
-        public void SendOutput(string output);
+        public UCICommand GetUCICommand(string input);
+        public static abstract UCIParseIntermediate ParseInput(string input);
     }
 }
