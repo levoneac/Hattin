@@ -20,16 +20,19 @@ namespace Hattin.Types
             AttackedSquares = [];
             EnPassantSquare = BoardSquare.NoSquare;
             IsPromotion = false;
+            EnPassantCaptureSquare = BoardSquare.NoSquare;
             IsCapture = false;
             IsCheck = false;
             CheckPath = [];
         }
 
-        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares, BoardSquare enpassantSquare = BoardSquare.NoSquare, bool isPromotion = false, bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
-        : base(piece, fromSquare, toSquare, rookCastleSquare)
+        public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares,
+            BoardSquare enPassantSquare = BoardSquare.NoSquare, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare, bool isPromotion = false,
+            bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
+                : base(piece, fromSquare, toSquare, rookCastleSquare, enPassantCaptureSquare: enPassantCaptureSquare)
         {
             AttackedSquares = attackedSquares;
-            EnPassantSquare = enpassantSquare;
+            EnPassantSquare = enPassantSquare;
             IsPromotion = isPromotion;
             IsCapture = isCapture;
 

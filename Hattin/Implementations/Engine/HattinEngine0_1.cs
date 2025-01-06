@@ -32,7 +32,14 @@ namespace Hattin.Implementations.Engine
         public GeneratedMove GetNextMove()
         {
             Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
-
+            if (Board.PieceProperties.GetCheckSource(Board.SideToMove).Count > 0)
+            {
+                Board.IsCheck = true;
+            }
+            else
+            {
+                Board.IsCheck = false;
+            }
             List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
             GeneratedMove chosenMove;
             if (generatedMoves.Count > 0)

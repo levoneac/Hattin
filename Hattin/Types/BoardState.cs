@@ -173,37 +173,21 @@ namespace Hattin.Types
             {
                 castleRights &= ~CastleRights.BlackKingsideCastle;
             }
-
-            //if (piece == NormalPieceValue.King)
-            //{
-            //    if (pieceColor == SideToMove.White)
-            //    {
-            //        castleRights &= ~(CastleRights.WhiteKingsideCastle & CastleRights.WhiteQueensideCastle);
-            //    }
-            //    else if (pieceColor == SideToMove.Black)
-            //    {
-            //        castleRights &= ~(CastleRights.BlackKingsideCastle & CastleRights.BlackQueensideCastle);
-            //    }
-            //}
-            //else if (piece == NormalPieceValue.Rook)
-            //{
-            //    if(pieceSquare == )
-            //}
         }
 
         public void MovePiece(Move move) //NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare
         {
-            //check if capture, check, etc..
-            //This function should return an object that has f.ex. enpassantsquare, if its a check, if its a capture
-            //moveProperties = ValidateMove();
-
-            //if(!moveProperties.isValid){throw error}
-
             pieceProperties.MovePiece(move);
             if (castleRights != 0) { UpdateCastleRights(move); }
             //LastestMove = new Move(piece, fromSquare, toSquare);
+
+            //120 based array for some reason
             Board[(int)move.FromSquare] = NormalPiece.Empty;
             Board[(int)move.DestSquare] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
+            if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
+            {
+                Board[(int)move.EnPassantCaptureSquare] = NormalPiece.Empty;
+            }
             moveHistory.Add(move);
 
             PlyCounter++;

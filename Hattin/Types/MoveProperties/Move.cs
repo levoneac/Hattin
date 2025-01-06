@@ -8,7 +8,8 @@ namespace Hattin.Types
         public BoardSquare FromSquare { get; init; }
         public BoardSquare DestSquare { get; init; }
         public NormalPiece PromoteTo { get; set; }
-        public BoardSquare RookCastleSquare { get; init; }
+        public BoardSquare RookCastleSquare { get; set; }
+        public BoardSquare EnPassantCaptureSquare { get; set; }
 
         public Move()
         {
@@ -17,15 +18,17 @@ namespace Hattin.Types
             DestSquare = BoardSquare.NoSquare;
             PromoteTo = NormalPiece.Empty;
             RookCastleSquare = BoardSquare.NoSquare;
+            EnPassantCaptureSquare = BoardSquare.NoSquare;
         }
 
-        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare, BoardSquare rookCastleSquare = BoardSquare.NoSquare, NormalPiece promoteTo = NormalPiece.Empty)
+        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare, BoardSquare rookCastleSquare = BoardSquare.NoSquare, NormalPiece promoteTo = NormalPiece.Empty, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare)
         {
             Piece = piece;
             FromSquare = fromSquare;
             DestSquare = destSquare;
             RookCastleSquare = rookCastleSquare;
             PromoteTo = promoteTo;
+            EnPassantCaptureSquare = enPassantCaptureSquare;
         }
 
         public static Move GetMoveFromAlgebra(string move, PieceList currentPieceProperties)

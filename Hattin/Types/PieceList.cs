@@ -193,17 +193,21 @@ namespace Hattin.Types
             {
                 throw new ArgumentException($"King on {move.DestSquare} cannot be captured", nameof(move.DestSquare));
             }
+
+            //Check if the piece actually exists
             int indexOfFromSquare = piecePositions[(int)move.Piece].IndexOf(move.FromSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)
             {
                 throw new ArgumentOutOfRangeException(nameof(move.Piece), $"There is no {move.Piece} on square {move.FromSquare} (moving to {move.DestSquare})");
             }
 
+            //If promotion move
             if (move.PromoteTo != NormalPiece.Empty)
             {
                 RemovePiece(move.Piece, move.FromSquare);
                 piecePositions[(int)move.PromoteTo].Add(move.DestSquare);
             }
+            //If not then move the piece as normal
             else
             {
                 piecePositions[(int)move.Piece][indexOfFromSquare] = move.DestSquare;
@@ -213,9 +217,15 @@ namespace Hattin.Types
             int fromSquareArrayPos = move.FromSquare.ToBase64Int();
             int toSquareArrayPos = move.DestSquare.ToBase64Int();
 
+
             if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
             {
                 RemovePiece(squareContents[toSquareArrayPos], move.DestSquare);
+            }
+            //There is never anything on an enpassantsquare
+            else if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
+            {
+                RemovePiece(squareContents[move.EnPassantCaptureSquare.ToBase64Int()], move.EnPassantCaptureSquare);
             }
 
             captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
