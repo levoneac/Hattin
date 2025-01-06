@@ -1,4 +1,5 @@
 using Hattin.Extensions.NormalPiece;
+using Hattin.Utils;
 
 namespace Hattin.Types
 {
@@ -8,7 +9,11 @@ namespace Hattin.Types
         public BoardSquare FromSquare { get; init; }
         public BoardSquare DestSquare { get; init; }
         public NormalPiece PromoteTo { get; set; }
+        //The square the rook is moved to
         public BoardSquare RookCastleSquare { get; set; }
+        //The empty square
+        public BoardSquare EnPassantSquare { get; set; }
+        //The square with the pawn
         public BoardSquare EnPassantCaptureSquare { get; set; }
 
         public Move()
@@ -18,20 +23,23 @@ namespace Hattin.Types
             DestSquare = BoardSquare.NoSquare;
             PromoteTo = NormalPiece.Empty;
             RookCastleSquare = BoardSquare.NoSquare;
+            EnPassantSquare = BoardSquare.NoSquare;
             EnPassantCaptureSquare = BoardSquare.NoSquare;
         }
 
-        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare, BoardSquare rookCastleSquare = BoardSquare.NoSquare, NormalPiece promoteTo = NormalPiece.Empty, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare)
+        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare, BoardSquare rookCastleSquare = BoardSquare.NoSquare,
+            NormalPiece promoteTo = NormalPiece.Empty, BoardSquare enPassantSquare = BoardSquare.NoSquare, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare)
         {
             Piece = piece;
             FromSquare = fromSquare;
             DestSquare = destSquare;
             RookCastleSquare = rookCastleSquare;
             PromoteTo = promoteTo;
+            EnPassantSquare = enPassantSquare;
             EnPassantCaptureSquare = enPassantCaptureSquare;
         }
 
-        public static Move GetMoveFromAlgebra(string move, PieceList currentPieceProperties)
+        public static Move GetMoveFromAlgebra(string move, BoardState board)
         {
             //todo: add promotion
             string fromString = move[0..2];
@@ -54,16 +62,40 @@ namespace Hattin.Types
             {
                 throw new ArgumentException($"The given string is not valid", nameof(move));
             }
-            NormalPiece piece = currentPieceProperties.GetPieceOnSquare((BoardSquare)from);
+            NormalPiece piece = board.PieceProperties.GetPieceOnSquare((BoardSquare)from);
+            BoardSquare fromSquare = (BoardSquare)from;
+            BoardSquare toSquare = (BoardSquare)to;
 
-
+            //Handle promotion
             if ((NormalPiece)promote != NormalPiece.Empty)
             {
                 NormalPiece[] promoteToPiece = NormalPieceClassifications.GetPiececlassFromPiece((NormalPiece)promote);
                 NormalPiece promoteTo = piece.ToColor() == SideToMove.White ? promoteToPiece[0] : promoteToPiece[1];
-                return new Move(piece, (BoardSquare)from, (BoardSquare)to, promoteTo: promoteTo);
+                return new Move(piece, fromSquare, toSquare, promoteTo: promoteTo);
             }
-            return new Move(piece, (BoardSquare)from, (BoardSquare)to);
+
+            //Handle castle
+
+            //Handle set enpassant square
+            BoardSquare enPassantSquare = BoardSquare.NoSquare;
+            BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare;
+            if (piece == NormalPiece.WhitePawn && NormalPieceStartingSquares.WhitePawn.Contains(fromSquare))
+            {
+                enPassantSquare = SquareRange.GetSquaresBetween(fromSquare, toSquare, false).FirstOrDefault(BoardSquare.NoSquare);
+            }
+            else if (piece == NormalPiece.BlackPawn && NormalPieceStartingSquares.BlackPawn.Contains(fromSquare))
+            {
+                enPassantSquare = SquareRange.GetSquaresBetween(fromSquare, toSquare, false).FirstOrDefault(BoardSquare.NoSquare);
+            }
+
+            //Handle enpassant capture
+            if (piece.ToValue() == NormalPieceValue.Pawn && toSquare == board.EnPassantSquare)
+            {
+                enPassantCaptureSquare = SquareRange.GetEnPassantCaptureSquare(fromSquare, toSquare);
+            }
+
+            //standard move
+            return new Move(piece, fromSquare, toSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare);
         }
     }
 }

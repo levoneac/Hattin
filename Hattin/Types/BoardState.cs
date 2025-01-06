@@ -184,6 +184,8 @@ namespace Hattin.Types
             //120 based array for some reason
             Board[(int)move.FromSquare] = NormalPiece.Empty;
             Board[(int)move.DestSquare] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
+
+            EnPassantSquare = move.EnPassantSquare;
             if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
             {
                 Board[(int)move.EnPassantCaptureSquare] = NormalPiece.Empty;

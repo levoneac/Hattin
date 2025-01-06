@@ -72,10 +72,11 @@ namespace Hattin.Implementations.Controllers
                 foreach (string moveString in GUICommands.Moves)
                 {
                     //Needs to update pins and checks
-                    Engine.Board.MovePiece(Move.GetMoveFromAlgebra(moveString, Engine.Board.PieceProperties));
+                    Engine.Board.MovePiece(Move.GetMoveFromAlgebra(moveString, Engine.Board));
+
                     //Engine.Board.PieceProperties.UpdateAllAttackSquares(Engine.MoveGenerator.GenerateAllAttackedSquares());
                     //Engine.Board.PrintAttackTotals(Engine.Board.SideToMove);
-                    Engine.Board.PrintBoard(Engine.Board.SideToMove);
+                    //Engine.Board.PrintBoard(Engine.Board.SideToMove);
                 }
             }
             if (GUICommands.CommandFromGUI == UCICommandFromGUI.Go)
@@ -148,6 +149,7 @@ namespace Hattin.Implementations.Controllers
                 {
                     EngineIsActive = false;
                     Console.WriteLine($"bestmove {currentPosition.BestMove.Move.ToAlgebra()}");
+                    Engine.Board.PrintBoard(Engine.Board.SideToMove);
                 }
             }
         }
