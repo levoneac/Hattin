@@ -3,12 +3,16 @@ namespace Hattin.Types
     public class UCICommand
     {
         public UCICommandFromGUI CommandFromGUI { get; set; }
-        public string? OptionPlaceholder;
-        public string? ValuePlaceHolder;
+        public string Option { get; set; }
+        public string Value { get; set; }
+        public string[] Moves { get; set; }
 
-        public UCICommand(UCICommandFromGUI commandFromGUI, string? placeholder = null, string? placeholder2 = null)
+        public UCICommand()
         {
-            CommandFromGUI = commandFromGUI;
+            CommandFromGUI = UCICommandFromGUI.NoCommand;
+            Option = "";
+            Value = "";
+            Moves = [];
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Hattin.Types
     public class BoardState : IBoard
     {
         public static readonly SquareIndexType squareIndexing = SquareIndexType.Base_120;
-        public static readonly string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        public const string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         public event EventHandler<NewMoveEventArgs> NewMoveEvent;
 
@@ -315,7 +315,7 @@ namespace Hattin.Types
             }
         }
 
-        public void ProcessFEN(string FEN)
+        public void ProcessFEN(string FEN = startingFEN)
         {
             FlushBoard();
             //"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"

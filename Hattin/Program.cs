@@ -71,25 +71,25 @@ namespace Hattin
 
             //List<List<AttackProjection>> attacks = engineThreaded.MoveGenerator.GenerateAllAttackedSquares();
             //board.PieceProperties.UpdateAllAttackSquares(attacks);
-            board.PrintBoard(SideToMove.White);
+            //board.PrintBoard(SideToMove.White);
 
 
-            board.PieceProperties.UpdateAllAttackSquares(engineThreaded.MoveGenerator.GenerateAllAttackedSquares());
-            board.PrintAttackTotals(SideToMove.White);
-
-
-            //SAVE FOR LOGGING LATER
-            foreach (var pin in board.PieceProperties.GetPinnedPieces([NormalPiece.WhiteKing, NormalPiece.BlackKing]))
-            {
-                Console.WriteLine();
-                Console.Write($"{pin.PinnedPiece} on {pin.PinnedPieceSquare} is pinned against {pin.PinnedAgainstPiece} on {pin.PinnedAgainstSquare} " +
-                     $"by the {pin.PinnedByPiece} on {pin.PinnedByPieceSquare} Absolute?: {pin.IsAbsolute}, Allowed Moves:");
-                foreach (var square in pin.AllowedSquares)
-                {
-                    Console.Write($"{square}, ");
-                }
-                Console.WriteLine();
-            }
+            //board.PieceProperties.UpdateAllAttackSquares(engineThreaded.MoveGenerator.GenerateAllAttackedSquares());
+            //board.PrintAttackTotals(SideToMove.White);
+            //
+            //
+            ////SAVE FOR LOGGING LATER
+            //foreach (var pin in board.PieceProperties.GetPinnedPieces([NormalPiece.WhiteKing, NormalPiece.BlackKing]))
+            //{
+            //    Console.WriteLine();
+            //    Console.Write($"{pin.PinnedPiece} on {pin.PinnedPieceSquare} is pinned against {pin.PinnedAgainstPiece} on {pin.PinnedAgainstSquare} " +
+            //         $"by the {pin.PinnedByPiece} on {pin.PinnedByPieceSquare} Absolute?: {pin.IsAbsolute}, Allowed Moves:");
+            //    foreach (var square in pin.AllowedSquares)
+            //    {
+            //        Console.Write($"{square}, ");
+            //    }
+            //    Console.WriteLine();
+            //}
 
             //List<BoardSquare> arrayOverlap = ListMethods.GetArrayOverlap(SquareRange.GetSquaresBetween(BoardSquare.A1, BoardSquare.H8, true), SquareRange.GetSquaresBetween(BoardSquare.G1, BoardSquare.A7, true));
             //NormalPieceClassifications.JumpingPieces.ToList().ForEach(s => Console.Write($"{s}, "));

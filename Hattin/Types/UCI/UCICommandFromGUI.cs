@@ -7,6 +7,7 @@ namespace Hattin.Types
         Isready,
         Setoption,
         Position,
+        Ucinewgame,
         Go,
         Stop,
         Quit

@@ -6,8 +6,12 @@ namespace Hattin.Extensions
     {
         public static string ToAlgebra(this Move move)
         {
-            return $"{move.FromSquare.ToString().ToLower()}{move.DestSquare.ToString().ToLower()}";
-            //Add promotion
+            string promoteTo = "";
+            if (move.PromoteTo != Types.NormalPiece.Empty)
+            {
+                promoteTo = ((FENSymbols)move.PromoteTo).ToString().ToLower();
+            }
+            return $"{move.FromSquare.ToString().ToLower()}{move.DestSquare.ToString().ToLower()}{promoteTo}";
         }
     }
 }

@@ -9,12 +9,15 @@ namespace Hattin.Implementations.Parsers
         public static UCICommand GetUCICommand(string input)
         {
             UCIParseIntermediate parseIntermediate = ParseInput(input);
+            UCICommand command = new UCICommand();
 
             if (Enum.TryParse(typeof(UCICommandFromGUI), parseIntermediate.Command, true, out object? result))
             {
-                return new UCICommand((UCICommandFromGUI)result);
+                command.CommandFromGUI = (UCICommandFromGUI)result;
             }
-            return new UCICommand(UCICommandFromGUI.NoCommand);
+            //Parse options and values
+            command.Moves = parseIntermediate.Moves;
+            return command;
         }
 
         //Bare minimum for now
@@ -28,7 +31,6 @@ namespace Hattin.Implementations.Parsers
             if (optionIndex != -1)
             {
                 option = words.Count > (optionIndex + 1) ? words[optionIndex + 1] : "";
-
             }
 
             int valueIndex = words.IndexOf("VALUE");
@@ -38,7 +40,18 @@ namespace Hattin.Implementations.Parsers
                 value = words.Count > (valueIndex + 1) ? words[valueIndex + 1] : "";
             }
 
-            return new UCIParseIntermediate(command, option, value);
+
+            int startPosIndex = words.IndexOf("POSITION");
+            string[] moves = [];
+            if (startPosIndex != -1)
+            {
+                if (words[startPosIndex + 1] == "STARTPOS" && words[startPosIndex + 2] == "MOVES")
+                {
+                    moves = [.. words[(startPosIndex + 3)..]];
+                }
+            }
+
+            return new UCIParseIntermediate(command, moves, option, value);
         }
     }
 }

@@ -42,5 +42,34 @@ namespace Hattin.Types
             }
             return [];
         }
+
+        public static NormalPiece[] GetPiececlassFromPiece(NormalPiece piece)
+        {
+            if (piece == NormalPiece.WhitePawn || piece == NormalPiece.BlackPawn)
+            {
+                return Pawns;
+            }
+            if (piece == NormalPiece.WhiteKnight || piece == NormalPiece.BlackKnight)
+            {
+                return Knights;
+            }
+            if (piece == NormalPiece.WhiteBishop || piece == NormalPiece.BlackBishop)
+            {
+                return Bishops;
+            }
+            if (piece == NormalPiece.WhiteRook || piece == NormalPiece.BlackRook)
+            {
+                return Rooks;
+            }
+            if (piece == NormalPiece.WhiteQueen || piece == NormalPiece.BlackQueen)
+            {
+                return Queens;
+            }
+            if (piece == NormalPiece.WhiteKing || piece == NormalPiece.BlackKing)
+            {
+                return Kings;
+            }
+            return [];
+        }
     }
 }

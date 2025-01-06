@@ -173,6 +173,7 @@ namespace Hattin.Types
                 attackedFrom[i].Clear();
                 attackingSquares[i].Clear();
             }
+            AttackSquaresInitialized = false;
         }
 
         //assumes that move is already verified from caller
@@ -297,6 +298,7 @@ namespace Hattin.Types
                 captureAndBlockingSquares[i] = SideToMove.None;
                 squareContents[i] = NormalPiece.Empty;
             }
+            FlushAttackInformation();
         }
     }
 

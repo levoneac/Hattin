@@ -1,0 +1,23 @@
+[Event "Computer chess game"]
+[Site "mathias-System-Product-Name"]
+[Date "2025.01.06"]
+[Round "?"]
+[White "mathias"]
+[Black "Hattin [013]"]
+[Result "1-0"]
+[BlackElo "2000"]
+[ECO "B00"]
+[Opening "Reversed Grob (Borg/Basman Defence)"]
+[Time "17:23:39"]
+[WhiteElo "2400"]
+[TimeControl "300"]
+[Termination "rules infraction"]
+[PlyCount "33"]
+[WhiteType "human"]
+[BlackType "program"]
+
+1. e4 g5 2. f4 Nf6 3. g4 h5 4. h4 Rh7 5. Rh2 c5 6. Rh1 e6 7. Rh2 b6 8. Rh1
+a5 9. Rh2 Qc7 10. Rh1 Rg7 11. Bb5 Qe5 12. fxe5 Nxg4 13. Rh3 Nh6 14. hxg5
+Ra6 15. gxh6 a4 16. hxg7 Ra5 17. g8=Q {Arena Adjudication. Illegal move!}
+1-0
+
