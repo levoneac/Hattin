@@ -144,7 +144,21 @@ namespace Hattin.Utils
             }
             return squares;
         }
+        //Doesnt quite fit here
+        public static BoardSquare GetEnPassantCaptureSquare(BoardSquare pawnFromSquare, BoardSquare pawnToSquare)
+        {
+            if (pawnFromSquare == BoardSquare.NoSquare || pawnToSquare == BoardSquare.NoSquare) { throw new ArgumentException($"Squares have to be on the board", nameof(pawnFromSquare)); }
+            char enPassantRow = Enum.GetName(typeof(BoardSquare), pawnFromSquare)?[1] ?? throw new ArgumentException($"fromSquare is invalid", nameof(pawnFromSquare));
+            char enpassantColumn = Enum.GetName(typeof(BoardSquare), pawnToSquare)?[0] ?? throw new ArgumentException($"toSquare is invalid", nameof(pawnToSquare));
 
-        //TODO: Diagonals if needed
+            //frankensteinian
+            string enPassantSquareString = enpassantColumn.ToString() + enPassantRow.ToString();
+
+            if (Enum.TryParse(typeof(BoardSquare), enPassantSquareString, true, out object? result))
+            {
+                return (BoardSquare)result;
+            }
+            throw new Exception($"No square was found");
+        }
     }
 }

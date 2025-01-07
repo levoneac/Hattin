@@ -3,14 +3,14 @@ using Hattin.Interfaces;
 using Hattin.Types;
 using Hattin.Utils;
 
-namespace Hattin.Engine
+namespace Hattin.Implementations.Engine
 {
-    public class HattinEngine0_1
+    public class HattinEngine0_1 : IEngine
     {
-        public BoardState Board { get; private set; }
-        public IMoveGenerator MoveGenerator { get; private set; }
-        public IMoveConstraintBuilder MoveConstraintBuilder { get; private set; }
-        public IPositionEvaluator PositionEvaluator { get; private set; }
+        public BoardState Board { get; init; }
+        public IMoveGenerator MoveGenerator { get; init; }
+        public IMoveConstraintBuilder MoveConstraintBuilder { get; init; }
+        public IPositionEvaluator PositionEvaluator { get; init; }
         public HattinEngine0_1(BoardState board, IMoveGenerator moveGenerator, IMoveConstraintBuilder moveConstraintBuilder, IPositionEvaluator positionEvaluator)
         {
             Board = board;
@@ -29,13 +29,17 @@ namespace Hattin.Engine
             MoveConstraintBuilder.SetPinRestriction();
             return MoveConstraintBuilder.GetConstraintFunction();
         }
-
-        //Testing move gen
-        public void PlayNextMove()
+        public GeneratedMove GetNextMove()
         {
-            //Make incremental later
             Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
-
+            if (Board.PieceProperties.GetCheckSource(Board.SideToMove).Count > 0)
+            {
+                Board.IsCheck = true;
+            }
+            else
+            {
+                Board.IsCheck = false;
+            }
             List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
             GeneratedMove chosenMove;
             if (generatedMoves.Count > 0)
@@ -56,7 +60,11 @@ namespace Hattin.Engine
                 NormalPiece piece = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
                 chosenMove.PromoteTo = piece;
             }
-
+            return chosenMove;
+        }
+        //Testing move gen
+        public void PlayChosenMove(GeneratedMove chosenMove)
+        {
             Board.MovePiece(chosenMove);
             if (chosenMove.IsCheck)
             {
@@ -68,13 +76,38 @@ namespace Hattin.Engine
             }
         }
 
-        public void PlayUntillPly(int plyCount)
+        public void PlayUntillPly(object? plyCount)
         {
-            while (Board.PlyCounter <= plyCount)
+            while (Board.PlyCounter <= (int)plyCount)
             {
-                PlayNextMove();
+                PlayChosenMove(GetNextMove());
                 Board.PrintBoard(SideToMove.White);
+                Thread.Sleep(3000);
             }
+        }
+
+        //Dummy function for testing right now
+        public void AnalyzeCurrent(AnalyzedPosition analyzedPosition)
+        {
+            GeneratedMove chosenMove = GetNextMove();
+            analyzedPosition.BestMove = new MoveEvaluation(chosenMove, 1.0f);
+            analyzedPosition.IsDone = true;
+            return;
+            //while (Board.PlyCounter <= 1000 && !analyzedPosition.StopToken.IsCancellationRequested)
+            //{
+            //    PlayChosenMove(GetNextMove());
+            //    Board.PrintBoard(SideToMove.White);
+            //    Thread.Sleep(3000);
+            //}
+        }
+
+        public void AnalyzeCurrent(object? options)
+        {
+            if (options is null || options.GetType() != typeof(AnalyzedPosition))
+            {
+                throw new ArgumentNullException(nameof(options), $"This function is just a wrapper for the main AnalyzeCurrent and requires an AnalyzedPosition instance");
+            }
+            AnalyzeCurrent((AnalyzedPosition)options);
         }
     }
 }
