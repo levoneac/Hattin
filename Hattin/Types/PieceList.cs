@@ -117,15 +117,40 @@ namespace Hattin.Types
         }
         public List<BoardSquare> GetCheckSource(SideToMove sideToMove)
         {
+            List<BoardSquare> attacks = new List<BoardSquare>();
             NormalPiece king = sideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             List<AttackProjection> attackSources = attackedFrom[PiecePositions[(int)king][0].ToBase64Int()];
-            return attackSources.Where(i => i.XRayLevel == 0 && i.AsPiece.ToColor() != sideToMove).Select(i => i.Square).ToList();
+            foreach (AttackProjection attackSource in attackSources)
+            {
+                bool directAttacks = attackingSquares[attackSource.Square.ToBase64Int()].Where(
+                    key => key.XRayLevel == 0 &&
+                    key.PieceOnSquare.ToValue() == NormalPieceValue.King &&
+                    !(king.ToColor() == key.AsPiece.ToColor())).Any();
+                if (directAttacks)
+                {
+                    attacks.Add(attackSource.Square);
+                }
+            }
+
+            return attacks;
         }
 
         public List<BoardSquare> GetAttackSource(BoardSquare attackedSquare, int maxXRayLevel = 0)
         {
+            List<BoardSquare> attacks = new List<BoardSquare>();
             List<AttackProjection> attackSources = attackedFrom[attackedSquare.ToBase64Int()];
-            return attackSources.Where(i => i.XRayLevel == maxXRayLevel).Select(i => i.Square).ToList();
+
+            foreach (AttackProjection attackSource in attackSources)
+            {
+                bool directAttacks = attackingSquares[attackSource.Square.ToBase64Int()].Where(
+                    key => key.XRayLevel <= maxXRayLevel &&
+                    !(key.AsPiece.ToColor() != key.PieceOnSquare.ToColor())).Any();
+                if (directAttacks)
+                {
+                    attacks.Add(attackSource.Square);
+                }
+            }
+            return attacks;
         }
 
         //Can be used for discovery attack search maybe?
@@ -186,6 +211,8 @@ namespace Hattin.Types
             squareContents[squareArrayPos] = piece;
         }
 
+
+        //Needs a cleanup
         //assumes that move is already verified from caller
         public void MovePiece(Move move)
         {
@@ -205,7 +232,12 @@ namespace Hattin.Types
             if (move.PromoteTo != NormalPiece.Empty)
             {
                 RemovePiece(move.Piece, move.FromSquare);
-                piecePositions[(int)move.PromoteTo].Add(move.DestSquare);
+                int toSquareArrayPos = move.DestSquare.ToBase64Int();
+                if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
+                {
+                    RemovePiece(squareContents[toSquareArrayPos], move.DestSquare);
+                }
+                AddPiece(move.PromoteTo, move.DestSquare);
             }
             //If not then move the piece as normal
             else
