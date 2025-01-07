@@ -45,9 +45,12 @@ namespace Hattin.Implementations.Parsers
             string[] moves = [];
             if (startPosIndex != -1)
             {
-                if (words[startPosIndex + 1] == "STARTPOS" && words[startPosIndex + 2] == "MOVES")
+                if (words[startPosIndex + 1] == "STARTPOS")
                 {
-                    moves = [.. words[(startPosIndex + 3)..]];
+                    if (words.Count > (startPosIndex + 2) && words[startPosIndex + 2] == "MOVES")
+                    {
+                        moves = [.. words[(startPosIndex + 3)..]];
+                    }
                 }
             }
 
