@@ -75,6 +75,33 @@ namespace Hattin.Types
             }
 
             //Handle castle
+            BoardSquare rookCastleSquare = BoardSquare.NoSquare;
+            if (piece == NormalPiece.WhiteKing && fromSquare == BoardSquare.E1)
+            {
+                if (toSquare == BoardSquare.G1)
+                {
+                    rookCastleSquare = BoardSquare.F1;
+                }
+                else if (toSquare == BoardSquare.C1)
+                {
+                    rookCastleSquare = BoardSquare.D1;
+                }
+            }
+            else if (piece == NormalPiece.BlackKing && fromSquare == BoardSquare.E8)
+            {
+                if (toSquare == BoardSquare.G8)
+                {
+                    rookCastleSquare = BoardSquare.F8;
+                }
+                else if (toSquare == BoardSquare.C8)
+                {
+                    rookCastleSquare = BoardSquare.D8;
+                }
+            }
+            if (rookCastleSquare != BoardSquare.NoSquare)
+            {
+                return new Move(piece, fromSquare, toSquare, rookCastleSquare: rookCastleSquare);
+            }
 
             //Handle set enpassant square
             BoardSquare enPassantSquare = BoardSquare.NoSquare;

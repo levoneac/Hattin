@@ -211,28 +211,65 @@ namespace Hattin.Types
             else
             {
                 piecePositions[(int)move.Piece][indexOfFromSquare] = move.DestSquare;
+
+                int fromSquareArrayPos = move.FromSquare.ToBase64Int();
+                int toSquareArrayPos = move.DestSquare.ToBase64Int();
+
+
+                if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
+                {
+                    RemovePiece(squareContents[toSquareArrayPos], move.DestSquare);
+                }
+                //There is never anything on an enpassantsquare
+                else if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
+                {
+                    RemovePiece(squareContents[move.EnPassantCaptureSquare.ToBase64Int()], move.EnPassantCaptureSquare);
+                }
+
+                captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
+                captureAndBlockingSquares[toSquareArrayPos] = move.Piece.ToColor();
+
+                squareContents[fromSquareArrayPos] = NormalPiece.Empty;
+                squareContents[toSquareArrayPos] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
             }
 
-
-            int fromSquareArrayPos = move.FromSquare.ToBase64Int();
-            int toSquareArrayPos = move.DestSquare.ToBase64Int();
-
-
-            if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
+            //if castle move, then move the rook to its new place
+            if (move.RookCastleSquare != BoardSquare.NoSquare)
             {
-                RemovePiece(squareContents[toSquareArrayPos], move.DestSquare);
-            }
-            //There is never anything on an enpassantsquare
-            else if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
-            {
-                RemovePiece(squareContents[move.EnPassantCaptureSquare.ToBase64Int()], move.EnPassantCaptureSquare);
-            }
+                BoardSquare rookFromSquare = BoardSquare.NoSquare;
+                NormalPiece rook = move.Piece.ToColor() == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
+                if (move.RookCastleSquare == BoardSquare.F1)
+                {
+                    rookFromSquare = BoardSquare.H1;
+                }
+                if (move.RookCastleSquare == BoardSquare.D1)
+                {
+                    rookFromSquare = BoardSquare.A1;
+                }
+                if (move.RookCastleSquare == BoardSquare.F8)
+                {
+                    rookFromSquare = BoardSquare.H8;
+                }
+                if (move.RookCastleSquare == BoardSquare.D8)
+                {
+                    rookFromSquare = BoardSquare.A8;
+                }
+                int indexOfRookSquare = piecePositions[(int)rook].IndexOf(rookFromSquare);
+                if (indexOfRookSquare == -1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(move.RookCastleSquare), $"There is no {rook} on square {rookFromSquare} (moving to {move.RookCastleSquare})");
+                }
+                piecePositions[(int)rook][indexOfRookSquare] = move.RookCastleSquare;
 
-            captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
-            captureAndBlockingSquares[toSquareArrayPos] = move.Piece.ToColor();
+                int rookFromSquareArrayPos = rookFromSquare.ToBase64Int();
+                int rookToSquareArrayPos = move.RookCastleSquare.ToBase64Int();
 
-            squareContents[fromSquareArrayPos] = NormalPiece.Empty;
-            squareContents[toSquareArrayPos] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
+                captureAndBlockingSquares[rookFromSquareArrayPos] = SideToMove.None;
+                captureAndBlockingSquares[rookToSquareArrayPos] = rook.ToColor();
+
+                squareContents[rookFromSquareArrayPos] = NormalPiece.Empty;
+                squareContents[rookToSquareArrayPos] = rook;
+            }
         }
 
         //assumes that move is already verified from caller

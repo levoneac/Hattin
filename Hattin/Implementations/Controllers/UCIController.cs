@@ -89,7 +89,8 @@ namespace Hattin.Implementations.Controllers
                 int numberOfOptions = 1;
                 EngineIsActive = true;
                 currentPosition = new AnalyzedPosition(numberOfOptions, Engine.Board.GetPositionHash(), cancellationToken.Token);
-
+                Engine.Board.PieceProperties.UpdateAllAttackSquares(Engine.MoveGenerator.GenerateAllAttackedSquares());
+                Engine.Board.PrintAttackTotals(SideToMove.White);
                 engineThread = new Thread(Engine.AnalyzeCurrent);
                 engineThread.Start(currentPosition);
 
@@ -153,6 +154,8 @@ namespace Hattin.Implementations.Controllers
                 }
             }
         }
+        //Every time there is a new move targeting the king through a pawn, it is treated as a direct attack
+
         //Still blocking :(
         //byte[] buffer = new byte[1024];
         //Stream inputStream = Console.OpenStandardInput();

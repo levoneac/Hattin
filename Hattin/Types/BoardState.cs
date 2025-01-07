@@ -185,7 +185,35 @@ namespace Hattin.Types
             Board[(int)move.FromSquare] = NormalPiece.Empty;
             Board[(int)move.DestSquare] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
 
+            //Castle move (refactor maybe? used many times)
+            if (move.RookCastleSquare != BoardSquare.NoSquare)
+            {
+                if (move.RookCastleSquare == BoardSquare.F1)
+                {
+                    Board[(int)BoardSquare.H1] = NormalPiece.Empty;
+                    Board[(int)BoardSquare.F1] = NormalPiece.WhiteRook;
+                }
+                if (move.RookCastleSquare == BoardSquare.D1)
+                {
+                    Board[(int)BoardSquare.A1] = NormalPiece.Empty;
+                    Board[(int)BoardSquare.D1] = NormalPiece.WhiteRook;
+                }
+                if (move.RookCastleSquare == BoardSquare.F8)
+                {
+                    Board[(int)BoardSquare.H8] = NormalPiece.Empty;
+                    Board[(int)BoardSquare.F8] = NormalPiece.WhiteRook;
+                }
+                if (move.RookCastleSquare == BoardSquare.D8)
+                {
+                    Board[(int)BoardSquare.A8] = NormalPiece.Empty;
+                    Board[(int)BoardSquare.D8] = NormalPiece.WhiteRook;
+                }
+            }
+
+            //Enpassant square
             EnPassantSquare = move.EnPassantSquare;
+
+            //Enpassant capture
             if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
             {
                 Board[(int)move.EnPassantCaptureSquare] = NormalPiece.Empty;
