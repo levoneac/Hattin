@@ -1,0 +1,7 @@
+Hattin/bin/**/*
+Hattin/obj/**/*
+.vscode
+*.pgn
+HattinB
+arenalinux_64bit_3.10beta
+backupHattin
