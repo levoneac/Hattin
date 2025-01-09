@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -121,12 +122,13 @@ namespace Hattin.Implementations.Controllers
             }
         }
         public void ReadLineThread(object? output)
-        {//fix: stop thread when engine quits
-            ((StringContainer)output).MyString = Console.ReadLine();
-        }
-        async public void StartListening()
         {
-            StringContainer input = new StringContainer("");
+            ((ConcurrentQueue<string>)output).Enqueue(Console.ReadLine());
+        }
+        public void StartListening()
+        {
+            ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();
+
             Thread? readThread = null;
             while (ReadFromCLI)
             {
@@ -135,13 +137,12 @@ namespace Hattin.Implementations.Controllers
                 {
                     //havent found another way to make this non blocking yet
                     readThread = new Thread(ReadLineThread);
-                    readThread.Start(input);
+                    readThread.Start(messageQueue);
                 }
 
-                if (input.MyString.Length > 0)
+                if (messageQueue.TryDequeue(out string? command))
                 {
-                    SendOutput(ExecuteCommand(input.MyString));
-                    input.MyString = "";
+                    SendOutput(ExecuteCommand(command));
                 }
 
 
@@ -154,7 +155,6 @@ namespace Hattin.Implementations.Controllers
                 }
             }
         }
-        //Every time there is a new move targeting the king through a pawn, it is treated as a direct attack
 
         //Still blocking :(
         //byte[] buffer = new byte[1024];
