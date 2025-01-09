@@ -31,7 +31,6 @@ namespace Hattin.Implementations.Controllers
             IsReady = false;
         }
 
-        //Testing the cancellation token setup
         public string[] ExecuteCommand(string? input)
         {
             if (input is null || input == "")
@@ -67,17 +66,12 @@ namespace Hattin.Implementations.Controllers
             }
             if (GUICommands.CommandFromGUI == UCICommandFromGUI.Position)
             {
-                //todo: handle castle and enpassant
                 //Optimization: make incremental if next move is continuing from prev position
-                Engine.Board.ProcessFEN();
+
+                Engine.Board.ProcessFEN(); //resets the board to startpos
                 foreach (string moveString in GUICommands.Moves)
                 {
-                    //Needs to update pins and checks
                     Engine.Board.MovePiece(Move.GetMoveFromAlgebra(moveString, Engine.Board));
-
-                    //Engine.Board.PieceProperties.UpdateAllAttackSquares(Engine.MoveGenerator.GenerateAllAttackedSquares());
-                    //Engine.Board.PrintAttackTotals(Engine.Board.SideToMove);
-                    //Engine.Board.PrintBoard(Engine.Board.SideToMove);
                 }
             }
             if (GUICommands.CommandFromGUI == UCICommandFromGUI.Go)
@@ -121,10 +115,12 @@ namespace Hattin.Implementations.Controllers
                 }
             }
         }
+
         public void ReadLineThread(object? output)
         {
             ((ConcurrentQueue<string>)output).Enqueue(Console.ReadLine());
         }
+
         public void StartListening()
         {
             ConcurrentQueue<string> messageQueue = new ConcurrentQueue<string>();

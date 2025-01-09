@@ -8,6 +8,9 @@ namespace Hattin.Events.EventArguments
         public BoardSquare FromSquare { get; private set; }
         public BoardSquare DestSquare { get; private set; }
         public NormalPiece PromoteTo { get; private set; }
+        public BoardSquare RookCastleSquare { get; private set; }
+        public BoardSquare EnPassantSquare { get; private set; }
+        public BoardSquare EnPassantCaptureSquare { get; private set; }
 
         public NewMoveEventArgs(Move move)
         {
@@ -15,13 +18,9 @@ namespace Hattin.Events.EventArguments
             FromSquare = move.FromSquare;
             DestSquare = move.DestSquare;
             PromoteTo = move.PromoteTo;
-        }
-        public NewMoveEventArgs(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare, NormalPiece promoteTo)
-        {
-            Piece = piece;
-            FromSquare = fromSquare;
-            DestSquare = destSquare;
-            PromoteTo = promoteTo;
+            RookCastleSquare = move.RookCastleSquare;
+            EnPassantSquare = move.EnPassantSquare;
+            EnPassantCaptureSquare = move.EnPassantCaptureSquare;
         }
     }
 }

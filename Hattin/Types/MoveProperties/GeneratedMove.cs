@@ -3,16 +3,12 @@ using Hattin.Utils;
 
 namespace Hattin.Types
 {
-    public class GeneratedMove : Move
+    public record GeneratedMove : Move
     {
         public List<List<AttackProjection>> AttackedSquares { get; set; }
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
-        public bool IsCheck { get; set; }//be aware of edgecases from promotion
-        public List<BoardSquare> CheckPath { get; set; }
-        //isMate?
-        //isBlocking??
-        //
+        public bool IsCheck { get; set; }
 
         public GeneratedMove() : base()
         {
@@ -20,7 +16,6 @@ namespace Hattin.Types
             IsPromotion = false;
             IsCapture = false;
             IsCheck = false;
-            CheckPath = [];
         }
 
         public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares,
@@ -42,13 +37,9 @@ namespace Hattin.Types
                 if (kingAttack.AsPiece != NormalPiece.Empty && kingAttack.XRayLevel == 0)
                 {
                     IsCheck = true;
-                    //CheckPath = SquareRange.GetSquaresBetween(fromSquare, kingAttack.Square, true);
                     break;
                 }
             }
-            CheckPath ??= new List<BoardSquare>();
-
-            //var checks = attackedSquares.Select(i => i.PieceOnSquare == opponentKingColor);
         }
     }
 }

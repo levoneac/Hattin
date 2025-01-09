@@ -1,38 +1,38 @@
-using System.Collections.ObjectModel;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.Squares;
-using Hattin.Interfaces;
 using Hattin.Utils;
 
 namespace Hattin.Types
 {
     public class PieceList
     {
-        //each piecetype has an array of boardsquares that tells you where a piece like that can be found
+        //each piecetype has an array(based on NormalPiece enum) of boardsquares that tells you where a piece like that can be found
         private List<BoardSquare>[] piecePositions;
-        public ReadOnlyCollection<ReadOnlyCollection<BoardSquare>> PiecePositions
-        {
-            get { return piecePositions.Select(list => list.AsReadOnly()).ToList().AsReadOnly(); } //looks slow ngl
-        }
+        public List<BoardSquare>[] PiecePositions { get; }
 
-        //Tracks which color has a piece on each square
-        private List<SideToMove> captureAndBlockingSquares; //switch to array
-        private List<AttackInformation> attackInformation; //switch to array
+        //an array of length 64 that tracks which side has a piece on each square (can also use squareContents and convert the piece to color)
+        private SideToMove[] captureAndBlockingSquares;
+        //an array of length 64 that contains total attack from white and black for each square (as well as a reference of those attacks)
+        private AttackInformation[] attackInformation;
+        //an array of length 64 that contains the piece on that square
         private NormalPiece[] squareContents;
-        private List<AttackProjection>[] attackingSquares; //an array of length 64 that contains lists of sqaures attacked from it
-        private List<AttackProjection>[] attackedFrom; //an array of lenght 64 that contains lists of where the source of the attack comes from
+        //an array of length 64 that contains lists of sqaures attacked from it
+        private List<AttackProjection>[] attackingSquares;
+        //an array of lenght 64 that contains lists of where the source of the attack comes from
+        private List<AttackProjection>[] attackedFrom;
         public bool AttackSquaresInitialized { get; private set; }
-
-
+        //unused for now
         public List<BitBoard>[] PiecePositionsBitBoard { get; set; }
+        //Total number of unique pieces
         public int NumPieces { get; private set; }
+
         public PieceList()
         {
             NumPieces = Enum.GetNames(typeof(NormalPiece)).Length;
             piecePositions = new List<BoardSquare>[NumPieces];
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
-            captureAndBlockingSquares = new List<SideToMove>(64);
-            attackInformation = new List<AttackInformation>(64);
+            captureAndBlockingSquares = new SideToMove[64];
+            attackInformation = new AttackInformation[64];
             squareContents = new NormalPiece[64];
             attackingSquares = new List<AttackProjection>[64];
             attackedFrom = new List<AttackProjection>[64];
@@ -45,8 +45,8 @@ namespace Hattin.Types
 
             for (int i = 0; i < 64; i++)
             {
-                captureAndBlockingSquares.Add(SideToMove.None);
-                attackInformation.Add(new AttackInformation { AttackTotals = new ColorCount(), Data = new List<AttackProjection>() });
+                captureAndBlockingSquares[i] = SideToMove.None;
+                attackInformation[i] = new AttackInformation { AttackTotals = new ColorCount(), Data = new List<AttackProjection>() };
                 squareContents[i] = NormalPiece.Empty;
                 attackingSquares[i] = new List<AttackProjection>();
                 attackedFrom[i] = new List<AttackProjection>();
@@ -115,6 +115,8 @@ namespace Hattin.Types
             }
             AttackSquaresInitialized = true;
         }
+
+        //Gets the squares the king is checked from
         public List<BoardSquare> GetCheckSource(SideToMove sideToMove)
         {
             List<BoardSquare> attacks = new List<BoardSquare>();
@@ -135,6 +137,7 @@ namespace Hattin.Types
             return attacks;
         }
 
+        //Gets the source squares of the attacks on the given square
         public List<BoardSquare> GetAttackSource(BoardSquare attackedSquare, int maxXRayLevel = 0)
         {
             List<BoardSquare> attacks = new List<BoardSquare>();
@@ -186,19 +189,6 @@ namespace Hattin.Types
                 }
             }
             return pinnedSquares;
-        }
-
-        private void FlushAttackInformation()
-        {
-            for (int i = 0; i < 64; i++)
-            {
-                attackInformation[i].Data.Clear();
-                attackInformation[i].AttackTotals.Black = 0;
-                attackInformation[i].AttackTotals.White = 0;
-                attackedFrom[i].Clear();
-                attackingSquares[i].Clear();
-            }
-            AttackSquaresInitialized = false;
         }
 
         //assumes that move is already verified from caller
@@ -366,6 +356,21 @@ namespace Hattin.Types
             return new PieceTotals(blackTotal, whiteTotal);
         }
 
+        //Clears out the attack piecelists
+        private void FlushAttackInformation()
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                attackInformation[i].Data.Clear();
+                attackInformation[i].AttackTotals.Black = 0;
+                attackInformation[i].AttackTotals.White = 0;
+                attackedFrom[i].Clear();
+                attackingSquares[i].Clear();
+            }
+            AttackSquaresInitialized = false;
+        }
+
+        //Cleans out all the piecelists
         public void ClearPieceList()
         {
             foreach (List<BoardSquare> listOfPieces in piecePositions)

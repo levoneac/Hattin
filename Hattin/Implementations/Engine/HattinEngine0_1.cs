@@ -19,6 +19,7 @@ namespace Hattin.Implementations.Engine
             PositionEvaluator = positionEvaluator;
         }
 
+        //Gets the constraints based on the current boardstate
         private Func<List<GeneratedMove>, List<GeneratedMove>>? GetConstraintFuncs()
         {
             MoveConstraintBuilder.Reset();
@@ -29,6 +30,8 @@ namespace Hattin.Implementations.Engine
             MoveConstraintBuilder.SetPinRestriction();
             return MoveConstraintBuilder.GetConstraintFunction();
         }
+
+        //Mostly for testingpurposes still
         public GeneratedMove GetNextMove()
         {
             Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
@@ -62,6 +65,7 @@ namespace Hattin.Implementations.Engine
             }
             return chosenMove;
         }
+
         //Testing move gen
         public void PlayChosenMove(GeneratedMove chosenMove)
         {
@@ -76,6 +80,7 @@ namespace Hattin.Implementations.Engine
             }
         }
 
+        //Autoplay test
         public void PlayUntillPly(object? plyCount)
         {
             while (Board.PlyCounter <= (int)plyCount)
@@ -101,6 +106,7 @@ namespace Hattin.Implementations.Engine
             //}
         }
 
+        //Wrapper for void AnalyzeCurrent(AnalyzedPosition analyzedPosition), needed for Thread instance
         public void AnalyzeCurrent(object? options)
         {
             if (options is null || options.GetType() != typeof(AnalyzedPosition))

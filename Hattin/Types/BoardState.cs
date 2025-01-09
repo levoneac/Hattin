@@ -21,8 +21,8 @@ namespace Hattin.Types
             private set { board = value; }
         }
 
-        private PieceList pieceProperties; //Array of lenght of NormalPiece enum, with each index refering to a list of squares those pieces occupy
-        public PieceList PieceProperties //should not really have a public interaction
+        private PieceList pieceProperties;
+        public PieceList PieceProperties
         {
             get { return pieceProperties; }
             private set { pieceProperties = value; }
@@ -105,7 +105,7 @@ namespace Hattin.Types
             positionHashes = new Dictionary<int, int>();
 
             NewMoveEvent += PrintMove;
-
+            //NewMoveEvent += UpdatePositionHashes;
             ProcessFEN(startingFEN);
         }
 
@@ -114,8 +114,7 @@ namespace Hattin.Types
             return HashCode.Combine(Board, EnPassantSquare, CastleRights, SideToMove);
         }
 
-        //Add event so this is called for every move
-        private void UpdatePositionHashes()
+        private void UpdatePositionHashes(object? sender, NewMoveEventArgs eventArgs)
         {
             int currentPositionHash = GetPositionHash();
             if (positionHashes.TryGetValue(currentPositionHash, out int current))
@@ -133,10 +132,7 @@ namespace Hattin.Types
         }
         public virtual void OnNewMoveEvent(NewMoveEventArgs eventArgs)
         {
-            if (NewMoveEvent is not null)//if there are any subscribers
-            {
-                NewMoveEvent.Invoke(this, eventArgs);
-            }
+            NewMoveEvent?.Invoke(this, eventArgs);
         }
 
         public void PrintMove(object? sender, NewMoveEventArgs eventArgs)
@@ -146,8 +142,6 @@ namespace Hattin.Types
 
         public void UpdateCastleRights(Move move)
         {
-            //SideToMove pieceColor = move.Piece.ToColor();
-            //NormalPieceValue piece = move.Piece.ToValue();
             BoardSquare pieceSquare = move.FromSquare;
             if (pieceSquare == BoardSquare.E1)
             {
@@ -175,11 +169,10 @@ namespace Hattin.Types
             }
         }
 
-        public void MovePiece(Move move) //NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare
+        public void MovePiece(Move move)
         {
             pieceProperties.MovePiece(move);
             if (castleRights != 0) { UpdateCastleRights(move); }
-            //LastestMove = new Move(piece, fromSquare, toSquare);
 
             //120 based array for some reason
             Board[(int)move.FromSquare] = NormalPiece.Empty;
@@ -218,27 +211,28 @@ namespace Hattin.Types
             {
                 Board[(int)move.EnPassantCaptureSquare] = NormalPiece.Empty;
             }
-            moveHistory.Add(move);
 
             PlyCounter++;
-
-            //if(moveProperties.captureOrPawnmove){PliesWithoutCapture++} else{PliesWithoutCapture = 0}
+            if (PieceProperties.GetPieceOnSquare(move.DestSquare) != NormalPiece.Empty) { PliesWithoutCapture++; } else { PliesWithoutCapture = 0; }
 
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
-            //EnpassantSquare = moveProperties.enpassantSquare;
+            moveHistory.Add(move);
             NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             OnNewMoveEvent(eventArgs);
+        }
+
+        public void UndoMove(Move move)
+        {
+            //ALT. 1: Use FEN to restore the boardstate (loses detailed move history outside the info in the FEN strings)
+            //ALT. 2: Restart the board and play through the game again (Pointless, since the board is restarted through FEN anyway)
+            //ALT. 3: Undo the last move (Fastest probably, but difficult to get right)
+            //ALT. 4: Copy the current state into an array (same as FEN? but uses more space)
         }
 
         public ReadOnlyCollection<Move> GetMoveHistory()
         {
             return moveHistory.AsReadOnly();
-        }
-
-        private void UpdatePieceBalance()
-        {
-
         }
 
         private void FlushBoard()
@@ -372,7 +366,6 @@ namespace Hattin.Types
                         int realPosition = Utils.Conversions.SquareConversions.Array64To120[boardPointer];
                         Board[realPosition] = (NormalPiece)piece;
                         PieceProperties.AddPiece((NormalPiece)piece, (BoardSquare)realPosition);
-                        //Console.WriteLine($"{(BoardSquare)realPosition}: {(NormalPiece)piece}, ({(int)boardPointer})");
                         boardPointer++;
                         elemsInRank++;
                     }
@@ -399,7 +392,6 @@ namespace Hattin.Types
                     changeRankNextIter = true;
                 }
 
-                //Console.WriteLine("{0}, {1}: ", boardPointer, changeRankNextIter);
             }
 
             //player to move
@@ -489,13 +481,6 @@ namespace Hattin.Types
             {
                 throw new ArgumentException($"Plies without capture value of {FENparts[5]} is not valid", nameof(FEN));
             }
-            UpdatePositionHashes();
-
-            //there are a few things missing from FEN. Like: if its check or if its mate
-            //p = UpdateGameProperties()
-            //GameResult = p.GameResult;
         }
-
-
     }
 }

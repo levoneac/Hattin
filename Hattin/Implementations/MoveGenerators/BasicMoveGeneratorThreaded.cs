@@ -8,11 +8,8 @@ using Hattin.Utils;
 
 namespace Hattin.Implementations.MoveGenerators
 {
-    //TODO:
-    //refactor attackedSquares-methods to automatically choose sliding or jumping
     public class BasicMoveGeneratorThreaded : IMoveGenerator
     {
-        public delegate bool SearchConstraint(GeneratedMove move);
         public BoardState Board { get; private set; } //make into interface later
         public int LastGeneratedPly { get; private set; }
         public BasicMoveGeneratorThreaded(BoardState board)
@@ -62,6 +59,10 @@ namespace Hattin.Implementations.MoveGenerators
             }
             return possibleMoves;
         }
+
+        //Generates squares that are attacked by sliding pieces. The outer list contains a list of squares/attacks.
+        //This means that at index 0 in the outer list, for example, the attacked squares between D4 and H8 for a bishop at C3 are in the inner list
+        //The next index could contain the attacks from C3 to A1 etc.
 
         //previousPosition is used as a way to ignore the piece on the given square in the board state
         //blockedSquare is used to signal that the given square is now blocked (useful for castling when the king now blocks the rook on the other side)
@@ -114,6 +115,7 @@ namespace Hattin.Implementations.MoveGenerators
             return attackedSquares;
         }
 
+        //Basic kingmoves and horsemoves
         public List<GeneratedMove> GenerateJumpingMoves(NormalPiece piece, SideToMove opponentColor)
         {
             List<GeneratedMove> possibleMoves = [];
@@ -144,6 +146,9 @@ namespace Hattin.Implementations.MoveGenerators
             }
             return possibleMoves;
         }
+
+        //Generates squares that are attacked by jumping pieces. The outer list contains a list of squares/attacks.
+        //For jumping pieces the inner list will always just be 1 element
         public List<List<AttackProjection>> GenerateJumpingAttackedSquares(NormalPiece piece, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare previousPosition, BoardSquare blockedSquare = BoardSquare.NoSquare)
         {
             List<List<AttackProjection>> attackedSquares = [];
@@ -155,8 +160,11 @@ namespace Hattin.Implementations.MoveGenerators
                 if (positionAfterOffset == blockedSquare) { continue; }
 
                 if ((BoardSquare)positionAfterOffset.ToBase64Int() == BoardSquare.NoSquare) { continue; }
+
+                //The source square
                 List<AttackProjection> curMove = new List<AttackProjection>([new AttackProjection(piece, currentPosition, piece, SquareInteraction.OwnSquare, curSequence, false)]);
 
+                //Check the contents of the square that is move to and act accordingly
                 SideToMove colorOfPieceOnSquare = Board.PieceProperties.GetColorOfPieceOnSquare(positionAfterOffset);
                 NormalPiece pieceOnSquare = Board.PieceProperties.GetPieceOnSquare(positionAfterOffset);
                 if (colorOfPieceOnSquare == opponentColor)
@@ -177,7 +185,7 @@ namespace Hattin.Implementations.MoveGenerators
             return attackedSquares;
         }
 
-        //nearing spaghetti
+        //Generates possible pawnmoves
         public List<GeneratedMove> GeneratePawnMoves()
         {
             List<GeneratedMove> possibleMoves = [];
@@ -225,7 +233,7 @@ namespace Hattin.Implementations.MoveGenerators
                         NormalPiece rookColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
                         attackedSquares.AddRange(GenerateSlidingAttackedSquares(rookColor, opponentColor, positionAfterOffset, pawnPosition));
 
-                        //Queen
+                        //Queen (combine the rook and bishop)
                         //NormalPiece queenColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
                         //attackedSquares.AddRange(GenerateSlidingAttackedSquares(queenColor, opponentColor, positionAfterOffset, pawnPosition));
                     }
@@ -270,7 +278,8 @@ namespace Hattin.Implementations.MoveGenerators
             return possibleMoves;
         }
 
-        //TODO: Handle promotions
+        //Generates squares that are attacked by pawns. The outer list contains a list of squares/attacks.
+        //The inner list contains 1 or 2 elements in this case
         public List<List<AttackProjection>> GeneratePawnAttackedSquares(NormalPiece pawnColor, SideToMove opponentColor, BoardSquare currentPosition, BoardSquare placeholder)
         {
             List<List<AttackProjection>> attackedSquares = [];
@@ -344,7 +353,6 @@ namespace Hattin.Implementations.MoveGenerators
             return GenerateSlidingMoves(pieceColor, opponentColor);
         }
 
-        //MINOR BUG: H1 and H8 still has a rook (PieceOnSquare property) in them after castling.
         public List<List<AttackProjection>> GenerateCastleAttackSquares(NormalPiece king, NormalPiece rook, BoardSquare kingDest, BoardSquare rookDest, SideToMove opponentColor)
         {
             List<List<AttackProjection>> attackProjections = GenerateSlidingAttackedSquares(rook, opponentColor, rookDest, Board.PieceProperties.GetPiecePositions(king)[0], kingDest); //rook moves
@@ -476,6 +484,7 @@ namespace Hattin.Implementations.MoveGenerators
             return possibleMoves;
         }
 
+        //Combines castle and normal moves
         public List<GeneratedMove> GenerateKingMoves()
         {
             NormalPiece pieceColor = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
@@ -486,7 +495,7 @@ namespace Hattin.Implementations.MoveGenerators
             return moves;
         }
 
-        //Slower than non-threaded
+        [Obsolete("Slower than non-Threaded")]
         public List<List<AttackProjection>> GenerateAllAttackedSquaresThreaded()
         {
             List<List<AttackProjection>> attackProjections = new List<List<AttackProjection>>();
@@ -599,6 +608,7 @@ namespace Hattin.Implementations.MoveGenerators
             List<ManualResetEvent> events = new List<ManualResetEvent>();
             List<Func<List<GeneratedMove>>> jobs = new List<Func<List<GeneratedMove>>>([GeneratePawnMoves, GenerateBishopMoves, GenerateKnightMoves, GenerateRookMoves, GenerateQueenMoves, GenerateKingMoves]);
 
+            //Add the generation to the threadpool
             foreach (Func<List<GeneratedMove>> job in jobs)
             {
                 ManualResetEvent ensureComplete = new ManualResetEvent(false);

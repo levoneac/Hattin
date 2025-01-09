@@ -1,9 +1,8 @@
 namespace Hattin.Utils
 {
-    //Could maybe be made into List extensions instead?
+    //Found out that this is the same as List<T>.intersect() :(
     public static class ListMethods
     {
-        //Same as List<T>.intersect() :(
         public static List<T> GetArrayOverlap<T>(List<T> array1, List<T> array2) where T : notnull
         {
             Dictionary<T, int> seen = new Dictionary<T, int>();

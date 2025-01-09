@@ -5,6 +5,7 @@ using Hattin.Utils;
 
 namespace Hattin.Implementations.MoveConstraintBuilders
 {
+    //Builds a set of functions that filter out moves based on enabled constraints
     public class BasicMoveConstraintBuilder : IMoveConstraintBuilder
     {
         private List<Func<GeneratedMove, bool>> CurrentCollection { get; set; }
