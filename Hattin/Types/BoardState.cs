@@ -201,12 +201,12 @@ namespace Hattin.Types
                 if (move.RookCastleSquare == BoardSquare.F8)
                 {
                     Board[(int)BoardSquare.H8] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.F8] = NormalPiece.WhiteRook;
+                    Board[(int)BoardSquare.F8] = NormalPiece.BlackRook;
                 }
                 if (move.RookCastleSquare == BoardSquare.D8)
                 {
                     Board[(int)BoardSquare.A8] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.D8] = NormalPiece.WhiteRook;
+                    Board[(int)BoardSquare.D8] = NormalPiece.BlackRook;
                 }
             }
 
