@@ -228,6 +228,8 @@ namespace Hattin.Types
             //ALT. 2: Restart the board and play through the game again (Pointless, since the board is restarted through FEN anyway)
             //ALT. 3: Undo the last move (Fastest probably, but difficult to get right)
             //ALT. 4: Copy the current state into an array (same as FEN? but uses more space)
+
+
         }
 
         public ReadOnlyCollection<Move> GetMoveHistory()
@@ -414,7 +416,8 @@ namespace Hattin.Types
             {
                 foreach (char elem in FENparts[2])
                 {
-                    if (elem == 'K')
+                    if (elem == '-') { continue; }
+                    else if (elem == 'K')
                     {
                         CastleRights |= CastleRights.WhiteKingsideCastle;
                     }

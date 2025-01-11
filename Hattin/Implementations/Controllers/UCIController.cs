@@ -67,8 +67,15 @@ namespace Hattin.Implementations.Controllers
             if (GUICommands.CommandFromGUI == UCICommandFromGUI.Position)
             {
                 //Optimization: make incremental if next move is continuing from prev position
+                if (GUICommands.FEN is not null)
+                {
+                    Engine.Board.ProcessFEN(GUICommands.FEN);
+                }
+                else
+                {
+                    Engine.Board.ProcessFEN(); //resets the board to startpos
+                }
 
-                Engine.Board.ProcessFEN(); //resets the board to startpos
                 foreach (string moveString in GUICommands.Moves)
                 {
                     Engine.Board.MovePiece(Move.GetMoveFromAlgebra(moveString, Engine.Board));

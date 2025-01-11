@@ -7,8 +7,7 @@ namespace Hattin.Types
     public class PieceList
     {
         //each piecetype has an array(based on NormalPiece enum) of boardsquares that tells you where a piece like that can be found
-        private List<BoardSquare>[] piecePositions;
-        public List<BoardSquare>[] PiecePositions { get; }
+        public List<BoardSquare>[] PiecePositions { get; private set; }
 
         //an array of length 64 that tracks which side has a piece on each square (can also use squareContents and convert the piece to color)
         private SideToMove[] captureAndBlockingSquares;
@@ -29,7 +28,7 @@ namespace Hattin.Types
         public PieceList()
         {
             NumPieces = Enum.GetNames(typeof(NormalPiece)).Length;
-            piecePositions = new List<BoardSquare>[NumPieces];
+            PiecePositions = new List<BoardSquare>[NumPieces];
             PiecePositionsBitBoard = new List<BitBoard>[NumPieces];
             captureAndBlockingSquares = new SideToMove[64];
             attackInformation = new AttackInformation[64];
@@ -39,7 +38,7 @@ namespace Hattin.Types
             AttackSquaresInitialized = false;
             for (int i = 0; i < NumPieces; i++)
             {
-                piecePositions[i] = new List<BoardSquare>();
+                PiecePositions[i] = new List<BoardSquare>();
                 //PiecePositionsBitBoard[i] = new List<BitBoard>();
             }
 
@@ -55,7 +54,7 @@ namespace Hattin.Types
 
         public List<BoardSquare> GetPiecePositions(NormalPiece pieceType)
         {
-            return piecePositions[(int)pieceType];
+            return PiecePositions[(int)pieceType];
         }
 
         public SideToMove GetColorOfPieceOnSquare(BoardSquare square)
@@ -194,7 +193,7 @@ namespace Hattin.Types
         //assumes that move is already verified from caller
         public void AddPiece(NormalPiece piece, BoardSquare square)
         {
-            piecePositions[(int)piece].Add(square);
+            PiecePositions[(int)piece].Add(square);
 
             int squareArrayPos = square.ToBase64Int();
             captureAndBlockingSquares[squareArrayPos] = piece.ToColor();
@@ -212,7 +211,7 @@ namespace Hattin.Types
             }
 
             //Check if the piece actually exists
-            int indexOfFromSquare = piecePositions[(int)move.Piece].IndexOf(move.FromSquare); //LINQ should be side effect free, so you cant change inplace afaik
+            int indexOfFromSquare = PiecePositions[(int)move.Piece].IndexOf(move.FromSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)
             {
                 throw new ArgumentOutOfRangeException(nameof(move.Piece), $"There is no {move.Piece} on square {move.FromSquare} (moving to {move.DestSquare})");
@@ -232,7 +231,7 @@ namespace Hattin.Types
             //If not then move the piece as normal
             else
             {
-                piecePositions[(int)move.Piece][indexOfFromSquare] = move.DestSquare;
+                PiecePositions[(int)move.Piece][indexOfFromSquare] = move.DestSquare;
 
                 int fromSquareArrayPos = move.FromSquare.ToBase64Int();
                 int toSquareArrayPos = move.DestSquare.ToBase64Int();
@@ -276,12 +275,12 @@ namespace Hattin.Types
                 {
                     rookFromSquare = BoardSquare.A8;
                 }
-                int indexOfRookSquare = piecePositions[(int)rook].IndexOf(rookFromSquare);
+                int indexOfRookSquare = PiecePositions[(int)rook].IndexOf(rookFromSquare);
                 if (indexOfRookSquare == -1)
                 {
                     throw new ArgumentOutOfRangeException(nameof(move.RookCastleSquare), $"There is no {rook} on square {rookFromSquare} (moving to {move.RookCastleSquare})");
                 }
-                piecePositions[(int)rook][indexOfRookSquare] = move.RookCastleSquare;
+                PiecePositions[(int)rook][indexOfRookSquare] = move.RookCastleSquare;
 
                 int rookFromSquareArrayPos = rookFromSquare.ToBase64Int();
                 int rookToSquareArrayPos = move.RookCastleSquare.ToBase64Int();
@@ -297,7 +296,7 @@ namespace Hattin.Types
         //assumes that move is already verified from caller
         public void RemovePiece(NormalPiece piece, BoardSquare square)
         {
-            if (!piecePositions[(int)piece].Remove(square))
+            if (!PiecePositions[(int)piece].Remove(square))
             {
                 throw new ArgumentOutOfRangeException(nameof(piece), $"There is no {piece} on square {square}");
             }
@@ -312,7 +311,7 @@ namespace Hattin.Types
             int blackTotal = 0;
             int whiteTotal = 0;
 
-            for (int i = 0; i < piecePositions.Length; i++)
+            for (int i = 0; i < PiecePositions.Length; i++)
             {
                 int amountOfPiece = PiecePositions[i].Count;
                 switch ((NormalPiece)i) //switch to using ToValue and ToColor extensions maybe
@@ -373,7 +372,7 @@ namespace Hattin.Types
         //Cleans out all the piecelists
         public void ClearPieceList()
         {
-            foreach (List<BoardSquare> listOfPieces in piecePositions)
+            foreach (List<BoardSquare> listOfPieces in PiecePositions)
             {
                 listOfPieces.Clear();
             }
