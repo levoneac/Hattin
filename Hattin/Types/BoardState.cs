@@ -183,7 +183,7 @@ namespace Hattin.Types
                 Board[(int)move.RookCastleFromSquare] = NormalPiece.Empty;
             }
 
-            //Save prev move data
+            //Save prev move data and state
             moveHistory.Push(new PlayedMove
             {
                 CastleRights = CastleRights,
@@ -202,8 +202,6 @@ namespace Hattin.Types
                 RookDestSquare = move.RookCastleToSquare,
             });
 
-            pieceProperties.MovePiece(move);
-
             if (castleRights != 0) { UpdateCastleRights(move); }
 
             //Enpassant square
@@ -216,10 +214,13 @@ namespace Hattin.Types
             }
 
             PlyCounter++;
-            if (PieceProperties.GetPieceOnSquare(move.DestSquare) != NormalPiece.Empty) { PliesWithoutCapture++; } else { PliesWithoutCapture = 0; }
+            if (PieceProperties.GetPieceOnSquare(move.DestSquare) == NormalPiece.Empty || move.Piece.ToValue() != NormalPieceValue.Pawn)
+            { PliesWithoutCapture++; }
+            else { PliesWithoutCapture = 0; }
 
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
+            pieceProperties.MovePiece(move);
             NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             OnNewMoveEvent(eventArgs);
         }
@@ -245,7 +246,7 @@ namespace Hattin.Types
                 Board[(int)move.RookSourceSquare] = PieceProperties.GetPieceOnSquare(move.RookDestSquare);
                 Board[(int)move.RookDestSquare] = NormalPiece.Empty;
             }
-            PieceProperties.UndoMove(move, moveHistory);
+            PieceProperties.UndoMove(move);
             CastleRights = move.CastleRights;
             EnPassantSquare = move.EnPassantSquare;
             if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
@@ -271,6 +272,7 @@ namespace Hattin.Types
             SideToMove = SideToMove.White;
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = 0;
+            moveHistory.Clear();
         }
         public void PrintBoard(SideToMove perspective, bool moreInfo = false)
         {

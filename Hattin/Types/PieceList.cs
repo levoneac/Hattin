@@ -124,9 +124,9 @@ namespace Hattin.Types
             foreach (AttackProjection attackSource in attackSources)
             {
                 bool directAttacks = attackingSquares[attackSource.Square.ToBase64Int()].Where(
-                    key => key.XRayLevel == 0 &&
-                    key.PieceOnSquare.ToValue() == NormalPieceValue.King &&
-                    !(king.ToColor() == key.AsPiece.ToColor())).Any();
+                    key => (key.XRayLevel == 0) &&
+                    (key.PieceOnSquare.ToValue() == NormalPieceValue.King) &&
+                    (key.PieceOnSquare.ToColor() != key.AsPiece.ToColor())).Any();
                 if (directAttacks)
                 {
                     attacks.Add(attackSource.Square);
@@ -280,7 +280,7 @@ namespace Hattin.Types
             }
         }
 
-        public void UndoMove(PlayedMove move, Stack<PlayedMove> hist)
+        public void UndoMove(PlayedMove move)
         {
             int indexOfFromSquare = PiecePositions[(int)move.PromotedToPiece].IndexOf(move.DestSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)

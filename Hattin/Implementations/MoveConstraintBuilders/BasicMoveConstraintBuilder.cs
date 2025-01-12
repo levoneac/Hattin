@@ -26,7 +26,7 @@ namespace Hattin.Implementations.MoveConstraintBuilders
         {
             NormalPiece king = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             BoardSquare kingSquare = Board.PieceProperties.GetPiecePositions(king)?[0] ?? throw new Exception($"The king went missing");
-            List<BoardSquare> checkingSources = Board.PieceProperties.GetCheckSource(Board.SideToMove);
+            List<BoardSquare> checkingSources = Board.PieceProperties.GetCheckSource(Board.SideToMove); //Double work, done before setting this constraint
             List<BoardSquare> checkAvertingSquares = new List<BoardSquare>();
             checkingSources.ForEach(sq => checkAvertingSquares.AddRange(SquareRange.GetSquaresBetween(sq, kingSquare, true)));
 
@@ -34,10 +34,12 @@ namespace Hattin.Implementations.MoveConstraintBuilders
 
             bool StopCheck(GeneratedMove move)
             {
-                if (checkAvertingSquares.Contains(move.DestSquare) && move.DestSquare != kingSquare)
+                //block with a piece if not doublecheck
+                if (checkAvertingSquares.Count == 1 && checkAvertingSquares.Contains(move.DestSquare) && move.DestSquare != kingSquare)
                 {
                     return true;
                 }
+                //run away
                 else if (move.Piece.ToValue() == NormalPieceValue.King)
                 {
                     return true;

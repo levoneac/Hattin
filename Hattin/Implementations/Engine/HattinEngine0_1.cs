@@ -108,7 +108,7 @@ namespace Hattin.Implementations.Engine
             if (generatedMoves.Count > 0)
             {
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
-                chosenMove = AlphaBetaSearch(new GeneratedMove(), Board, 0, 3, float.MinValue, float.MaxValue, Board.SideToMove).Move;
+                chosenMove = AlphaBetaSearch(new GeneratedMove(), Board, 0, 4, float.MinValue, float.MaxValue, Board.SideToMove).Move;
             }
             else
             {
