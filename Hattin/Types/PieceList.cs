@@ -255,35 +255,20 @@ namespace Hattin.Types
             }
 
             //if castle move, then move the rook to its new place
-            if (move.RookCastleSquare != BoardSquare.NoSquare)
+            if (move.RookCastleToSquare != BoardSquare.NoSquare && move.RookCastleFromSquare != BoardSquare.NoSquare)
             {
-                BoardSquare rookFromSquare = BoardSquare.NoSquare;
-                NormalPiece rook = move.Piece.ToColor() == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
-                if (move.RookCastleSquare == BoardSquare.F1)
-                {
-                    rookFromSquare = BoardSquare.H1;
-                }
-                if (move.RookCastleSquare == BoardSquare.D1)
-                {
-                    rookFromSquare = BoardSquare.A1;
-                }
-                if (move.RookCastleSquare == BoardSquare.F8)
-                {
-                    rookFromSquare = BoardSquare.H8;
-                }
-                if (move.RookCastleSquare == BoardSquare.D8)
-                {
-                    rookFromSquare = BoardSquare.A8;
-                }
-                int indexOfRookSquare = PiecePositions[(int)rook].IndexOf(rookFromSquare);
+                NormalPiece rook = GetPieceOnSquare(move.RookCastleFromSquare);
+
+                int indexOfRookSquare = PiecePositions[(int)rook].IndexOf(move.RookCastleFromSquare);
                 if (indexOfRookSquare == -1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(move.RookCastleSquare), $"There is no {rook} on square {rookFromSquare} (moving to {move.RookCastleSquare})");
+                    throw new ArgumentOutOfRangeException(nameof(move.RookCastleFromSquare), $"There is no {rook} on square {move.RookCastleFromSquare} (moving to {move.RookCastleToSquare})");
                 }
-                PiecePositions[(int)rook][indexOfRookSquare] = move.RookCastleSquare;
 
-                int rookFromSquareArrayPos = rookFromSquare.ToBase64Int();
-                int rookToSquareArrayPos = move.RookCastleSquare.ToBase64Int();
+                PiecePositions[(int)rook][indexOfRookSquare] = move.RookCastleToSquare;
+
+                int rookFromSquareArrayPos = move.RookCastleFromSquare.ToBase64Int();
+                int rookToSquareArrayPos = move.RookCastleToSquare.ToBase64Int();
 
                 captureAndBlockingSquares[rookFromSquareArrayPos] = SideToMove.None;
                 captureAndBlockingSquares[rookToSquareArrayPos] = rook.ToColor();

@@ -387,7 +387,7 @@ namespace Hattin.Implementations.MoveGenerators
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.WhiteKing, NormalPiece.WhiteRook, BoardSquare.G1, BoardSquare.F1, opponentColor);
-                        moves.Add(new GeneratedMove(NormalPiece.WhiteKing, BoardSquare.E1, BoardSquare.G1, attackProjections, rookCastleSquare: BoardSquare.F1));
+                        moves.Add(new GeneratedMove(NormalPiece.WhiteKing, BoardSquare.E1, BoardSquare.G1, attackProjections, rookCastleToSquare: BoardSquare.F1, rookCastleFromSquare: BoardSquare.H1));
                     }
 
                 }
@@ -405,7 +405,7 @@ namespace Hattin.Implementations.MoveGenerators
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.WhiteKing, NormalPiece.WhiteRook, BoardSquare.C1, BoardSquare.D1, opponentColor);
-                        moves.Add(new GeneratedMove(NormalPiece.WhiteKing, BoardSquare.E1, BoardSquare.C1, attackProjections, rookCastleSquare: BoardSquare.D1));
+                        moves.Add(new GeneratedMove(NormalPiece.WhiteKing, BoardSquare.E1, BoardSquare.C1, attackProjections, rookCastleToSquare: BoardSquare.D1, rookCastleFromSquare: BoardSquare.A1));
                     }
                 }
             }
@@ -425,7 +425,7 @@ namespace Hattin.Implementations.MoveGenerators
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.BlackKing, NormalPiece.BlackRook, BoardSquare.G8, BoardSquare.F8, opponentColor);
-                        moves.Add(new GeneratedMove(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.G8, attackProjections, rookCastleSquare: BoardSquare.F8));
+                        moves.Add(new GeneratedMove(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.G8, attackProjections, rookCastleToSquare: BoardSquare.F8, rookCastleFromSquare: BoardSquare.H8));
                     }
                 }
                 if (Board.CastleRights.HasFlag(CastleRights.BlackQueensideCastle))
@@ -442,7 +442,7 @@ namespace Hattin.Implementations.MoveGenerators
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.BlackKing, NormalPiece.BlackRook, BoardSquare.C8, BoardSquare.D8, opponentColor);
-                        moves.Add(new GeneratedMove(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.C8, attackProjections, rookCastleSquare: BoardSquare.D8));
+                        moves.Add(new GeneratedMove(NormalPiece.BlackKing, BoardSquare.E8, BoardSquare.C8, attackProjections, rookCastleToSquare: BoardSquare.D8, rookCastleFromSquare: BoardSquare.A8));
                     }
                 }
             }

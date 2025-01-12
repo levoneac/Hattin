@@ -171,37 +171,22 @@ namespace Hattin.Types
 
         public void MovePiece(Move move)
         {
-            pieceProperties.MovePiece(move);
-            if (castleRights != 0) { UpdateCastleRights(move); }
-
             //120 based array for some reason
             Board[(int)move.FromSquare] = NormalPiece.Empty;
             Board[(int)move.DestSquare] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
 
-            //Castle move (refactor maybe? used many times)
-            if (move.RookCastleSquare != BoardSquare.NoSquare)
+            //Castle move 
+            if (move.RookCastleToSquare != BoardSquare.NoSquare && move.RookCastleFromSquare != BoardSquare.NoSquare)
             {
-                if (move.RookCastleSquare == BoardSquare.F1)
-                {
-                    Board[(int)BoardSquare.H1] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.F1] = NormalPiece.WhiteRook;
-                }
-                if (move.RookCastleSquare == BoardSquare.D1)
-                {
-                    Board[(int)BoardSquare.A1] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.D1] = NormalPiece.WhiteRook;
-                }
-                if (move.RookCastleSquare == BoardSquare.F8)
-                {
-                    Board[(int)BoardSquare.H8] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.F8] = NormalPiece.BlackRook;
-                }
-                if (move.RookCastleSquare == BoardSquare.D8)
-                {
-                    Board[(int)BoardSquare.A8] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.D8] = NormalPiece.BlackRook;
-                }
+                Board[(int)move.RookCastleToSquare] = PieceProperties.GetPieceOnSquare(move.RookCastleFromSquare);
+                Board[(int)move.RookCastleFromSquare] = NormalPiece.Empty;
             }
+
+            pieceProperties.MovePiece(move);
+            if (castleRights != 0) { UpdateCastleRights(move); }
+
+            //Save prev move data
+
 
             //Enpassant square
             EnPassantSquare = move.EnPassantSquare;
@@ -228,6 +213,8 @@ namespace Hattin.Types
             //ALT. 2: Restart the board and play through the game again (Pointless, since the board is restarted through FEN anyway)
             //ALT. 3: Undo the last move (Fastest probably, but difficult to get right)
             //ALT. 4: Copy the current state into an array (same as FEN? but uses more space)
+
+
 
 
         }

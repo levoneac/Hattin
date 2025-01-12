@@ -1,9 +1,5 @@
 using System.Collections.Concurrent;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Xml;
-using Hattin.Extensions;
+using Hattin.Extensions.Move;
 using Hattin.Implementations.Parsers;
 using Hattin.Interfaces;
 using Hattin.Types;

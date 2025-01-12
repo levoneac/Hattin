@@ -11,8 +11,8 @@ namespace Hattin.Types
         public BoardSquare FromSquare { get; init; }
         public BoardSquare DestSquare { get; init; }
         public NormalPiece PromoteTo { get; set; }
-        //The square the rook is moved to
-        public BoardSquare RookCastleSquare { get; set; }
+        public BoardSquare RookCastleFromSquare { get; set; }
+        public BoardSquare RookCastleToSquare { get; set; }
         //The empty square
         public BoardSquare EnPassantSquare { get; set; }
         //The square with the pawn
@@ -24,18 +24,20 @@ namespace Hattin.Types
             FromSquare = BoardSquare.NoSquare;
             DestSquare = BoardSquare.NoSquare;
             PromoteTo = NormalPiece.Empty;
-            RookCastleSquare = BoardSquare.NoSquare;
+            RookCastleFromSquare = BoardSquare.NoSquare;
+            RookCastleToSquare = BoardSquare.NoSquare;
             EnPassantSquare = BoardSquare.NoSquare;
             EnPassantCaptureSquare = BoardSquare.NoSquare;
         }
 
-        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare, BoardSquare rookCastleSquare = BoardSquare.NoSquare,
+        public Move(NormalPiece piece, BoardSquare fromSquare, BoardSquare destSquare, BoardSquare rookCastleFromSquare = BoardSquare.NoSquare, BoardSquare rookCastleToSquare = BoardSquare.NoSquare,
             NormalPiece promoteTo = NormalPiece.Empty, BoardSquare enPassantSquare = BoardSquare.NoSquare, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare)
         {
             Piece = piece;
             FromSquare = fromSquare;
             DestSquare = destSquare;
-            RookCastleSquare = rookCastleSquare;
+            RookCastleFromSquare = rookCastleFromSquare;
+            RookCastleToSquare = rookCastleToSquare;
             PromoteTo = promoteTo;
             EnPassantSquare = enPassantSquare;
             EnPassantCaptureSquare = enPassantCaptureSquare;
@@ -77,32 +79,37 @@ namespace Hattin.Types
             }
 
             //Handle castle
-            BoardSquare rookCastleSquare = BoardSquare.NoSquare;
+            BoardSquare rookCastleFromSquare = BoardSquare.NoSquare;
+            BoardSquare rookCastleToSquare = BoardSquare.NoSquare;
             if (piece == NormalPiece.WhiteKing && fromSquare == BoardSquare.E1)
             {
                 if (toSquare == BoardSquare.G1)
                 {
-                    rookCastleSquare = BoardSquare.F1;
+                    rookCastleFromSquare = BoardSquare.H1;
+                    rookCastleToSquare = BoardSquare.F1;
                 }
                 else if (toSquare == BoardSquare.C1)
                 {
-                    rookCastleSquare = BoardSquare.D1;
+                    rookCastleFromSquare = BoardSquare.A1;
+                    rookCastleToSquare = BoardSquare.D1;
                 }
             }
             else if (piece == NormalPiece.BlackKing && fromSquare == BoardSquare.E8)
             {
                 if (toSquare == BoardSquare.G8)
                 {
-                    rookCastleSquare = BoardSquare.F8;
+                    rookCastleFromSquare = BoardSquare.H8;
+                    rookCastleToSquare = BoardSquare.F8;
                 }
                 else if (toSquare == BoardSquare.C8)
                 {
-                    rookCastleSquare = BoardSquare.D8;
+                    rookCastleFromSquare = BoardSquare.A8;
+                    rookCastleToSquare = BoardSquare.D8;
                 }
             }
-            if (rookCastleSquare != BoardSquare.NoSquare)
+            if (rookCastleToSquare != BoardSquare.NoSquare && rookCastleFromSquare != BoardSquare.NoSquare)
             {
-                return new Move(piece, fromSquare, toSquare, rookCastleSquare: rookCastleSquare);
+                return new Move(piece, fromSquare, toSquare, rookCastleToSquare: rookCastleToSquare, rookCastleFromSquare: rookCastleFromSquare);
             }
 
             //Handle set enpassant square
@@ -125,6 +132,16 @@ namespace Hattin.Types
 
             //standard move
             return new Move(piece, fromSquare, toSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare);
+        }
+
+        public static string ToAlgebra(Move move)
+        {
+            string promoteTo = "";
+            if (move.PromoteTo != NormalPiece.Empty)
+            {
+                promoteTo = ((FENSymbols)move.PromoteTo).ToString().ToLower();
+            }
+            return $"{move.FromSquare.ToString().ToLower()}{move.DestSquare.ToString().ToLower()}{promoteTo}";
         }
     }
 }
