@@ -17,6 +17,7 @@ namespace Hattin.Types
         public NormalPiece PromotedToPiece { get; init; }
         public BoardSquare FromSquare { get; init; }
         public BoardSquare DestSquare { get; init; }
+        public NormalPiece PieceOnDestSquare { get; init; }
         public BoardSquare RookSourceSquare { get; init; }
         public BoardSquare RookDestSquare { get; init; }
 

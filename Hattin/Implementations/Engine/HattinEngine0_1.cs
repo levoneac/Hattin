@@ -1,4 +1,5 @@
 using Hattin.Extensions.NormalPiece;
+using Hattin.Extensions.SideToMove;
 using Hattin.Interfaces;
 using Hattin.Types;
 using Hattin.Utils;
@@ -31,8 +32,61 @@ namespace Hattin.Implementations.Engine
             return MoveConstraintBuilder.GetConstraintFunction();
         }
 
-        //Mostly for testingpurposes still
-        public GeneratedMove GetNextMove()
+        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int maxDepth, float alpha, float beta, SideToMove player)
+        {
+            if (depth == maxDepth)
+            {
+                return new MoveEvaluation(move, PositionEvaluator.EvaluateCurrentPosition(currentBoard));
+            }
+            MoveEvaluation curEval;
+            GeneratedMove bestMove = new GeneratedMove();
+            if (player == SideToMove.White)
+            {
+                float bestValue = float.MinValue;
+                foreach (GeneratedMove curMove in GetPossibleMoves())
+                {
+                    Board.MovePiece(curMove);
+                    curEval = AlphaBetaSearch(curMove, currentBoard, depth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    Board.UndoLastMove();
+                    if (curEval.Evaluation > bestValue)
+                    {
+                        bestValue = curEval.Evaluation;
+                        bestMove = curMove;
+                    }
+
+                    if (bestValue >= beta)
+                    {
+                        break;
+                    }
+                }
+                return new MoveEvaluation(bestMove, bestValue);
+            }
+
+            if (player == SideToMove.Black)
+            {
+                float bestValue = float.MaxValue;
+                foreach (GeneratedMove curMove in GetPossibleMoves())
+                {
+                    Board.MovePiece(curMove);
+                    curEval = AlphaBetaSearch(curMove, currentBoard, depth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    Board.UndoLastMove();
+                    if (curEval.Evaluation < bestValue)
+                    {
+                        bestValue = curEval.Evaluation;
+                        bestMove = curMove;
+                    }
+
+                    if (bestValue <= alpha)
+                    {
+                        break;
+                    }
+                }
+                return new MoveEvaluation(bestMove, bestValue);
+            }
+            return new MoveEvaluation(new GeneratedMove(), 0);
+        }
+
+        public List<GeneratedMove> GetPossibleMoves()
         {
             Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
             if (Board.PieceProperties.GetCheckSource(Board.SideToMove).Count > 0)
@@ -43,11 +97,18 @@ namespace Hattin.Implementations.Engine
             {
                 Board.IsCheck = false;
             }
-            List<GeneratedMove> generatedMoves = MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
+            return MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
+        }
+
+        //Mostly for testingpurposes still
+        public GeneratedMove GetNextMove()
+        {
+            List<GeneratedMove> generatedMoves = GetPossibleMoves();
             GeneratedMove chosenMove;
             if (generatedMoves.Count > 0)
             {
-                chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
+                //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
+                chosenMove = AlphaBetaSearch(new GeneratedMove(), Board, 0, 3, float.MinValue, float.MaxValue, Board.SideToMove).Move;
             }
             else
             {

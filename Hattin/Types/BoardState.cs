@@ -183,8 +183,6 @@ namespace Hattin.Types
                 Board[(int)move.RookCastleFromSquare] = NormalPiece.Empty;
             }
 
-            pieceProperties.MovePiece(move);
-
             //Save prev move data
             moveHistory.Push(new PlayedMove
             {
@@ -199,9 +197,12 @@ namespace Hattin.Types
                 PromotedToPiece = pieceAfterMove,
                 FromSquare = move.FromSquare,
                 DestSquare = move.DestSquare,
+                PieceOnDestSquare = PieceProperties.GetPieceOnSquare(move.DestSquare),
                 RookSourceSquare = move.RookCastleFromSquare,
                 RookDestSquare = move.RookCastleToSquare,
             });
+
+            pieceProperties.MovePiece(move);
 
             if (castleRights != 0) { UpdateCastleRights(move); }
 
@@ -237,14 +238,14 @@ namespace Hattin.Types
         {
 
             Board[(int)move.FromSquare] = move.PromotedFromPiece;
-            Board[(int)move.DestSquare] = NormalPiece.Empty;
+            Board[(int)move.DestSquare] = move.PieceOnDestSquare;
 
             if (move.RookSourceSquare != BoardSquare.NoSquare && move.RookDestSquare != BoardSquare.NoSquare)
             {
                 Board[(int)move.RookSourceSquare] = PieceProperties.GetPieceOnSquare(move.RookDestSquare);
                 Board[(int)move.RookDestSquare] = NormalPiece.Empty;
             }
-            PieceProperties.UndoMove(move);
+            PieceProperties.UndoMove(move, moveHistory);
             CastleRights = move.CastleRights;
             EnPassantSquare = move.EnPassantSquare;
             if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)

@@ -7,7 +7,8 @@ namespace Hattin.Implementations.PositionEvaluators
     {
         public float EvaluateCurrentPosition(BoardState currentBoard)
         {
-            throw new NotImplementedException();
+            PieceTotals totals = currentBoard.PieceProperties.CalculatePieceTotals();
+            return totals.White - totals.Black;
         }
 
         public float EvaluatePositionAfterMove(Move newMove, BoardState currentBoard)

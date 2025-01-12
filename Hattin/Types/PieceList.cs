@@ -280,17 +280,21 @@ namespace Hattin.Types
             }
         }
 
-        public void UndoMove(PlayedMove move)
+        public void UndoMove(PlayedMove move, Stack<PlayedMove> hist)
         {
             int indexOfFromSquare = PiecePositions[(int)move.PromotedToPiece].IndexOf(move.DestSquare); //LINQ should be side effect free, so you cant change inplace afaik
             if (indexOfFromSquare == -1)
             {
-                throw new ArgumentOutOfRangeException(nameof(move.PromotedToPiece), $"There is no {move.PromotedToPiece} on square {move.FromSquare} (moving to {move.DestSquare})");
+                throw new ArgumentOutOfRangeException(nameof(move.PromotedToPiece), $"There is no {move.PromotedToPiece} on square {move.DestSquare} (moving back to {move.FromSquare})");
             }
 
             RemovePiece(move.PromotedToPiece, move.DestSquare);
             AddPiece(move.PromotedFromPiece, move.FromSquare);
 
+            if (move.PieceOnDestSquare != NormalPiece.Empty)
+            {
+                AddPiece(move.PieceOnDestSquare, move.DestSquare);
+            }
             if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
             {
                 NormalPiece pawn = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
@@ -399,13 +403,13 @@ namespace Hattin.Types
 
     public readonly struct PieceTotals
     {
-        public readonly int black;
-        public readonly int white;
+        public readonly int Black;
+        public readonly int White;
 
         public PieceTotals(int blackSum, int whiteSum)
         {
-            black = blackSum;
-            white = whiteSum;
+            Black = blackSum;
+            White = whiteSum;
         }
     }
 }
