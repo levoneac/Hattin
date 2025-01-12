@@ -33,6 +33,14 @@ namespace Hattin.Implementations.Controllers
             {
                 return [""];
             }
+
+            //debug
+            //if (input == "undo")
+            //{
+            //    Engine.Board.UndoLastMove();
+            //    Engine.Board.PrintBoard(Engine.Board.SideToMove);
+            //}
+
             UCICommand GUICommands = UCIParser.GetUCICommand(input);
 
             if (GUICommands.CommandFromGUI == UCICommandFromGUI.Uci)
@@ -88,7 +96,7 @@ namespace Hattin.Implementations.Controllers
                 EngineIsActive = true;
                 currentPosition = new AnalyzedPosition(numberOfOptions, Engine.Board.GetPositionHash(), cancellationToken.Token);
                 Engine.Board.PieceProperties.UpdateAllAttackSquares(Engine.MoveGenerator.GenerateAllAttackedSquares());
-                Engine.Board.PrintAttackTotals(SideToMove.White);
+                Engine.Board.PrintAttackTotals(Engine.Board.SideToMove);
                 engineThread = new Thread(Engine.AnalyzeCurrent);
                 engineThread.Start(currentPosition);
 

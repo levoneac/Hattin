@@ -35,7 +35,7 @@ namespace Hattin.Types
             private set { lastestMove = value; }
         }
 
-        private List<Move> moveHistory;
+        private Stack<PlayedMove> moveHistory;
 
 
         private int plyCounter;
@@ -95,7 +95,7 @@ namespace Hattin.Types
             Board = new NormalPiece[(int)squareIndexing];
             PieceProperties = new PieceList();
             LastestMove = new Move();
-            moveHistory = new List<Move>();
+            moveHistory = new Stack<PlayedMove>();
             PlyCounter = 0;
             PliesWithoutCapture = 0;
             SideToMove = SideToMove.White;
@@ -171,9 +171,10 @@ namespace Hattin.Types
 
         public void MovePiece(Move move)
         {
+            NormalPiece pieceAfterMove = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
             //120 based array for some reason
             Board[(int)move.FromSquare] = NormalPiece.Empty;
-            Board[(int)move.DestSquare] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
+            Board[(int)move.DestSquare] = pieceAfterMove;
 
             //Castle move 
             if (move.RookCastleToSquare != BoardSquare.NoSquare && move.RookCastleFromSquare != BoardSquare.NoSquare)
@@ -183,10 +184,26 @@ namespace Hattin.Types
             }
 
             pieceProperties.MovePiece(move);
-            if (castleRights != 0) { UpdateCastleRights(move); }
 
             //Save prev move data
+            moveHistory.Push(new PlayedMove
+            {
+                CastleRights = CastleRights,
+                EnPassantSquare = EnPassantSquare,
+                EnPassantCaptureSquare = move.EnPassantCaptureSquare,
+                PlyCounter = PlyCounter,
+                PliesWithoutCapture = PliesWithoutCapture,
+                SideToMove = SideToMove,
 
+                PromotedFromPiece = move.Piece,
+                PromotedToPiece = pieceAfterMove,
+                FromSquare = move.FromSquare,
+                DestSquare = move.DestSquare,
+                RookSourceSquare = move.RookCastleFromSquare,
+                RookDestSquare = move.RookCastleToSquare,
+            });
+
+            if (castleRights != 0) { UpdateCastleRights(move); }
 
             //Enpassant square
             EnPassantSquare = move.EnPassantSquare;
@@ -202,27 +219,43 @@ namespace Hattin.Types
 
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
 
-            moveHistory.Add(move);
             NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             OnNewMoveEvent(eventArgs);
         }
 
-        public void UndoMove(Move move)
+        public void UndoLastMove()
         {
             //ALT. 1: Use FEN to restore the boardstate (loses detailed move history outside the info in the FEN strings)
             //ALT. 2: Restart the board and play through the game again (Pointless, since the board is restarted through FEN anyway)
             //ALT. 3: Undo the last move (Fastest probably, but difficult to get right)
             //ALT. 4: Copy the current state into an array (same as FEN? but uses more space)
-
-
-
-
+            PlayedMove moveToUndo = moveHistory.Pop();
+            UndoMove(moveToUndo);
         }
 
-        public ReadOnlyCollection<Move> GetMoveHistory()
+        public void UndoMove(PlayedMove move)
         {
-            return moveHistory.AsReadOnly();
+
+            Board[(int)move.FromSquare] = move.PromotedFromPiece;
+            Board[(int)move.DestSquare] = NormalPiece.Empty;
+
+            if (move.RookSourceSquare != BoardSquare.NoSquare && move.RookDestSquare != BoardSquare.NoSquare)
+            {
+                Board[(int)move.RookSourceSquare] = PieceProperties.GetPieceOnSquare(move.RookDestSquare);
+                Board[(int)move.RookDestSquare] = NormalPiece.Empty;
+            }
+            PieceProperties.UndoMove(move);
+            CastleRights = move.CastleRights;
+            EnPassantSquare = move.EnPassantSquare;
+            if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
+            {
+                Board[(int)move.EnPassantCaptureSquare] = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
+            }
+            PlyCounter = move.PlyCounter; //strip
+            PliesWithoutCapture = move.PliesWithoutCapture;
+            SideToMove = move.SideToMove; //strip
         }
+
 
         private void FlushBoard()
         {

@@ -247,6 +247,7 @@ namespace Hattin.Types
                     RemovePiece(squareContents[move.EnPassantCaptureSquare.ToBase64Int()], move.EnPassantCaptureSquare);
                 }
 
+                //same as add and remove (refactor possible, but would lead to more function calls)
                 captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
                 captureAndBlockingSquares[toSquareArrayPos] = move.Piece.ToColor();
 
@@ -267,6 +268,7 @@ namespace Hattin.Types
 
                 PiecePositions[(int)rook][indexOfRookSquare] = move.RookCastleToSquare;
 
+                //same as add and remove (refactor possible, but would lead to more function calls)
                 int rookFromSquareArrayPos = move.RookCastleFromSquare.ToBase64Int();
                 int rookToSquareArrayPos = move.RookCastleToSquare.ToBase64Int();
 
@@ -275,6 +277,31 @@ namespace Hattin.Types
 
                 squareContents[rookFromSquareArrayPos] = NormalPiece.Empty;
                 squareContents[rookToSquareArrayPos] = rook;
+            }
+        }
+
+        public void UndoMove(PlayedMove move)
+        {
+            int indexOfFromSquare = PiecePositions[(int)move.PromotedToPiece].IndexOf(move.DestSquare); //LINQ should be side effect free, so you cant change inplace afaik
+            if (indexOfFromSquare == -1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(move.PromotedToPiece), $"There is no {move.PromotedToPiece} on square {move.FromSquare} (moving to {move.DestSquare})");
+            }
+
+            RemovePiece(move.PromotedToPiece, move.DestSquare);
+            AddPiece(move.PromotedFromPiece, move.FromSquare);
+
+            if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
+            {
+                NormalPiece pawn = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
+                AddPiece(pawn, move.EnPassantCaptureSquare);
+            }
+
+            if (move.RookSourceSquare != BoardSquare.NoSquare && move.RookDestSquare != BoardSquare.NoSquare)
+            {
+                NormalPiece rook = GetPieceOnSquare(move.RookDestSquare);
+                RemovePiece(rook, move.RookDestSquare);
+                AddPiece(rook, move.RookSourceSquare);
             }
         }
 
