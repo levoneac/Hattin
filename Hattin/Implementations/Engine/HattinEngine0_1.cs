@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Diagnostics;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.SideToMove;
 using Hattin.Interfaces;
@@ -12,12 +14,14 @@ namespace Hattin.Implementations.Engine
         public IMoveGenerator MoveGenerator { get; init; }
         public IMoveConstraintBuilder MoveConstraintBuilder { get; init; }
         public IPositionEvaluator PositionEvaluator { get; init; }
+        private TranspositionTable<MoveEvaluation> TranspositionTable;
         public HattinEngine0_1(BoardState board, IMoveGenerator moveGenerator, IMoveConstraintBuilder moveConstraintBuilder, IPositionEvaluator positionEvaluator)
         {
             Board = board;
             MoveGenerator = moveGenerator;
             MoveConstraintBuilder = moveConstraintBuilder;
             PositionEvaluator = positionEvaluator;
+            TranspositionTable = new TranspositionTable<MoveEvaluation>(10_000);
         }
 
         //Gets the constraints based on the current boardstate
@@ -32,7 +36,7 @@ namespace Hattin.Implementations.Engine
             return MoveConstraintBuilder.GetConstraintFunction();
         }
 
-        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int maxDepth, float alpha, float beta, SideToMove player)
+        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int maxDepth, float alpha, float beta, SideToMove player, TranspositionTable<MoveEvaluation> hashTable)
         {
             if (depth == maxDepth)
             {
@@ -46,7 +50,21 @@ namespace Hattin.Implementations.Engine
                 foreach (GeneratedMove curMove in GetPossibleMoves())
                 {
                     Board.MovePiece(curMove);
-                    curEval = AlphaBetaSearch(curMove, currentBoard, depth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    int positionHash = Board.GetPositionHash();
+                    if (hashTable.TryGetValue(positionHash, out MoveEvaluation preCalculated))
+                    {
+                        if (preCalculated is null)
+                        {
+                            throw new Exception("idk bro");
+                        }
+                        curEval = preCalculated;
+                    }
+                    else
+                    {
+                        curEval = AlphaBetaSearch(curMove, currentBoard, depth + 1, maxDepth, alpha, beta, player.ToOppositeColor(), hashTable);
+                        hashTable[positionHash] = curEval;
+                    }
+
                     Board.UndoLastMove();
                     if (curEval.Evaluation > bestValue)
                     {
@@ -68,7 +86,20 @@ namespace Hattin.Implementations.Engine
                 foreach (GeneratedMove curMove in GetPossibleMoves())
                 {
                     Board.MovePiece(curMove);
-                    curEval = AlphaBetaSearch(curMove, currentBoard, depth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    int positionHash = Board.GetPositionHash();
+                    if (hashTable.TryGetValue(positionHash, out MoveEvaluation preCalculated))
+                    {
+                        if (preCalculated is null)
+                        {
+                            throw new Exception("idk bro");
+                        }
+                        curEval = preCalculated;
+                    }
+                    else
+                    {
+                        curEval = AlphaBetaSearch(curMove, currentBoard, depth + 1, maxDepth, alpha, beta, player.ToOppositeColor(), hashTable);
+                        hashTable[positionHash] = curEval;
+                    }
                     Board.UndoLastMove();
                     if (curEval.Evaluation < bestValue)
                     {
@@ -108,7 +139,8 @@ namespace Hattin.Implementations.Engine
             if (generatedMoves.Count > 0)
             {
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
-                chosenMove = AlphaBetaSearch(new GeneratedMove(), Board, 0, 4, float.MinValue, float.MaxValue, Board.SideToMove).Move;
+
+                chosenMove = AlphaBetaSearch(new GeneratedMove(), Board, 0, 7, float.MinValue, float.MaxValue, Board.SideToMove, TranspositionTable).Move;
             }
             else
             {

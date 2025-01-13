@@ -104,14 +104,21 @@ namespace Hattin.Types
             IsCheck = false;
             positionHashes = new Dictionary<int, int>();
 
-            NewMoveEvent += PrintMove;
+            //NewMoveEvent += PrintMove;
             //NewMoveEvent += UpdatePositionHashes;
             ProcessFEN(startingFEN);
         }
 
         public int GetPositionHash()
         {
-            return HashCode.Combine(Board, EnPassantSquare, CastleRights, SideToMove);
+
+            int boardHash = 0;
+            for (int i = 0; i < 64; i++)
+            {
+                boardHash = HashCode.Combine(boardHash, Board[i]);
+            }
+            //reducing possible hashes so positions can be overridden and memory wont explode. Problem: this probably leads the engine to get wrong eval for position
+            return HashCode.Combine(boardHash, EnPassantSquare, CastleRights, SideToMove);
         }
 
         private void UpdatePositionHashes(object? sender, NewMoveEventArgs eventArgs)

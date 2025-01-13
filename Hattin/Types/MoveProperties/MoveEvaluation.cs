@@ -1,6 +1,6 @@
 namespace Hattin.Types
 {
-    public class MoveEvaluation
+    public record MoveEvaluation
     {
         public GeneratedMove Move { get; }
         public float Evaluation { get; }
