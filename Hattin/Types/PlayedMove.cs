@@ -10,6 +10,7 @@ namespace Hattin.Types
         public int PlyCounter { get; init; } //just --
         public int PliesWithoutCapture { get; init; }
         public SideToMove SideToMove { get; init; }
+        public Dictionary<int, int> PositionHashes { get; init; }
 
 
         //MOVE PROPERTIES FOR UPDATING

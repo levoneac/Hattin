@@ -2,9 +2,9 @@ namespace Hattin.Types
 {
     public enum GameResult : int
     {
+        BlackWin = -1,
         Ongoing,
-        Draw,
         WhiteWin,
-        BlackWin
+        Draw
     }
 }

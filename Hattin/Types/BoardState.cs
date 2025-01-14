@@ -81,14 +81,9 @@ namespace Hattin.Types
         }
 
 
-        private Dictionary<int, int> positionHashes;
+        public Dictionary<int, int> PositionHashes { get; set; }
 
-        private GameResult gameResult;
-        public GameResult GameResult
-        {
-            get { return gameResult; }
-            private set { gameResult = value; }
-        }
+        public GameResult GameResult { get; set; }
 
         public BoardState()
         {
@@ -102,7 +97,7 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
             IsCheck = false;
-            positionHashes = new Dictionary<int, int>();
+            PositionHashes = new Dictionary<int, int>();
 
             //NewMoveEvent += PrintMove;
             //NewMoveEvent += UpdatePositionHashes;
@@ -111,7 +106,7 @@ namespace Hattin.Types
 
         public int GetPositionHash()
         {
-
+            //slow
             int boardHash = 0;
             for (int i = 0; i < 64; i++)
             {
@@ -121,20 +116,20 @@ namespace Hattin.Types
             return HashCode.Combine(boardHash, EnPassantSquare, CastleRights, SideToMove);
         }
 
-        private void UpdatePositionHashes(object? sender, NewMoveEventArgs eventArgs)
+        private void UpdatePositionHashes()
         {
             int currentPositionHash = GetPositionHash();
-            if (positionHashes.TryGetValue(currentPositionHash, out int current))
+            if (PositionHashes.TryGetValue(currentPositionHash, out int current))
             {
-                positionHashes[currentPositionHash] = current + 1;
-                if (positionHashes[currentPositionHash] >= 3)
+                PositionHashes[currentPositionHash] = current + 1;
+                if (PositionHashes[currentPositionHash] >= 3)
                 {
                     GameResult = GameResult.Draw;
                 }
             }
             else
             {
-                positionHashes.Add(currentPositionHash, 1);
+                PositionHashes.Add(currentPositionHash, 1);
             }
         }
         public virtual void OnNewMoveEvent(NewMoveEventArgs eventArgs)
@@ -199,6 +194,7 @@ namespace Hattin.Types
                 PlyCounter = PlyCounter,
                 PliesWithoutCapture = PliesWithoutCapture,
                 SideToMove = SideToMove,
+                PositionHashes = PositionHashes,
 
                 PromotedFromPiece = move.Piece,
                 PromotedToPiece = pieceAfterMove,
@@ -207,6 +203,7 @@ namespace Hattin.Types
                 PieceOnDestSquare = PieceProperties.GetPieceOnSquare(move.DestSquare),
                 RookSourceSquare = move.RookCastleFromSquare,
                 RookDestSquare = move.RookCastleToSquare,
+
             });
 
             if (castleRights != 0) { UpdateCastleRights(move); }
@@ -226,7 +223,7 @@ namespace Hattin.Types
             else { PliesWithoutCapture = 0; }
 
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
-
+            //UpdatePositionHashes();
             pieceProperties.MovePiece(move);
             NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             OnNewMoveEvent(eventArgs);
@@ -263,6 +260,7 @@ namespace Hattin.Types
             PlyCounter = move.PlyCounter; //strip
             PliesWithoutCapture = move.PliesWithoutCapture;
             SideToMove = move.SideToMove; //strip
+            PositionHashes = move.PositionHashes;
         }
 
 
