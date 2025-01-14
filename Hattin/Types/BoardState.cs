@@ -97,7 +97,7 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
             IsCheck = false;
-            PositionHashes = new Dictionary<int, int>();
+            //PositionHashes = new Dictionary<int, int>();
 
             //NewMoveEvent += PrintMove;
             //NewMoveEvent += UpdatePositionHashes;
@@ -194,7 +194,8 @@ namespace Hattin.Types
                 PlyCounter = PlyCounter,
                 PliesWithoutCapture = PliesWithoutCapture,
                 SideToMove = SideToMove,
-                PositionHashes = PositionHashes,
+                //PositionHashes = PositionHashes,
+                IsCheck = IsCheck,
 
                 PromotedFromPiece = move.Piece,
                 PromotedToPiece = pieceAfterMove,
@@ -257,10 +258,11 @@ namespace Hattin.Types
             {
                 Board[(int)move.EnPassantCaptureSquare] = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
             }
+            IsCheck = move.IsCheck;
             PlyCounter = move.PlyCounter; //strip
             PliesWithoutCapture = move.PliesWithoutCapture;
             SideToMove = move.SideToMove; //strip
-            PositionHashes = move.PositionHashes;
+            //PositionHashes = move.PositionHashes;
         }
 
 

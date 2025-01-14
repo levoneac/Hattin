@@ -3,7 +3,7 @@ using Hattin.Utils;
 
 namespace Hattin.Types
 {
-    public record GeneratedMove : Move
+    public record GeneratedMove : Move, IComparable<GeneratedMove>
     {
         public List<List<AttackProjection>> AttackedSquares { get; set; }
         public bool IsPromotion { get; set; }
@@ -24,7 +24,6 @@ namespace Hattin.Types
                 : base(piece, fromSquare, toSquare, rookCastleFromSquare, rookCastleToSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare)
         {
             AttackedSquares = attackedSquares;
-            EnPassantSquare = enPassantSquare;
             IsPromotion = isPromotion;
             IsCapture = isCapture;
 
@@ -40,6 +39,23 @@ namespace Hattin.Types
                     break;
                 }
             }
+        }
+
+        public int CompareTo(GeneratedMove? obj)
+        {
+            if (obj is null && this is null) { return 0; }
+            else if (this is null) { return 1; }
+            else if (obj is null) { return -1; }
+
+            if (IsCheck == true && obj.IsCheck == true) { return 0; }
+            else if (IsCheck == true) { return -1; }
+            else if (obj.IsCheck == true) { return 1; }
+
+            if (IsCapture == true && obj.IsCapture == true) { return 0; }
+            else if (IsCapture == true) { return -1; }
+            else if (obj.IsCapture == true) { return 1; }
+
+            return 0;
         }
     }
 }

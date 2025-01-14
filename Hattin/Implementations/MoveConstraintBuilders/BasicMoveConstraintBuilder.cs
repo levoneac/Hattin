@@ -22,11 +22,11 @@ namespace Hattin.Implementations.MoveConstraintBuilders
 
         //C# aparently has closures, so the variables of the outer function are still in scope for the inner function after the return
         //Maybe it would be more efficient to save checkAvertingSquares in a property of this class, but for now it works
-        public void SetStopCheck()
+        public void SetStopCheck(List<BoardSquare> checkingSources)
         {
             NormalPiece king = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             BoardSquare kingSquare = Board.PieceProperties.GetPiecePositions(king)?[0] ?? throw new Exception($"The king went missing");
-            List<BoardSquare> checkingSources = Board.PieceProperties.GetCheckSource(Board.SideToMove); //Double work, done before setting this constraint
+            //List<BoardSquare> checkingSources = Board.PieceProperties.GetCheckSource(Board.SideToMove); //Double work, done before setting this constraint
             List<BoardSquare> checkAvertingSquares = new List<BoardSquare>();
             checkingSources.ForEach(sq => checkAvertingSquares.AddRange(SquareRange.GetSquaresBetween(sq, kingSquare, true))); //unnecessary if checkingsources is over 1
 

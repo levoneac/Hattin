@@ -21,16 +21,16 @@ namespace Hattin.Implementations.Engine
             MoveGenerator = moveGenerator;
             MoveConstraintBuilder = moveConstraintBuilder;
             PositionEvaluator = positionEvaluator;
-            TranspositionTable = new TranspositionTable<float>(500_000);
+            TranspositionTable = new TranspositionTable<float>(1_000_000);
         }
 
         //Gets the constraints based on the current boardstate
-        private Func<List<GeneratedMove>, List<GeneratedMove>>? GetConstraintFuncs()
+        private Func<List<GeneratedMove>, List<GeneratedMove>>? GetConstraintFuncs(List<BoardSquare>? checkingSources = null)
         {
             MoveConstraintBuilder.Reset();
-            if (Board.IsCheck)
+            if (checkingSources is not null && checkingSources.Count > 0)
             {
-                MoveConstraintBuilder.SetStopCheck();
+                MoveConstraintBuilder.SetStopCheck(checkingSources);
             }
             MoveConstraintBuilder.SetPinRestriction();
             return MoveConstraintBuilder.GetConstraintFunction();
@@ -44,10 +44,13 @@ namespace Hattin.Implementations.Engine
             {
                 return new MoveEvaluation(move, PositionEvaluator.EvaluateCurrentPosition(currentBoard));
             }
+            //if (move.IsCheck) { Board.IsCheck = true; } else { Board.IsCheck = false; } Runs into problems with discovery check
+
             MoveEvaluation curEval;
             float positionScore;
             GeneratedMove bestMove = new GeneratedMove();
             List<GeneratedMove> possibleMoves = GetPossibleMoves();
+
             if (possibleMoves.Count == 0)
             {
                 return ResolveNoMoves(player);
@@ -141,7 +144,7 @@ namespace Hattin.Implementations.Engine
         private int ExtendSearch(GeneratedMove move)
         {
             int extension = 0;
-            if (Board.IsCheck || move.IsCapture)
+            if (move.IsCheck || move.IsCapture)
             {
                 extension = 1;
             }
@@ -151,7 +154,8 @@ namespace Hattin.Implementations.Engine
         public List<GeneratedMove> GetPossibleMoves()
         {
             Board.PieceProperties.UpdateAllAttackSquares(MoveGenerator.GenerateAllAttackedSquares());
-            if (Board.PieceProperties.GetCheckSource(Board.SideToMove).Count > 0)
+            List<BoardSquare> checkingSources = Board.PieceProperties.GetCheckSource(Board.SideToMove);
+            if (checkingSources.Count > 0)
             {
                 Board.IsCheck = true;
             }
@@ -159,7 +163,7 @@ namespace Hattin.Implementations.Engine
             {
                 Board.IsCheck = false;
             }
-            return MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs());
+            return MoveGenerator.GenerateAllLegalMoves(GetConstraintFuncs(checkingSources));
         }
 
         //Mostly for testingpurposes still
@@ -171,7 +175,7 @@ namespace Hattin.Implementations.Engine
             {
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
 
-                chosenMove = AlphaBetaSearch(new GeneratedMove(), Board, 5, 0, 8, float.MinValue, float.MaxValue, Board.SideToMove, TranspositionTable).Move;
+                chosenMove = AlphaBetaSearch(new GeneratedMove(), Board, 3, 0, 10, float.MinValue, float.MaxValue, Board.SideToMove, TranspositionTable).Move;
             }
             else
             {
