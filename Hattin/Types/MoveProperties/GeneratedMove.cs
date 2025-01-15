@@ -47,15 +47,41 @@ namespace Hattin.Types
             else if (this is null) { return 1; }
             else if (obj is null) { return -1; }
 
+            int score = 0;
+
             if (IsCheck == true && obj.IsCheck == true) { return 0; }
-            else if (IsCheck == true) { return -1; }
-            else if (obj.IsCheck == true) { return 1; }
+            else if (IsCheck == true) { score -= 10; }
+            else if (obj.IsCheck == true) { score += 10; }
 
-            if (IsCapture == true && obj.IsCapture == true) { return 0; }
-            else if (IsCapture == true) { return -1; }
-            else if (obj.IsCapture == true) { return 1; }
+            if (IsCapture == true && obj.IsCapture == true) { }
+            else if (IsCapture == true)
+            {
+                if (Piece.ToValue() < obj.Piece.ToValue())
+                {
+                    score -= 10;
+                }
+                else
+                {
+                    score -= 1;
+                }
+            }
+            else if (obj.IsCapture == true)
+            {
+                if (Piece.ToValue() > obj.Piece.ToValue())
+                {
+                    score += 10;
+                }
+                else
+                {
+                    score += 1;
+                }
+            }
 
-            return 0;
+            if (IsPromotion == true && obj.IsPromotion == true) { }
+            else if (IsPromotion == true) { score -= 10; }
+            else if (obj.IsPromotion == true) { score += 10; }
+
+            return score;
         }
     }
 }

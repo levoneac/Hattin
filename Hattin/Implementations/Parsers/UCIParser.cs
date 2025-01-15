@@ -58,9 +58,11 @@ namespace Hattin.Implementations.Parsers
                     }
                     return new UCIParseIntermediate(command, moves, option, value);
                 }
-                else if (words[startPosIndex + 1] == "fen")
+                if (words[startPosIndex + 1] == "fen")
                 {
                     return new UCIParseIntermediate(command, string.Join(" ", words[(startPosIndex + 2)..]), option, value);
+
+                    //can contain moves after FEN as well
                 }
             }
             return new UCIParseIntermediate(command, option, value);

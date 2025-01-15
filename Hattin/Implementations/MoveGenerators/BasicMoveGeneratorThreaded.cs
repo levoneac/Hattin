@@ -379,12 +379,13 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.WhiteKingsideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0)
                         {
                             canCastle = false;
                             break;
                         }
                     }
+                    if (!SquareRange.IsSquareRangeEmpty(SquareRange.GetSquaresBetween(BoardSquare.E1, BoardSquare.H1, false, Directions.Column), Board)) { canCastle = false; }
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.WhiteKing, NormalPiece.WhiteRook, BoardSquare.G1, BoardSquare.F1, opponentColor);
@@ -397,12 +398,13 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.WhiteQueensideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0)
                         {
                             canCastle = false;
                             break;
                         }
                     }
+                    if (!SquareRange.IsSquareRangeEmpty(SquareRange.GetSquaresBetween(BoardSquare.E1, BoardSquare.A1, false, Directions.Column), Board)) { canCastle = false; }
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.WhiteKing, NormalPiece.WhiteRook, BoardSquare.C1, BoardSquare.D1, opponentColor);
@@ -417,12 +419,13 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.BlackKingsideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.White > 0)
                         {
                             canCastle = false;
                             break;
                         }
                     }
+                    if (!SquareRange.IsSquareRangeEmpty(SquareRange.GetSquaresBetween(BoardSquare.E8, BoardSquare.H8, false, Directions.Column), Board)) { canCastle = false; }
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.BlackKing, NormalPiece.BlackRook, BoardSquare.G8, BoardSquare.F8, opponentColor);
@@ -434,12 +437,13 @@ namespace Hattin.Implementations.MoveGenerators
                     bool canCastle = true;
                     foreach (BoardSquare square in NormalPieceCastleSquares.BlackQueensideCastle)
                     {
-                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.Black > 0 || Board.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                        if (Board.PieceProperties.GetAttackCountOnSquare(square).AttackTotals.White > 0)
                         {
                             canCastle = false;
                             break;
                         }
                     }
+                    if (!SquareRange.IsSquareRangeEmpty(SquareRange.GetSquaresBetween(BoardSquare.E8, BoardSquare.A8, false, Directions.Column), Board)) { canCastle = false; }
                     if (canCastle)
                     {
                         List<List<AttackProjection>> attackProjections = GenerateCastleAttackSquares(NormalPiece.BlackKing, NormalPiece.BlackRook, BoardSquare.C8, BoardSquare.D8, opponentColor);

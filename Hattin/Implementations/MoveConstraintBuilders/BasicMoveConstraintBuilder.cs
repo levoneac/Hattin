@@ -40,7 +40,7 @@ namespace Hattin.Implementations.MoveConstraintBuilders
                     return true;
                 }
                 //run away
-                else if (move.Piece.ToValue() == NormalPieceValue.King)
+                else if (move.Piece.ToValue() == NormalPieceValue.King && move.RookCastleFromSquare == BoardSquare.NoSquare && move.RookCastleToSquare == BoardSquare.NoSquare)
                 {
                     return true;
                 }
@@ -61,6 +61,7 @@ namespace Hattin.Implementations.MoveConstraintBuilders
                 CurrentCollection.Add(IsPinRestricted);
             }
 
+            //wrong name
             bool IsPinRestricted(GeneratedMove move)
             {
                 if (pinnedLookup.TryGetValue(move.FromSquare, out List<BoardSquare>? allowedSquares))

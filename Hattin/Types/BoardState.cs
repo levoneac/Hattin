@@ -106,13 +106,12 @@ namespace Hattin.Types
 
         public int GetPositionHash()
         {
-            //slow
+            //Change to zobrist hash
             int boardHash = 0;
             for (int i = 0; i < 64; i++)
             {
                 boardHash = HashCode.Combine(boardHash, Board[i]);
             }
-            //reducing possible hashes so positions can be overridden and memory wont explode. Problem: this probably leads the engine to get wrong eval for position
             return HashCode.Combine(boardHash, EnPassantSquare, CastleRights, SideToMove);
         }
 
