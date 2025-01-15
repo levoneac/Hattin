@@ -124,9 +124,9 @@ namespace Hattin.Types
             foreach (AttackProjection attackSource in attackSources)
             {
                 bool directAttacks = attackingSquares[attackSource.Square.ToBase64Int()].Where(
-                    key => key.XRayLevel == 0 &&
-                    key.PieceOnSquare.ToValue() == NormalPieceValue.King &&
-                    !(king.ToColor() == key.AsPiece.ToColor())).Any();
+                    key => (key.XRayLevel == 0) &&
+                    (key.PieceOnSquare.ToValue() == NormalPieceValue.King) &&
+                    (key.PieceOnSquare.ToColor() != key.AsPiece.ToColor())).Any();
                 if (directAttacks)
                 {
                     attacks.Add(attackSource.Square);
@@ -247,6 +247,7 @@ namespace Hattin.Types
                     RemovePiece(squareContents[move.EnPassantCaptureSquare.ToBase64Int()], move.EnPassantCaptureSquare);
                 }
 
+                //same as add and remove (refactor possible, but would lead to more function calls)
                 captureAndBlockingSquares[fromSquareArrayPos] = SideToMove.None;
                 captureAndBlockingSquares[toSquareArrayPos] = move.Piece.ToColor();
 
@@ -255,41 +256,56 @@ namespace Hattin.Types
             }
 
             //if castle move, then move the rook to its new place
-            if (move.RookCastleSquare != BoardSquare.NoSquare)
+            if (move.RookCastleToSquare != BoardSquare.NoSquare && move.RookCastleFromSquare != BoardSquare.NoSquare)
             {
-                BoardSquare rookFromSquare = BoardSquare.NoSquare;
-                NormalPiece rook = move.Piece.ToColor() == SideToMove.White ? NormalPiece.WhiteRook : NormalPiece.BlackRook;
-                if (move.RookCastleSquare == BoardSquare.F1)
-                {
-                    rookFromSquare = BoardSquare.H1;
-                }
-                if (move.RookCastleSquare == BoardSquare.D1)
-                {
-                    rookFromSquare = BoardSquare.A1;
-                }
-                if (move.RookCastleSquare == BoardSquare.F8)
-                {
-                    rookFromSquare = BoardSquare.H8;
-                }
-                if (move.RookCastleSquare == BoardSquare.D8)
-                {
-                    rookFromSquare = BoardSquare.A8;
-                }
-                int indexOfRookSquare = PiecePositions[(int)rook].IndexOf(rookFromSquare);
+                NormalPiece rook = GetPieceOnSquare(move.RookCastleFromSquare);
+
+                int indexOfRookSquare = PiecePositions[(int)rook].IndexOf(move.RookCastleFromSquare);
                 if (indexOfRookSquare == -1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(move.RookCastleSquare), $"There is no {rook} on square {rookFromSquare} (moving to {move.RookCastleSquare})");
+                    throw new ArgumentOutOfRangeException(nameof(move.RookCastleFromSquare), $"There is no {rook} on square {move.RookCastleFromSquare} (moving to {move.RookCastleToSquare})");
                 }
-                PiecePositions[(int)rook][indexOfRookSquare] = move.RookCastleSquare;
 
-                int rookFromSquareArrayPos = rookFromSquare.ToBase64Int();
-                int rookToSquareArrayPos = move.RookCastleSquare.ToBase64Int();
+                PiecePositions[(int)rook][indexOfRookSquare] = move.RookCastleToSquare;
+
+                //same as add and remove (refactor possible, but would lead to more function calls)
+                int rookFromSquareArrayPos = move.RookCastleFromSquare.ToBase64Int();
+                int rookToSquareArrayPos = move.RookCastleToSquare.ToBase64Int();
 
                 captureAndBlockingSquares[rookFromSquareArrayPos] = SideToMove.None;
                 captureAndBlockingSquares[rookToSquareArrayPos] = rook.ToColor();
 
                 squareContents[rookFromSquareArrayPos] = NormalPiece.Empty;
                 squareContents[rookToSquareArrayPos] = rook;
+            }
+        }
+
+        public void UndoMove(PlayedMove move)
+        {
+            int indexOfFromSquare = PiecePositions[(int)move.PromotedToPiece].IndexOf(move.DestSquare); //LINQ should be side effect free, so you cant change inplace afaik
+            if (indexOfFromSquare == -1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(move.PromotedToPiece), $"There is no {move.PromotedToPiece} on square {move.DestSquare} (moving back to {move.FromSquare})");
+            }
+
+            RemovePiece(move.PromotedToPiece, move.DestSquare);
+            AddPiece(move.PromotedFromPiece, move.FromSquare);
+
+            if (move.PieceOnDestSquare != NormalPiece.Empty)
+            {
+                AddPiece(move.PieceOnDestSquare, move.DestSquare);
+            }
+            if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
+            {
+                NormalPiece pawn = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
+                AddPiece(pawn, move.EnPassantCaptureSquare);
+            }
+
+            if (move.RookSourceSquare != BoardSquare.NoSquare && move.RookDestSquare != BoardSquare.NoSquare)
+            {
+                NormalPiece rook = GetPieceOnSquare(move.RookDestSquare);
+                RemovePiece(rook, move.RookDestSquare);
+                AddPiece(rook, move.RookSourceSquare);
             }
         }
 
@@ -387,13 +403,13 @@ namespace Hattin.Types
 
     public readonly struct PieceTotals
     {
-        public readonly int black;
-        public readonly int white;
+        public readonly int Black;
+        public readonly int White;
 
         public PieceTotals(int blackSum, int whiteSum)
         {
-            black = blackSum;
-            white = whiteSum;
+            Black = blackSum;
+            White = whiteSum;
         }
     }
 }

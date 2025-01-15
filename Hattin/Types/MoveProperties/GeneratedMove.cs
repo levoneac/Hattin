@@ -3,7 +3,7 @@ using Hattin.Utils;
 
 namespace Hattin.Types
 {
-    public record GeneratedMove : Move
+    public record GeneratedMove : Move, IComparable<GeneratedMove>
     {
         public List<List<AttackProjection>> AttackedSquares { get; set; }
         public bool IsPromotion { get; set; }
@@ -20,11 +20,10 @@ namespace Hattin.Types
 
         public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares,
             BoardSquare enPassantSquare = BoardSquare.NoSquare, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare, bool isPromotion = false,
-            bool isCapture = false, BoardSquare rookCastleSquare = BoardSquare.NoSquare)
-                : base(piece, fromSquare, toSquare, rookCastleSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare)
+            bool isCapture = false, BoardSquare rookCastleFromSquare = BoardSquare.NoSquare, BoardSquare rookCastleToSquare = BoardSquare.NoSquare)
+                : base(piece, fromSquare, toSquare, rookCastleFromSquare, rookCastleToSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare)
         {
             AttackedSquares = attackedSquares;
-            EnPassantSquare = enPassantSquare;
             IsPromotion = isPromotion;
             IsCapture = isCapture;
 
@@ -40,6 +39,49 @@ namespace Hattin.Types
                     break;
                 }
             }
+        }
+
+        public int CompareTo(GeneratedMove? obj)
+        {
+            if (obj is null && this is null) { return 0; }
+            else if (this is null) { return 1; }
+            else if (obj is null) { return -1; }
+
+            int score = 0;
+
+            if (IsCheck == true && obj.IsCheck == true) { return 0; }
+            else if (IsCheck == true) { score -= 10; }
+            else if (obj.IsCheck == true) { score += 10; }
+
+            if (IsCapture == true && obj.IsCapture == true) { }
+            else if (IsCapture == true)
+            {
+                if (Piece.ToValue() < obj.Piece.ToValue())
+                {
+                    score -= 10;
+                }
+                else
+                {
+                    score -= 1;
+                }
+            }
+            else if (obj.IsCapture == true)
+            {
+                if (Piece.ToValue() > obj.Piece.ToValue())
+                {
+                    score += 10;
+                }
+                else
+                {
+                    score += 1;
+                }
+            }
+
+            if (IsPromotion == true && obj.IsPromotion == true) { }
+            else if (IsPromotion == true) { score -= 10; }
+            else if (obj.IsPromotion == true) { score += 10; }
+
+            return score;
         }
     }
 }

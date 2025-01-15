@@ -35,7 +35,7 @@ namespace Hattin.Types
             private set { lastestMove = value; }
         }
 
-        private List<Move> moveHistory;
+        private Stack<PlayedMove> moveHistory;
 
 
         private int plyCounter;
@@ -81,53 +81,54 @@ namespace Hattin.Types
         }
 
 
-        private Dictionary<int, int> positionHashes;
+        public Dictionary<int, int> PositionHashes { get; set; }
 
-        private GameResult gameResult;
-        public GameResult GameResult
-        {
-            get { return gameResult; }
-            private set { gameResult = value; }
-        }
+        public GameResult GameResult { get; set; }
 
         public BoardState()
         {
             Board = new NormalPiece[(int)squareIndexing];
             PieceProperties = new PieceList();
             LastestMove = new Move();
-            moveHistory = new List<Move>();
+            moveHistory = new Stack<PlayedMove>();
             PlyCounter = 0;
             PliesWithoutCapture = 0;
             SideToMove = SideToMove.White;
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
             IsCheck = false;
-            positionHashes = new Dictionary<int, int>();
+            //PositionHashes = new Dictionary<int, int>();
 
-            NewMoveEvent += PrintMove;
+            //NewMoveEvent += PrintMove;
             //NewMoveEvent += UpdatePositionHashes;
             ProcessFEN(startingFEN);
         }
 
         public int GetPositionHash()
         {
-            return HashCode.Combine(Board, EnPassantSquare, CastleRights, SideToMove);
+            //Change to zobrist hash
+            int boardHash = 0;
+            for (int i = 0; i < 64; i++)
+            {
+                boardHash = HashCode.Combine(boardHash, Board[i]);
+            }
+            return HashCode.Combine(boardHash, EnPassantSquare, CastleRights, SideToMove);
         }
 
-        private void UpdatePositionHashes(object? sender, NewMoveEventArgs eventArgs)
+        private void UpdatePositionHashes()
         {
             int currentPositionHash = GetPositionHash();
-            if (positionHashes.TryGetValue(currentPositionHash, out int current))
+            if (PositionHashes.TryGetValue(currentPositionHash, out int current))
             {
-                positionHashes[currentPositionHash] = current + 1;
-                if (positionHashes[currentPositionHash] >= 3)
+                PositionHashes[currentPositionHash] = current + 1;
+                if (PositionHashes[currentPositionHash] >= 3)
                 {
                     GameResult = GameResult.Draw;
                 }
             }
             else
             {
-                positionHashes.Add(currentPositionHash, 1);
+                PositionHashes.Add(currentPositionHash, 1);
             }
         }
         public virtual void OnNewMoveEvent(NewMoveEventArgs eventArgs)
@@ -171,37 +172,41 @@ namespace Hattin.Types
 
         public void MovePiece(Move move)
         {
-            pieceProperties.MovePiece(move);
-            if (castleRights != 0) { UpdateCastleRights(move); }
-
+            NormalPiece pieceAfterMove = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
             //120 based array for some reason
             Board[(int)move.FromSquare] = NormalPiece.Empty;
-            Board[(int)move.DestSquare] = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
+            Board[(int)move.DestSquare] = pieceAfterMove;
 
-            //Castle move (refactor maybe? used many times)
-            if (move.RookCastleSquare != BoardSquare.NoSquare)
+            //Castle move 
+            if (move.RookCastleToSquare != BoardSquare.NoSquare && move.RookCastleFromSquare != BoardSquare.NoSquare)
             {
-                if (move.RookCastleSquare == BoardSquare.F1)
-                {
-                    Board[(int)BoardSquare.H1] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.F1] = NormalPiece.WhiteRook;
-                }
-                if (move.RookCastleSquare == BoardSquare.D1)
-                {
-                    Board[(int)BoardSquare.A1] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.D1] = NormalPiece.WhiteRook;
-                }
-                if (move.RookCastleSquare == BoardSquare.F8)
-                {
-                    Board[(int)BoardSquare.H8] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.F8] = NormalPiece.BlackRook;
-                }
-                if (move.RookCastleSquare == BoardSquare.D8)
-                {
-                    Board[(int)BoardSquare.A8] = NormalPiece.Empty;
-                    Board[(int)BoardSquare.D8] = NormalPiece.BlackRook;
-                }
+                Board[(int)move.RookCastleToSquare] = PieceProperties.GetPieceOnSquare(move.RookCastleFromSquare);
+                Board[(int)move.RookCastleFromSquare] = NormalPiece.Empty;
             }
+
+            //Save prev move data and state
+            moveHistory.Push(new PlayedMove
+            {
+                CastleRights = CastleRights,
+                EnPassantSquare = EnPassantSquare,
+                EnPassantCaptureSquare = move.EnPassantCaptureSquare,
+                PlyCounter = PlyCounter,
+                PliesWithoutCapture = PliesWithoutCapture,
+                SideToMove = SideToMove,
+                //PositionHashes = PositionHashes,
+                IsCheck = IsCheck,
+
+                PromotedFromPiece = move.Piece,
+                PromotedToPiece = pieceAfterMove,
+                FromSquare = move.FromSquare,
+                DestSquare = move.DestSquare,
+                PieceOnDestSquare = PieceProperties.GetPieceOnSquare(move.DestSquare),
+                RookSourceSquare = move.RookCastleFromSquare,
+                RookDestSquare = move.RookCastleToSquare,
+
+            });
+
+            if (castleRights != 0) { UpdateCastleRights(move); }
 
             //Enpassant square
             EnPassantSquare = move.EnPassantSquare;
@@ -213,29 +218,52 @@ namespace Hattin.Types
             }
 
             PlyCounter++;
-            if (PieceProperties.GetPieceOnSquare(move.DestSquare) != NormalPiece.Empty) { PliesWithoutCapture++; } else { PliesWithoutCapture = 0; }
+            if (PieceProperties.GetPieceOnSquare(move.DestSquare) == NormalPiece.Empty || move.Piece.ToValue() != NormalPieceValue.Pawn)
+            { PliesWithoutCapture++; }
+            else { PliesWithoutCapture = 0; }
 
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
-
-            moveHistory.Add(move);
+            //UpdatePositionHashes();
+            pieceProperties.MovePiece(move);
             NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             OnNewMoveEvent(eventArgs);
         }
 
-        public void UndoMove(Move move)
+        public void UndoLastMove()
         {
             //ALT. 1: Use FEN to restore the boardstate (loses detailed move history outside the info in the FEN strings)
             //ALT. 2: Restart the board and play through the game again (Pointless, since the board is restarted through FEN anyway)
             //ALT. 3: Undo the last move (Fastest probably, but difficult to get right)
             //ALT. 4: Copy the current state into an array (same as FEN? but uses more space)
-
-
+            PlayedMove moveToUndo = moveHistory.Pop();
+            UndoMove(moveToUndo);
         }
 
-        public ReadOnlyCollection<Move> GetMoveHistory()
+        public void UndoMove(PlayedMove move)
         {
-            return moveHistory.AsReadOnly();
+
+            Board[(int)move.FromSquare] = move.PromotedFromPiece;
+            Board[(int)move.DestSquare] = move.PieceOnDestSquare;
+
+            if (move.RookSourceSquare != BoardSquare.NoSquare && move.RookDestSquare != BoardSquare.NoSquare)
+            {
+                Board[(int)move.RookSourceSquare] = PieceProperties.GetPieceOnSquare(move.RookDestSquare);
+                Board[(int)move.RookDestSquare] = NormalPiece.Empty;
+            }
+            PieceProperties.UndoMove(move);
+            CastleRights = move.CastleRights;
+            EnPassantSquare = move.EnPassantSquare;
+            if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
+            {
+                Board[(int)move.EnPassantCaptureSquare] = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
+            }
+            IsCheck = move.IsCheck;
+            PlyCounter = move.PlyCounter; //strip
+            PliesWithoutCapture = move.PliesWithoutCapture;
+            SideToMove = move.SideToMove; //strip
+            //PositionHashes = move.PositionHashes;
         }
+
 
         private void FlushBoard()
         {
@@ -250,6 +278,7 @@ namespace Hattin.Types
             SideToMove = SideToMove.White;
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = 0;
+            moveHistory.Clear();
         }
         public void PrintBoard(SideToMove perspective, bool moreInfo = false)
         {

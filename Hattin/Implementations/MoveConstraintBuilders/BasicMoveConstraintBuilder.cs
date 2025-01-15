@@ -22,23 +22,25 @@ namespace Hattin.Implementations.MoveConstraintBuilders
 
         //C# aparently has closures, so the variables of the outer function are still in scope for the inner function after the return
         //Maybe it would be more efficient to save checkAvertingSquares in a property of this class, but for now it works
-        public void SetStopCheck()
+        public void SetStopCheck(List<BoardSquare> checkingSources)
         {
             NormalPiece king = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteKing : NormalPiece.BlackKing;
             BoardSquare kingSquare = Board.PieceProperties.GetPiecePositions(king)?[0] ?? throw new Exception($"The king went missing");
-            List<BoardSquare> checkingSources = Board.PieceProperties.GetCheckSource(Board.SideToMove);
+            //List<BoardSquare> checkingSources = Board.PieceProperties.GetCheckSource(Board.SideToMove); //Double work, done before setting this constraint
             List<BoardSquare> checkAvertingSquares = new List<BoardSquare>();
-            checkingSources.ForEach(sq => checkAvertingSquares.AddRange(SquareRange.GetSquaresBetween(sq, kingSquare, true)));
+            checkingSources.ForEach(sq => checkAvertingSquares.AddRange(SquareRange.GetSquaresBetween(sq, kingSquare, true))); //unnecessary if checkingsources is over 1
 
             CurrentCollection.Add(StopCheck);
 
             bool StopCheck(GeneratedMove move)
             {
-                if (checkAvertingSquares.Contains(move.DestSquare) && move.DestSquare != kingSquare)
+                //block with a piece if not doublecheck
+                if (checkingSources.Count <= 1 && checkAvertingSquares.Contains(move.DestSquare) && move.DestSquare != kingSquare)
                 {
                     return true;
                 }
-                else if (move.Piece.ToValue() == NormalPieceValue.King)
+                //run away
+                else if (move.Piece.ToValue() == NormalPieceValue.King && move.RookCastleFromSquare == BoardSquare.NoSquare && move.RookCastleToSquare == BoardSquare.NoSquare)
                 {
                     return true;
                 }
@@ -59,6 +61,7 @@ namespace Hattin.Implementations.MoveConstraintBuilders
                 CurrentCollection.Add(IsPinRestricted);
             }
 
+            //wrong name
             bool IsPinRestricted(GeneratedMove move)
             {
                 if (pinnedLookup.TryGetValue(move.FromSquare, out List<BoardSquare>? allowedSquares))

@@ -160,5 +160,18 @@ namespace Hattin.Utils
             }
             throw new Exception($"No square was found");
         }
+
+
+        public static bool IsSquareRangeEmpty(List<BoardSquare> range, BoardState currentBoard)
+        {
+            foreach (BoardSquare square in range)
+            {
+                if (currentBoard.PieceProperties.GetPieceOnSquare(square) != NormalPiece.Empty)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }

@@ -1,15 +1,17 @@
 namespace Hattin.Types
 {
-    public record MoveEvaluation
+    public class Transposition
     {
         public GeneratedMove Move { get; set; }
         public float Evaluation { get; set; }
-        public MoveEvaluation(GeneratedMove move, float evaluation)
+        public int Depth { get; set; }
+
+        public Transposition(GeneratedMove move, float evaluation, int depth)
         {
             Move = move;
             Evaluation = evaluation;
+            Depth = depth;
+
         }
-
-
     }
 }
