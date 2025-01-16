@@ -94,7 +94,7 @@ namespace Hattin.Implementations.Controllers
                 cancellationToken = new CancellationTokenSource();
                 int numberOfOptions = 1;
                 EngineIsActive = true;
-                currentPosition = new AnalyzedPosition(numberOfOptions, Engine.Board.GetPositionHash(), cancellationToken.Token);
+                currentPosition = new AnalyzedPosition(numberOfOptions, Engine.Board.PositionHash.CurrentPositionHash, cancellationToken.Token);
                 Engine.Board.PieceProperties.UpdateAllAttackSquares(Engine.MoveGenerator.GenerateAllAttackedSquares());
                 Engine.Board.PrintAttackTotals(Engine.Board.SideToMove);
                 engineThread = new Thread(Engine.AnalyzeCurrent);

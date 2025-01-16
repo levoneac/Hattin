@@ -60,7 +60,7 @@ namespace Hattin.Implementations.Engine
             if (player == SideToMove.White)
             {
                 float bestValue = float.MinValue;
-                int positionHash = Board.GetPositionHash();
+                int positionHash = Board.PositionHash.CurrentPositionHash;
                 if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
                 {
                     if (preCalculated.Depth >= absoluteDepth)
@@ -101,7 +101,7 @@ namespace Hattin.Implementations.Engine
             if (player == SideToMove.Black)
             {
                 float bestValue = float.MaxValue;
-                int positionHash = Board.GetPositionHash();
+                int positionHash = Board.PositionHash.CurrentPositionHash;
                 if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
                 {
                     if (preCalculated.Depth >= absoluteDepth)

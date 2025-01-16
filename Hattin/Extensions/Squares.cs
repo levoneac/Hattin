@@ -19,5 +19,22 @@ namespace Hattin.Extensions.Squares
         {
             return Utils.Conversions.SquareConversions.AutoChooseConvert64And120(integer, boardType);
         }
+
+        public static int ToFileEnumValue(this BoardSquare square)
+        {
+            if (square == BoardSquare.NoSquare)
+            {
+                throw new ArgumentException($"Nosquare doesnt have a file", nameof(square));
+            }
+            return 15 + (((int)square) % 10); //beware of changing the enums with this
+
+            //Safe and slow solution
+            //string squareString = Enum.GetName(typeof(BoardSquare), square) ?? throw new Exception($"{square} Square not found");
+            //if (Enum.TryParse(typeof(BoardFile), squareString[0].ToString(), out object? file))
+            //{
+            //    return (int)(BoardFile)file;
+            //}
+            //throw new Exception($"File not found for {square}");
+        }
     }
 }
