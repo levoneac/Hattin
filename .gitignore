@@ -5,3 +5,7 @@ Hattin/obj/**/*
 HattinB
 arenalinux_64bit_3.10beta
 backupHattin
+/.vs
+/Hattin/.vs
+/Hattin/Properties/PublishProfiles
+/Hattin/Hattin.csproj.user

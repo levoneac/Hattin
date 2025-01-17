@@ -7,10 +7,10 @@ namespace Hattin.Types
         public int Depth { get; set; }
         public TranspositionEntryType Type { get; set; }
 
-        public Transposition(GeneratedMove move, float evaluation, int depth, TranspositionEntryType type)
+        public Transposition(MoveEvaluation move, int depth, TranspositionEntryType type)
         {
-            Move = move;
-            Evaluation = evaluation;
+            Move = move.Move;
+            Evaluation = move.Evaluation;
             Depth = depth;
             Type = type;
         }

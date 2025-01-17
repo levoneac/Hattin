@@ -40,50 +40,42 @@ namespace Hattin.Implementations.Engine
         //BUG 1: if the transptable is small, the engine sometimes cant generate moves even if possible moves exist
         private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int absoluteDepth, int maxDepth, float alpha, float beta, SideToMove player)
         {
-            GeneratedMove bestMove = new GeneratedMove();
+
+            MoveEvaluation bestMove = new MoveEvaluation(player);
+            MoveEvaluation curEval;
+            GeneratedMove curMove;
+            List<GeneratedMove> possibleMoves = new List<GeneratedMove>();
+            bool tryFromTableFirst = false;
+
             int positionHash = Board.PositionHash.CurrentPositionHash;
             if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
             {
-                if (preCalculated.Depth >= absoluteDepth)
+                //If the found position was searched longer than this one will be, return the move
+                if(preCalculated.Depth > depth && preCalculated.Type == TranspositionEntryType.FullySearched)
                 {
-                    //Move was within the alpha and beta and was fully searched
-                    if (preCalculated.Type == TranspositionEntryType.Valid)
-                    {
-                        return new MoveEvaluation(preCalculated.Move, preCalculated.Evaluation);
-                    }
-
-                    //Move has been seen earlier but was cut off before finishing (i think)
-                    else if (preCalculated.Type == TranspositionEntryType.LessThanAlpha)
-                    {
-                        if (preCalculated.Evaluation < beta)
-                        {
-                            beta = preCalculated.Evaluation;
-                            bestMove = preCalculated.Move;
-                        }
-                    }
-                    else if (preCalculated.Type == TranspositionEntryType.MoreThanBeta)
-                    {
-                        if (preCalculated.Evaluation > alpha)
-                        {
-                            alpha = preCalculated.Evaluation;
-                            bestMove = preCalculated.Move;
-                        }
-                    }
+                    bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation);
+                    return bestMove;
                 }
+
+                //Else try the found move first for possible fast pruning
+                if (Board.IsValid(preCalculated.Move))
+                {
+                    possibleMoves.Add(preCalculated.Move);
+                    tryFromTableFirst = true;
+                }
+
             }
             if (depth <= 0 || absoluteDepth >= maxDepth)
             {
                 return new MoveEvaluation(move, PositionEvaluator.EvaluateCurrentPosition(currentBoard));
             }
-            //if (move.IsCheck) { Board.IsCheck = true; } else { Board.IsCheck = false; } Runs into problems with discovery check
 
-            MoveEvaluation curEval;
-            float positionScore;
 
-            TranspositionEntryType transpositionEntryType = TranspositionEntryType.Valid;
-
-            GeneratedMove thisMove = bestMove;
-            List<GeneratedMove> possibleMoves = GetPossibleMoves();
+            TranspositionEntryType transpositionEntryType = TranspositionEntryType.FullySearched;
+            if (!tryFromTableFirst)
+            {
+                possibleMoves.AddRange(GetPossibleMoves());
+            }
 
             if (possibleMoves.Count == 0)
             {
@@ -91,61 +83,76 @@ namespace Hattin.Implementations.Engine
             }
             if (player == SideToMove.White)
             {
-                foreach (GeneratedMove curMove in possibleMoves)
+                for (int i = 0; i < possibleMoves.Count; i++)
                 {
+                    curMove = possibleMoves[i];
                     Board.MovePiece(curMove);
-
                     curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
-                    positionScore = curEval.Evaluation;
-                    //thisMove = curEval.Move;
+
+                    if (curEval.Evaluation > bestMove.Evaluation)
+                    {
+                        bestMove.SetToNewMove(curMove, curEval.Evaluation);
+                    }
 
                     Board.UndoLastMove();
-                    if (positionScore > alpha)
+                    if (bestMove.Evaluation > alpha)
                     {
-                        alpha = positionScore;
-                        bestMove = curMove;
+                        alpha = bestMove.Evaluation;
                     }
 
                     if (alpha >= beta)
                     {
-                        transpositionEntryType = TranspositionEntryType.MoreThanBeta;
+                        transpositionEntryType = TranspositionEntryType.Pruned;
                         break;
                     }
+
+                    if (tryFromTableFirst)
+                    {
+                        tryFromTableFirst = false;
+                        possibleMoves.AddRange(GetPossibleMoves());
+                    }
                 }
-                TranspositionTable[positionHash] = new Transposition(bestMove, alpha, depth, transpositionEntryType); //dont save cut values!!!!
+                TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType); 
 
 
-                return new MoveEvaluation(bestMove, alpha);
+                return bestMove;
             }
 
             if (player == SideToMove.Black)
             {
-                foreach (GeneratedMove curMove in possibleMoves)
+                for (int i = 0; i < possibleMoves.Count; i++)
                 {
+                    curMove = possibleMoves[i];
                     Board.MovePiece(curMove);
                     curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
-                    positionScore = curEval.Evaluation;
-                    //thisMove = curEval.Move;
+                    if (curEval.Evaluation < bestMove.Evaluation)
+                    {
+                        bestMove.SetToNewMove(curMove, curEval.Evaluation);
+                    }
 
                     Board.UndoLastMove();
-                    if (positionScore < beta)
+                    if (bestMove.Evaluation < beta)
                     {
-                        beta = positionScore;
-                        bestMove = curMove;
+                        beta = bestMove.Evaluation;
                     }
 
                     if (beta <= alpha)
                     {
-                        transpositionEntryType = TranspositionEntryType.LessThanAlpha;
+                        transpositionEntryType = TranspositionEntryType.Pruned;
                         break;
                     }
+
+                    if (tryFromTableFirst)
+                    {
+                        tryFromTableFirst = false;
+                        possibleMoves.AddRange(GetPossibleMoves());
+                    }
                 }
-                TranspositionTable[positionHash] = new Transposition(bestMove, beta, depth, transpositionEntryType);
+                TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
 
-
-                return new MoveEvaluation(bestMove, beta);
+                return bestMove;
             }
-            return new MoveEvaluation(bestMove, (int)GameResult.Draw);
+            return new MoveEvaluation(bestMove.Move, (int)GameResult.Draw);
 
         }
 

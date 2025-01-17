@@ -257,6 +257,16 @@ namespace Hattin.Types
             PieceProperties.UndoMove(move);
         }
 
+        //quickfix
+        public bool IsValid(Move move)
+        {
+            if (PieceProperties.GetPieceOnSquare(move.FromSquare) == move.Piece)
+            {
+                return true;
+            }
+            return false;
+        }
+
 
         private void FlushBoard()
         {
