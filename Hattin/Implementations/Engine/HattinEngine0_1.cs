@@ -51,7 +51,7 @@ namespace Hattin.Implementations.Engine
             if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
             {
                 //If the found position was searched longer than this one will be, return the move
-                if(preCalculated.Depth > depth && preCalculated.Type == TranspositionEntryType.FullySearched)
+                if (preCalculated.Depth > depth && preCalculated.Type == TranspositionEntryType.FullySearched)
                 {
                     bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation);
                     return bestMove;
@@ -112,7 +112,7 @@ namespace Hattin.Implementations.Engine
                         possibleMoves.AddRange(GetPossibleMoves());
                     }
                 }
-                TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType); 
+                TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
 
 
                 return bestMove;
@@ -207,7 +207,7 @@ namespace Hattin.Implementations.Engine
             {
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
                 //TranspositionTable.Clear();
-                MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 3, 0, 6, float.MinValue, float.MaxValue, Board.SideToMove);
+                MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 4, 0, 9, float.MinValue, float.MaxValue, Board.SideToMove);
                 chosenMove = bestMove.Move;
             }
             else

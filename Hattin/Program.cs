@@ -8,6 +8,7 @@ using Hattin.Implementations.MoveGenerators;
 using Hattin.Implementations.PositionEvaluators;
 using Hattin.Interfaces;
 using Hattin.Types;
+using Hattin.Utils;
 
 namespace Hattin
 {
@@ -22,11 +23,12 @@ namespace Hattin
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, constraintBuilder, evaluator);
 
-            UCIController controller = new UCIController(engineThreaded);
-            controller.StartListening();
+            //UCIController controller = new UCIController(engineThreaded);
+            //controller.StartListening();
+            Perft perft = new Perft(engineThreaded);
+            perft.PrintTotalMovesTillDepth(4, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 
-
-
+            //Idea: dont update the attacked squares unless king is in check(how to know this without doning it? do the move and if the king is captured its check(what about castling?))
 
 
             //v SAVE FOR LOGGING LATER v

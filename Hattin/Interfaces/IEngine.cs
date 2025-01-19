@@ -8,6 +8,7 @@ namespace Hattin.Interfaces
         public BoardState Board { get; init; }
         public IMoveGenerator MoveGenerator { get; init; }
         public GeneratedMove GetNextMove();
+        public List<GeneratedMove> GetPossibleMoves();
         public void AnalyzeCurrent(AnalyzedPosition analyzedPosition);
         public void AnalyzeCurrent(object? options);
         //public void InterruptSearch();

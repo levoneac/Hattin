@@ -490,6 +490,12 @@ namespace Hattin.Types
                 }
             }
 
+            //Not all FENs include the last 2
+            if (FENparts.Length < 5)
+            {
+                PositionHash.InitializeHash(this);
+                return;
+            }
             //50 move rule (in ply)
             if (int.TryParse(FENparts[4], out int plies))
             {
