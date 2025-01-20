@@ -205,9 +205,12 @@ namespace Hattin.Types
         //assumes that move is already verified from caller
         public void MovePiece(Move move)
         {
-            if (squareContents[move.DestSquare.ToBase64Int()].ToValue() == NormalPieceValue.King)
+            int fromSquareArrayPos = move.FromSquare.ToBase64Int();
+            int toSquareArrayPos = move.DestSquare.ToBase64Int();
+            NormalPiece pieceOnDestSquare = squareContents[toSquareArrayPos];
+            if (pieceOnDestSquare.ToValue() == NormalPieceValue.King)
             {
-                throw new ArgumentException($"King on {move.DestSquare} cannot be captured", nameof(move.DestSquare));
+                throw new ArgumentException($"{pieceOnDestSquare} on {move.DestSquare} cannot be captured by {move.Piece} from {move.FromSquare}", nameof(move.DestSquare));
             }
 
             //Check if the piece actually exists
@@ -221,10 +224,9 @@ namespace Hattin.Types
             if (move.PromoteTo != NormalPiece.Empty)
             {
                 RemovePiece(move.Piece, move.FromSquare);
-                int toSquareArrayPos = move.DestSquare.ToBase64Int();
-                if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
+                if (pieceOnDestSquare != NormalPiece.Empty)
                 {
-                    RemovePiece(squareContents[toSquareArrayPos], move.DestSquare);
+                    RemovePiece(pieceOnDestSquare, move.DestSquare);
                 }
                 AddPiece(move.PromoteTo, move.DestSquare);
             }
@@ -233,13 +235,9 @@ namespace Hattin.Types
             {
                 PiecePositions[(int)move.Piece][indexOfFromSquare] = move.DestSquare;
 
-                int fromSquareArrayPos = move.FromSquare.ToBase64Int();
-                int toSquareArrayPos = move.DestSquare.ToBase64Int();
-
-
-                if (squareContents[toSquareArrayPos] != NormalPiece.Empty)
+                if (pieceOnDestSquare != NormalPiece.Empty)
                 {
-                    RemovePiece(squareContents[toSquareArrayPos], move.DestSquare);
+                    RemovePiece(pieceOnDestSquare, move.DestSquare);
                 }
                 //There is never anything on an enpassantsquare
                 else if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
@@ -392,7 +390,7 @@ namespace Hattin.Types
             {
                 listOfPieces.Clear();
             }
-            for (int i = 0; i < 63; i++)
+            for (int i = 0; i < 64; i++)
             {
                 captureAndBlockingSquares[i] = SideToMove.None;
                 squareContents[i] = NormalPiece.Empty;

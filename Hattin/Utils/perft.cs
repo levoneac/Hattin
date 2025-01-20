@@ -1,3 +1,4 @@
+using Hattin.Extensions.Move;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Interfaces;
 using Hattin.Types;
@@ -43,13 +44,31 @@ namespace Hattin.Utils
             }
         }
 
+        public void PrintTotalMovesPerBranchTillDepth(int depth, string? FEN = null)
+        {
+            MaxDepth = depth;
+
+            if (FEN is not null)
+            {
+                Engine.Board.ProcessFEN(FEN);
+            }
+
+            List<GeneratedMove> branches = Engine.GetPossibleMoves();
+            for (int i = 0; i < branches.Count; i++)
+            {
+                InitializeTotalPositoins(depth);
+
+                Engine.Board.MovePiece(branches[i]);
+                MoveGeneration();
+                Engine.Board.UndoLastMove();
+
+                Console.WriteLine($"Move : {branches[i].ToAlgebra(true)} -> {TotalPositions.Sum()}");
+            }
+        }
+
         public void PrintTotalMovesTillDepth(int depth, string? FEN = null)
         {
-            TotalPositions.Clear();
-            for (int i = 0; i < depth; i++)
-            {
-                TotalPositions.Add(0);
-            }
+            InitializeTotalPositoins(depth);
             MaxDepth = depth;
 
             if (FEN is not null)
@@ -59,7 +78,7 @@ namespace Hattin.Utils
             MoveGeneration();
             for (int i = 0; i < TotalPositions.Count; i++)
             {
-                Console.WriteLine($"Depth:{i} -> {TotalPositions[i]}");
+                Console.WriteLine($"Depth : {i} -> {TotalPositions[i]}");
             }
         }
         //r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq 
@@ -80,6 +99,16 @@ namespace Hattin.Utils
         //Issues seem to be castles and maybe promotions and checkmates
 
         //rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  
+
+
+        private void InitializeTotalPositoins(int depth)
+        {
+            TotalPositions.Clear();
+            for (int i = 0; i < depth; i++)
+            {
+                TotalPositions.Add(0);
+            }
+        }
 
     }
 }

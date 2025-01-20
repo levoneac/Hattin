@@ -4,9 +4,9 @@ namespace Hattin.Extensions.Move
 {
     public static class MoveExtensions
     {
-        public static string ToAlgebra(this Types.Move move)
+        public static string ToAlgebra(this Types.Move move, bool includePiece = false)
         {
-            return Types.Move.ToAlgebra(move);
+            return Types.Move.ToAlgebra(move, includePiece);
         }
 
         //Is it bad practise to overload builtins?

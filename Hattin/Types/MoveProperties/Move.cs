@@ -134,14 +134,14 @@ namespace Hattin.Types
             return new Move(piece, fromSquare, toSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare);
         }
 
-        public static string ToAlgebra(Move move)
+        public static string ToAlgebra(Move move, bool includePiece = false)
         {
             string promoteTo = "";
             if (move.PromoteTo != NormalPiece.Empty)
             {
                 promoteTo = ((FENSymbols)move.PromoteTo).ToString().ToLower();
             }
-            return $"{move.FromSquare.ToString().ToLower()}{move.DestSquare.ToString().ToLower()}{promoteTo}";
+            return $"{(includePiece ? ((FENSymbols)move.Piece).ToString() : "")}{move.FromSquare.ToString().ToLower()}{move.DestSquare.ToString().ToLower()}{promoteTo}";
         }
     }
 }
