@@ -47,7 +47,7 @@ namespace Hattin.Utils
             return Directions.Diagonal;
         }
 
-        public static bool IsKnightMove(BoardSquare fromSquare, BoardSquare toSquare)
+        private static bool IsKnightMove(BoardSquare fromSquare, BoardSquare toSquare)
         {
             return NormalPieceOffsets.Knight.Contains(fromSquare - toSquare);
         }

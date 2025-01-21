@@ -8,6 +8,7 @@ namespace Hattin.Types
         public List<List<AttackProjection>> AttackedSquares { get; set; }
         public bool IsPromotion { get; set; }
         public bool IsCapture { get; set; }
+        public bool IsEnPassant { get; set; }
         public bool IsCheck { get; set; }
 
         public GeneratedMove() : base()
@@ -15,16 +16,18 @@ namespace Hattin.Types
             AttackedSquares = [];
             IsPromotion = false;
             IsCapture = false;
+            IsEnPassant = false;
             IsCheck = false;
         }
 
         public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares,
             BoardSquare enPassantSquare = BoardSquare.NoSquare, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare, bool isPromotion = false,
-            bool isCapture = false, BoardSquare rookCastleFromSquare = BoardSquare.NoSquare, BoardSquare rookCastleToSquare = BoardSquare.NoSquare)
+            bool isCapture = false, bool isEnPassant = false, BoardSquare rookCastleFromSquare = BoardSquare.NoSquare, BoardSquare rookCastleToSquare = BoardSquare.NoSquare)
                 : base(piece, fromSquare, toSquare, rookCastleFromSquare, rookCastleToSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare)
         {
             AttackedSquares = attackedSquares;
             IsPromotion = isPromotion;
+            IsEnPassant = isEnPassant;
             IsCapture = isCapture;
 
             NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;

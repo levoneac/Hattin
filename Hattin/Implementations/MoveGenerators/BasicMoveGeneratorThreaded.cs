@@ -253,7 +253,7 @@ namespace Hattin.Implementations.MoveGenerators
                     else if (offsetIndex > 1 && positionAfterOffset == Board.EnPassantSquare)
                     {
                         BoardSquare capturedEnPassantPawnPosition = positionAfterOffset - offsets[1];
-                        possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, capturedEnPassantPawnPosition, isPromotion, true));
+                        possibleMoves.Add(new GeneratedMove(pieceColor, pawnPosition, positionAfterOffset, attackedSquares, BoardSquare.NoSquare, capturedEnPassantPawnPosition, isPromotion, true, isEnPassant: true));
                     }
                     //else if the square is not occupied and its a normal forward move
                     else if (colorOfPieceOnSquare == SideToMove.None && offsetIndex < 2)

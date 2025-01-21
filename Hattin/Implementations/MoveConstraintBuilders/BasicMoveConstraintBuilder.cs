@@ -1,4 +1,5 @@
 using Hattin.Extensions.NormalPiece;
+using Hattin.Extensions.Squares;
 using Hattin.Interfaces;
 using Hattin.Types;
 using Hattin.Utils;
@@ -52,18 +53,36 @@ namespace Hattin.Implementations.MoveConstraintBuilders
         {
             List<Pin> pins = Board.PieceProperties.GetPinnedPieces(NormalPieceClassifications.Kings);
             Dictionary<BoardSquare, List<BoardSquare>> pinnedLookup = new Dictionary<BoardSquare, List<BoardSquare>>();
+
+            //figure out less wasteful way later
+            Dictionary<BoardSquare, bool> enPassantLookup = new Dictionary<BoardSquare, bool>();
+
             foreach (var pin in pins)
             {
                 pinnedLookup[pin.PinnedPieceSquare] = pin.AllowedSquares;
+                if (pin.EnPassantPin)
+                {
+                    enPassantLookup[pin.PinnedPieceSquare] = true;
+                }
             }
             if (pinnedLookup.Count > 0)
             {
-                CurrentCollection.Add(IsPinRestricted);
+                CurrentCollection.Add(IsNotPinRestricted);
             }
 
-            //wrong name
-            bool IsPinRestricted(GeneratedMove move)
+
+            bool IsNotPinRestricted(GeneratedMove move)
             {
+                //check if enpassant-pinned
+                if (enPassantLookup.TryGetValue(move.FromSquare, out bool isEnPassantPin))
+                {
+                    //if capture then dont allow
+                    if (move.IsEnPassant)
+                    {
+                        return false;
+                    }
+
+                }
                 if (pinnedLookup.TryGetValue(move.FromSquare, out List<BoardSquare>? allowedSquares))
                 {
                     if (allowedSquares?.Contains(move.DestSquare) ?? false)
