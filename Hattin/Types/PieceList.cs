@@ -175,12 +175,14 @@ namespace Hattin.Types
                             if (possiblePinSquares.Contains(attackedSquare.Square))
                             {
                                 bool enPasssantPin = false;
+                                bool isPin = true;
                                 if (attackedSquare.XRayLevel == 0) { firstAttackedPiece = attackedSquare.PieceOnSquare; }
                                 if (attackedSquare.XRayLevel == 0 && attackedSquare.Interaction == SquareInteraction.Attacking)
                                 {
                                     if (attackedSquare.PieceOnSquare.ToValue() == NormalPieceValue.King) { continue; }
 
-                                    //checks if there are any other squares with a piece inbetween the possible pin and the pinnedToPiece
+
+                                    //if the first and only piece blocking between the possible pin and the king, then you cant allow en passant
                                     var piecesBetween = SquareRange.GetSquaresBetween(attackedSquare.Square, pinnedToPiece, false)
                                                             .Select((i, index) => new { index, pieceType = GetPieceOnSquare(i).ToValue() });
                                     foreach (var pieceBetween in piecesBetween)
@@ -189,17 +191,20 @@ namespace Hattin.Types
                                         {
                                             enPasssantPin = true;
                                         }
-                                        else if (!(pieceBetween.pieceType == NormalPieceValue.Pawn && pieceBetween.index == 1))
+                                        else if (pieceBetween.pieceType != NormalPieceValue.Empty)
                                         {
-                                            enPasssantPin = false;
+                                            isPin = false;
                                             break;
                                         }
                                     }
+                                    if (isPin)
+                                    {
+                                        pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare, pinnedToPiece, pinnedToPieceType,
+                                            pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, true), enPasssantPin));
 
-                                    pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare, pinnedToPiece, pinnedToPieceType,
-                                        pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, true), enPasssantPin));
+                                        continue;
+                                    }
 
-                                    continue;
                                 }
                                 if (attackedSquare.XRayLevel == 1 && attackedSquare.PieceOnSquare.ToValue() == NormalPieceValue.Pawn && attackedSquare.Interaction == SquareInteraction.Attacking)
                                 {
