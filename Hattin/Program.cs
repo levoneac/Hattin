@@ -26,8 +26,8 @@ namespace Hattin
             //UCIController controller = new UCIController(engineThreaded);
             //controller.StartListening();
             Perft perft = new Perft(engineThreaded);
-            perft.PrintTotalMovesTillDepth(4, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");  //8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 enpassant capture reveals the king to a rook
-            perft.PrintTotalMovesTillDepth(3, "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+            //perft.PrintTotalMovesTillDepth(4, "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");  //8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1 enpassant capture reveals the king to a rook
+            perft.PrintTotalMovesPerBranchTillDepth(1, "8/2p5/3p4/KP5r/1R3pPk/8/4P3/8 b - g3 0 1");
             //Idea: dont update the attacked squares unless king is in check(how to know this without doning it? do the move and if the king is captured its check(what about castling?))
 
 

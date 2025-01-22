@@ -59,7 +59,8 @@ namespace Hattin.Utils
             {
                 Engine.Board.ProcessFEN(FEN);
             }
-
+            long totalMoves = 0;
+            long curBranchCount = 0;
             List<GeneratedMove> branches = Engine.GetPossibleMoves();
             for (int i = 0; i < branches.Count; i++)
             {
@@ -69,8 +70,12 @@ namespace Hattin.Utils
                 MoveGeneration();
                 Engine.Board.UndoLastMove();
 
-                Console.WriteLine($"Move: {branches[i].ToAlgebra(true)} -> {TotalCounts.Sum(i => i.NumMoves)}");
+                curBranchCount = TotalCounts.Sum(i => i.NumMoves);
+                totalMoves += curBranchCount;
+
+                Console.WriteLine($"Branch: {i + 1} - Move: {branches[i].ToAlgebra(true)} -> {curBranchCount}");
             }
+            Console.WriteLine($"Total moves: {totalMoves}");
         }
 
         public void PrintTotalMovesTillDepth(int depth, string? FEN = null)
