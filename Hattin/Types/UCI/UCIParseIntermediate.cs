@@ -25,12 +25,12 @@ namespace Hattin.Types
             Moves = moves;
             FEN = null;
         }
-        public UCIParseIntermediate(string command, string? fen, string optionName = "", string optionValue = "")
+        public UCIParseIntermediate(string command, string? fen, string[] moves, string optionName = "", string optionValue = "")
         {
             Command = command;
             OptionName = optionName;
             OptionValue = optionValue;
-            Moves = [];
+            Moves = moves;
             FEN = fen;
         }
     }

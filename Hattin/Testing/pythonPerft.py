@@ -71,7 +71,7 @@ class Perft:
         return result
 
 
-board = chess.Board(
-    "8/2p5/3p4/KP5r/1R3pPk/8/4P3/8 b - g3 0 1")
+board = chess.Board("rnbq1k1r/pp1PbBpp/2p5/8/8/8/PPP1N1PP/RNBQK2n w Q - 0 9"
+                    )
 perft = Perft(board)
-perft.PrintTotalMovesPerBranchTillDepth(2)
+perft.PrintTotalMovesPerBranchTillDepth(3)

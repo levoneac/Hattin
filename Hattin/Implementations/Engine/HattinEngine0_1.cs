@@ -207,7 +207,7 @@ namespace Hattin.Implementations.Engine
             {
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
                 //TranspositionTable.Clear();
-                MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 4, 0, 9, float.MinValue, float.MaxValue, Board.SideToMove);
+                MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 3, 0, 8, float.MinValue, float.MaxValue, Board.SideToMove);
                 chosenMove = bestMove.Move;
             }
             else

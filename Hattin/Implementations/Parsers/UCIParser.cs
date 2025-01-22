@@ -49,9 +49,9 @@ namespace Hattin.Implementations.Parsers
 
             int startPosIndex = words.IndexOf("position");
             {
+                string[] moves = [];
                 if (words[startPosIndex + 1] == "startpos")
                 {
-                    string[] moves = [];
                     if (words.Count > (startPosIndex + 2) && words[startPosIndex + 2] == "moves")
                     {
                         moves = [.. words[(startPosIndex + 3)..]];
@@ -60,7 +60,14 @@ namespace Hattin.Implementations.Parsers
                 }
                 if (words[startPosIndex + 1] == "fen")
                 {
-                    return new UCIParseIntermediate(command, string.Join(" ", words[(startPosIndex + 2)..]), option, value);
+                    int movesIndex = words.IndexOf("moves");
+                    if (movesIndex != -1)
+                    {
+                        moves = [.. words[(movesIndex + 1)..]];
+                    }
+                    else { movesIndex = words.Count; }
+
+                    return new UCIParseIntermediate(command, string.Join(" ", words[(startPosIndex + 2)..movesIndex]), moves, option, value);
 
                     //can contain moves after FEN as well
                 }

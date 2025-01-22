@@ -64,16 +64,41 @@ namespace Hattin.Utils
             List<GeneratedMove> branches = Engine.GetPossibleMoves();
             for (int i = 0; i < branches.Count; i++)
             {
-                InitializeTotalPositoins(depth);
+                GeneratedMove move = branches[i];
+                //promote
+                if (move.IsPromotion)
+                {
+                    foreach (NormalPiece promotion in NormalPieceClassifications.Promoteable)
+                    {
+                        if (promotion.ToColor() != Engine.Board.SideToMove) { continue; }
+                        InitializeTotalPositoins(depth);
+                        move.PromoteTo = promotion;
+                        Engine.Board.MovePiece(move);
+                        MoveGeneration(1);
+                        Engine.Board.UndoLastMove();
 
-                Engine.Board.MovePiece(branches[i]);
-                MoveGeneration();
-                Engine.Board.UndoLastMove();
+                        curBranchCount = TotalCounts.Sum(i => i.NumMoves);
+                        totalMoves += curBranchCount;
 
-                curBranchCount = TotalCounts.Sum(i => i.NumMoves);
-                totalMoves += curBranchCount;
+                        Console.WriteLine($"Branch: {i + 1} - Move: {move.ToAlgebra(true)} -> {curBranchCount}");
 
-                Console.WriteLine($"Branch: {i + 1} - Move: {branches[i].ToAlgebra(true)} -> {curBranchCount}");
+                    }
+                }
+                else
+                {
+                    InitializeTotalPositoins(depth);
+                    Engine.Board.MovePiece(move);
+                    MoveGeneration(1);
+                    Engine.Board.UndoLastMove();
+
+                    curBranchCount = TotalCounts.Sum(i => i.NumMoves);
+                    totalMoves += curBranchCount;
+
+                    Console.WriteLine($"Branch: {i + 1} - Move: {branches[i].ToAlgebra(true)} -> {curBranchCount}");
+                }
+
+
+
             }
             Console.WriteLine($"Total moves: {totalMoves}");
         }

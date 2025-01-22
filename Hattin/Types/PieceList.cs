@@ -200,7 +200,7 @@ namespace Hattin.Types
                                     if (isPin)
                                     {
                                         pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare, pinnedToPiece, pinnedToPieceType,
-                                            pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, true), enPasssantPin));
+                                            pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(pinnedToPiece, source.Square, true), enPasssantPin));
 
                                         continue;
                                     }
@@ -211,7 +211,7 @@ namespace Hattin.Types
                                     if (firstAttackedPiece.ToValue() == NormalPieceValue.Pawn && firstAttackedPiece.ToColor() == source.AsPiece.ToColor())
                                     {
                                         pinnedSquares.Add(new Pin(source.Square, source.AsPiece, attackedSquare.Square, attackedSquare.PieceOnSquare, pinnedToPiece, pinnedToPieceType,
-                                            pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(attackedSquare.Square, source.Square, true), enPassantPin: true));
+                                            pinnedToPieceType.ToValue() == NormalPieceValue.King, SquareRange.GetSquaresBetween(pinnedToPiece, source.Square, true), enPassantPin: true));
                                     }
                                 }
                             }
