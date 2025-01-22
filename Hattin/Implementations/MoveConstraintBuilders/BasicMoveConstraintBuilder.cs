@@ -81,7 +81,8 @@ namespace Hattin.Implementations.MoveConstraintBuilders
                     {
                         return false;
                     }
-
+                    //If its not en passant, allow the move as there is another piece to block the attack
+                    return true;
                 }
                 if (pinnedLookup.TryGetValue(move.FromSquare, out List<BoardSquare>? allowedSquares))
                 {
