@@ -22,26 +22,30 @@ namespace Hattin.Types
 
         public GeneratedMove(NormalPiece piece, BoardSquare fromSquare, BoardSquare toSquare, List<List<AttackProjection>> attackedSquares,
             BoardSquare enPassantSquare = BoardSquare.NoSquare, BoardSquare enPassantCaptureSquare = BoardSquare.NoSquare, bool isPromotion = false,
-            bool isCapture = false, bool isEnPassant = false, BoardSquare rookCastleFromSquare = BoardSquare.NoSquare, BoardSquare rookCastleToSquare = BoardSquare.NoSquare)
+            bool isCapture = false, bool isEnPassant = false, bool isCheck = false, BoardSquare rookCastleFromSquare = BoardSquare.NoSquare, BoardSquare rookCastleToSquare = BoardSquare.NoSquare)
                 : base(piece, fromSquare, toSquare, rookCastleFromSquare, rookCastleToSquare, enPassantSquare: enPassantSquare, enPassantCaptureSquare: enPassantCaptureSquare)
         {
             AttackedSquares = attackedSquares;
             IsPromotion = isPromotion;
             IsEnPassant = isEnPassant;
             IsCapture = isCapture;
+            IsCheck = isCheck;
 
-            NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
 
-            //maybe move out into movegenerator for more efficiency
-            foreach (var attackDirection in attackedSquares)
+            if (!IsCheck)
             {
-                AttackProjection kingAttack = attackDirection.FirstOrDefault(sq => sq.PieceOnSquare == opponentKingColor, new AttackProjection());
-                if (kingAttack.AsPiece != NormalPiece.Empty && kingAttack.XRayLevel == 0)
+                NormalPiece opponentKingColor = piece.ToColor() == SideToMove.White ? NormalPiece.BlackKing : NormalPiece.WhiteKing;
+                foreach (var attackDirection in attackedSquares)
                 {
-                    IsCheck = true;
-                    break;
+                    AttackProjection kingAttack = attackDirection.FirstOrDefault(sq => sq.PieceOnSquare == opponentKingColor, new AttackProjection());
+                    if (kingAttack.AsPiece != NormalPiece.Empty && kingAttack.XRayLevel == 0)
+                    {
+                        IsCheck = true;
+                        break;
+                    }
                 }
             }
+
         }
 
         public int CompareTo(GeneratedMove? obj)

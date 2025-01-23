@@ -23,7 +23,7 @@ class Perft:
             return
 
         curPerftAggregate = self.TotalCounts[depth]
-        for move in self.Board.generate_legal_moves():
+        for move in self.Board.legal_moves:
             curPerftAggregate.NumMoves += 1
 
             self.Board.push(move)
@@ -40,7 +40,7 @@ class Perft:
         totalMoves = 0
         curBranchMoves = 0
         branchNum = 1
-        for move in self.Board.generate_legal_moves():
+        for move in self.Board.legal_moves:
             self.InitializeList(maxDepth)
 
             self.Board.push(move)
@@ -71,7 +71,7 @@ class Perft:
         return result
 
 
-board = chess.Board("rnbq1k1r/pp1PbBpp/2p5/8/8/8/PPP1N1PP/RNBQK2n w Q - 0 9"
+board = chess.Board("r7/2P2k2/8/5K2/8/8/8/8 w - - 2 9"
                     )
 perft = Perft(board)
-perft.PrintTotalMovesPerBranchTillDepth(3)
+perft.PrintTotalMovesPerBranchTillDepth(4)

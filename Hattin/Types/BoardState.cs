@@ -135,6 +135,7 @@ namespace Hattin.Types
         public void UpdateCastleRights(Move move)
         {
             BoardSquare pieceSquare = move.FromSquare;
+            BoardSquare captureSquare = move.DestSquare;
             if (pieceSquare == BoardSquare.E1)
             {
                 castleRights &= ~(CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle);
@@ -143,19 +144,19 @@ namespace Hattin.Types
             {
                 castleRights &= ~(CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle);
             }
-            else if (pieceSquare == BoardSquare.A1)
+            else if (pieceSquare == BoardSquare.A1 || captureSquare == BoardSquare.A1)
             {
                 castleRights &= ~CastleRights.WhiteQueensideCastle;
             }
-            else if (pieceSquare == BoardSquare.H1)
+            else if (pieceSquare == BoardSquare.H1 || captureSquare == BoardSquare.H1)
             {
                 castleRights &= ~CastleRights.WhiteKingsideCastle;
             }
-            else if (pieceSquare == BoardSquare.A8)
+            else if (pieceSquare == BoardSquare.A8 || captureSquare == BoardSquare.A8)
             {
                 castleRights &= ~CastleRights.BlackQueensideCastle;
             }
-            else if (pieceSquare == BoardSquare.H8)
+            else if (pieceSquare == BoardSquare.H8 || captureSquare == BoardSquare.H8)
             {
                 castleRights &= ~CastleRights.BlackKingsideCastle;
             }

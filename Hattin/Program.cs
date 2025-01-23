@@ -23,16 +23,17 @@ namespace Hattin
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, constraintBuilder, evaluator);
 
-            UCIController controller = new UCIController(engineThreaded);
-            controller.StartListening();
+            //UCIController controller = new UCIController(engineThreaded);
+            //controller.StartListening();
 
 
-            //Perft perft = new Perft(engineThreaded);
-            //perft.PrintTotalMovesPerBranchTillDepth(3, "r1bq1k1r/pp1nbBpp/2p4B/8/8/8/PPP1N1PP/RN1QK2n b Q - 1 10");
+            Perft perft = new Perft(engineThreaded);
+            perft.PrintTotalMovesPerBranchTillDepth(3, "rnNq1k1r/pp2bppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R b KQ - 0 8");
 
 
             //FENS need their move considered
             //side isnt changed when makign a move
+
 
 
 

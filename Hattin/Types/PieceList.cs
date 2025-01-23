@@ -313,7 +313,7 @@ namespace Hattin.Types
 
         public void UndoMove(PlayedMove move)
         {
-            int indexOfFromSquare = PiecePositions[(int)move.PromotedToPiece].IndexOf(move.DestSquare); //LINQ should be side effect free, so you cant change inplace afaik
+            int indexOfFromSquare = PiecePositions[(int)move.PromotedToPiece].IndexOf(move.DestSquare);
             if (indexOfFromSquare == -1)
             {
                 throw new ArgumentOutOfRangeException(nameof(move.PromotedToPiece), $"There is no {move.PromotedToPiece} on square {move.DestSquare} (moving back to {move.FromSquare})");

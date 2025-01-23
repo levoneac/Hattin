@@ -51,7 +51,7 @@ namespace Hattin.Implementations.Engine
             if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
             {
                 //If the found position was searched longer than this one will be, return the move
-                if (preCalculated.Depth > depth && preCalculated.Type == TranspositionEntryType.FullySearched)
+                if (preCalculated.Depth >= depth && preCalculated.Type == TranspositionEntryType.FullySearched)
                 {
                     bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation);
                     return bestMove;

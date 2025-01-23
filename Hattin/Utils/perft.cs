@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Hattin.Extensions.Move;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Interfaces;
@@ -51,7 +52,7 @@ namespace Hattin.Utils
             }
         }
 
-        public void PrintTotalMovesPerBranchTillDepth(int depth, string? FEN = null)
+        public void PrintTotalMovesPerBranchTillDepth(int depth, string? FEN = null, bool onlyLastDepth = true)
         {
             MaxDepth = depth;
 
@@ -73,13 +74,13 @@ namespace Hattin.Utils
                         if (promotion.ToColor() != Engine.Board.SideToMove) { continue; }
                         InitializeTotalPositoins(depth);
                         move.PromoteTo = promotion;
+
                         Engine.Board.MovePiece(move);
                         MoveGeneration(1);
                         Engine.Board.UndoLastMove();
 
-                        curBranchCount = TotalCounts.Sum(i => i.NumMoves);
+                        curBranchCount = GetSumBranch(depth, onlyLastDepth);
                         totalMoves += curBranchCount;
-
                         Console.WriteLine($"Branch: {i + 1} - Move: {move.ToAlgebra(true)} -> {curBranchCount}");
 
                     }
@@ -91,18 +92,27 @@ namespace Hattin.Utils
                     MoveGeneration(1);
                     Engine.Board.UndoLastMove();
 
-                    curBranchCount = TotalCounts.Sum(i => i.NumMoves);
+                    curBranchCount = GetSumBranch(depth, onlyLastDepth);
                     totalMoves += curBranchCount;
-
                     Console.WriteLine($"Branch: {i + 1} - Move: {branches[i].ToAlgebra(true)} -> {curBranchCount}");
                 }
-
-
-
             }
             Console.WriteLine($"Total moves: {totalMoves}");
         }
 
+        private long GetSumBranch(int depth, bool onlyLastDepth)
+        {
+            long curBranchCount = 0;
+            if (onlyLastDepth)
+            {
+                curBranchCount = TotalCounts[depth - 1].NumMoves;
+            }
+            else
+            {
+                curBranchCount = TotalCounts.Sum(i => i.NumMoves);
+            }
+            return curBranchCount;
+        }
         public void PrintTotalMovesTillDepth(int depth, string? FEN = null)
         {
             InitializeTotalPositoins(depth);
@@ -141,10 +151,18 @@ namespace Hattin.Utils
         //Depth:3 -> 4085603
         //Depth:4 -> 193690690
 
-        //Issues seem to be castles and maybe promotions and checkmates
-
-        //rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8  
-
+        //Depth: 1 -> Total: 20, Capt: 0, EP: 0, Cast: 0, Prom: 0, Check: 0
+        //Depth: 2 -> Total: 400, Capt: 0, EP: 0, Cast: 0, Prom: 0, Check: 0
+        //Depth: 3 -> Total: 8902, Capt: 34, EP: 0, Cast: 0, Prom: 0, Check: 12
+        //Depth: 4 -> Total: 197281, Capt: 1576, EP: 0, Cast: 0, Prom: 0, Check: 469
+        //Depth: 5 -> Total: 4865609, Capt: 82719, EP: 258, Cast: 0, Prom: 0, Check: 27345
+        //Depth: 6 -> Total: 119060322, Capt: 2812006, EP: 5246, Cast: 0, Prom: 0, Check: 808770
+        //Depth: 7 -> Total: -1099066995, Capt: 108328417, EP: 318113, Cast: 883453, Prom: 0, Check: 33085818
+        //
+        //real    166m22,124s
+        //user    487m41,569s
+        //sys     102m0,456s
+        //
 
         private void InitializeTotalPositoins(int depth)
         {
@@ -157,13 +175,13 @@ namespace Hattin.Utils
 
         public class PerftResult
         {
-            public int Depth { get; set; } = 0;
-            public int NumMoves { get; set; } = 0;
-            public int NumEnPassant { get; set; } = 0;
-            public int NumCaptures { get; set; } = 0;
-            public int NumCasltes { get; set; } = 0;
-            public int NumChecks { get; set; } = 0;
-            public int NumPromotions { get; set; } = 0;
+            public long Depth { get; set; } = 0;
+            public long NumMoves { get; set; } = 0;
+            public long NumEnPassant { get; set; } = 0;
+            public long NumCaptures { get; set; } = 0;
+            public long NumCasltes { get; set; } = 0;
+            public long NumChecks { get; set; } = 0;
+            public long NumPromotions { get; set; } = 0;
             public PerftResult(int depth)
             {
                 Depth = depth;
