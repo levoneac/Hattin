@@ -629,7 +629,6 @@ namespace Hattin.Implementations.MoveGenerators
 
 
             Moves = constraints?.Invoke(Moves) ?? Moves;
-            Moves.Sort();
             return Moves;
 
 

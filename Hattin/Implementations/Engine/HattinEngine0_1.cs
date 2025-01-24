@@ -43,6 +43,7 @@ namespace Hattin.Implementations.Engine
 
             MoveEvaluation bestMove = new MoveEvaluation(player);
             MoveEvaluation curEval;
+            GeneratedMove priorityMove = null;
             GeneratedMove curMove;
             List<GeneratedMove> possibleMoves = new List<GeneratedMove>();
             bool tryFromTableFirst = false;
@@ -56,25 +57,30 @@ namespace Hattin.Implementations.Engine
                     bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation);
                     return bestMove;
                 }
-
                 //Else try the found move first for possible fast pruning
-                if (Board.IsValid(preCalculated.Move))
+                else
                 {
-                    possibleMoves.Add(preCalculated.Move);
-                    tryFromTableFirst = true;
+                    priorityMove = preCalculated.Move;
                 }
-
             }
             if (depth <= 0 || absoluteDepth >= maxDepth)
             {
                 return new MoveEvaluation(move, PositionEvaluator.EvaluateCurrentPosition(currentBoard));
             }
 
-
             TranspositionEntryType transpositionEntryType = TranspositionEntryType.FullySearched;
-            if (!tryFromTableFirst)
+
+            possibleMoves.AddRange(GetPossibleMoves());
+            possibleMoves.Sort();
+            if (priorityMove is not null)
             {
-                possibleMoves.AddRange(GetPossibleMoves());
+                //Due to hash collisions you need to check if the move is actually legal
+                int priorityMoveIndex = possibleMoves.IndexOf(priorityMove);
+                if (priorityMoveIndex != -1)
+                {
+                    possibleMoves.RemoveAt(priorityMoveIndex);
+                    possibleMoves.Insert(0, priorityMove);
+                }
             }
 
             if (possibleMoves.Count == 0)
@@ -88,13 +94,13 @@ namespace Hattin.Implementations.Engine
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove);
                     curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    Board.UndoLastMove();
 
                     if (curEval.Evaluation > bestMove.Evaluation)
                     {
                         bestMove.SetToNewMove(curMove, curEval.Evaluation);
                     }
 
-                    Board.UndoLastMove();
                     if (bestMove.Evaluation > alpha)
                     {
                         alpha = bestMove.Evaluation;
@@ -125,12 +131,13 @@ namespace Hattin.Implementations.Engine
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove);
                     curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    Board.UndoLastMove();
+
                     if (curEval.Evaluation < bestMove.Evaluation)
                     {
                         bestMove.SetToNewMove(curMove, curEval.Evaluation);
                     }
 
-                    Board.UndoLastMove();
                     if (bestMove.Evaluation < beta)
                     {
                         beta = bestMove.Evaluation;

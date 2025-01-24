@@ -144,19 +144,19 @@ namespace Hattin.Types
             {
                 castleRights &= ~(CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle);
             }
-            else if (pieceSquare == BoardSquare.A1 || captureSquare == BoardSquare.A1)
+            if (pieceSquare == BoardSquare.A1 || captureSquare == BoardSquare.A1)
             {
                 castleRights &= ~CastleRights.WhiteQueensideCastle;
             }
-            else if (pieceSquare == BoardSquare.H1 || captureSquare == BoardSquare.H1)
+            if (pieceSquare == BoardSquare.H1 || captureSquare == BoardSquare.H1)
             {
                 castleRights &= ~CastleRights.WhiteKingsideCastle;
             }
-            else if (pieceSquare == BoardSquare.A8 || captureSquare == BoardSquare.A8)
+            if (pieceSquare == BoardSquare.A8 || captureSquare == BoardSquare.A8)
             {
                 castleRights &= ~CastleRights.BlackQueensideCastle;
             }
-            else if (pieceSquare == BoardSquare.H8 || captureSquare == BoardSquare.H8)
+            if (pieceSquare == BoardSquare.H8 || captureSquare == BoardSquare.H8)
             {
                 castleRights &= ~CastleRights.BlackKingsideCastle;
             }
