@@ -28,13 +28,7 @@ namespace Hattin
 
 
             //Perft perft = new Perft(engineThreaded);
-            //perft.PrintTotalMovesPerBranchTillDepth(4, "rnb1qk1r/pp1PbBpp/2p5/8/8/8/PPP1NKPP/RNBQ1R2 w - - 1 11");
-
-
-            //FENS need their move considered
-            //side isnt changed when makign a move
-
-
+            //perft.PrintTotalMovesTillDepth(3, "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
 
 
             //v SAVE FOR LOGGING LATER v

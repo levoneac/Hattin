@@ -36,7 +36,7 @@ namespace Hattin.Utils
                 if (move.IsPromotion)
                 {
                     curResult.NumMoves += 3;
-                    curResult.NumPromotions++;
+                    curResult.NumPromotions += 4;
                     foreach (NormalPiece promotion in NormalPieceClassifications.Promoteable)
                     {
                         if (promotion.ToColor() != Engine.Board.SideToMove) { continue; }

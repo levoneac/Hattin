@@ -11,78 +11,18 @@ namespace Hattin.Types
     {
         public static readonly SquareIndexType squareIndexing = SquareIndexType.Base_120;
         public const string startingFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
         public event EventHandler<NewMoveEventArgs> NewMoveEvent;
-
-        private NormalPiece[] board;
-        public NormalPiece[] Board
-        {
-            get { return board; }
-            private set { board = value; }
-        }
-
-        private PieceList pieceProperties;
-        public PieceList PieceProperties
-        {
-            get { return pieceProperties; }
-            private set { pieceProperties = value; }
-        }
-
-        private Move lastestMove;
-        public Move LastestMove
-        {
-            get { return lastestMove; }
-            private set { lastestMove = value; }
-        }
-
+        public NormalPiece[] Board { get; set; }
+        public PieceList PieceProperties { get; set; }
+        public Move LastestMove { get; set; }
         private Stack<PlayedMove> moveHistory;
-
-
-        private int plyCounter;
-        public int PlyCounter
-        {
-            get { return plyCounter; }
-            private set { plyCounter = value; }
-        }
-
-        private int pliesWithoutCapture;
-        public int PliesWithoutCapture
-        {
-            get { return pliesWithoutCapture; }
-            private set { pliesWithoutCapture = value; }
-        }
-
-        private SideToMove sideToMove;
-        public SideToMove SideToMove
-        {
-            get { return sideToMove; }
-            private set { sideToMove = value; }
-        }
-
-        private BoardSquare enPassantSquare;
-        public BoardSquare EnPassantSquare
-        {
-            get { return enPassantSquare; }
-            set { enPassantSquare = value; }
-        }
-
-        private CastleRights castleRights;
-        public CastleRights CastleRights
-        {
-            get { return castleRights; }
-            private set { castleRights = value; }
-        }
-
-        private bool isCheck;
-        public bool IsCheck
-        {
-            get { return isCheck; }
-            set { isCheck = value; }
-        }
-
-
+        public int PlyCounter { get; set; }
+        public int PliesWithoutCapture { get; set; }
+        public SideToMove SideToMove { get; set; }
+        public BoardSquare EnPassantSquare { get; set; }
+        public CastleRights CastleRights { get; set; }
+        public bool IsCheck { get; set; }
         public ZobristHash PositionHash { get; set; }
-
         public GameResult GameResult { get; set; }
 
         public BoardState()
@@ -138,27 +78,27 @@ namespace Hattin.Types
             BoardSquare captureSquare = move.DestSquare;
             if (pieceSquare == BoardSquare.E1)
             {
-                castleRights &= ~(CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle);
+                CastleRights &= ~(CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle);
             }
             else if (pieceSquare == BoardSquare.E8)
             {
-                castleRights &= ~(CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle);
+                CastleRights &= ~(CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle);
             }
             if (pieceSquare == BoardSquare.A1 || captureSquare == BoardSquare.A1)
             {
-                castleRights &= ~CastleRights.WhiteQueensideCastle;
+                CastleRights &= ~CastleRights.WhiteQueensideCastle;
             }
             if (pieceSquare == BoardSquare.H1 || captureSquare == BoardSquare.H1)
             {
-                castleRights &= ~CastleRights.WhiteKingsideCastle;
+                CastleRights &= ~CastleRights.WhiteKingsideCastle;
             }
             if (pieceSquare == BoardSquare.A8 || captureSquare == BoardSquare.A8)
             {
-                castleRights &= ~CastleRights.BlackQueensideCastle;
+                CastleRights &= ~CastleRights.BlackQueensideCastle;
             }
             if (pieceSquare == BoardSquare.H8 || captureSquare == BoardSquare.H8)
             {
-                castleRights &= ~CastleRights.BlackKingsideCastle;
+                CastleRights &= ~CastleRights.BlackKingsideCastle;
             }
         }
 
@@ -198,7 +138,7 @@ namespace Hattin.Types
 
             });
 
-            if (castleRights != 0) { UpdateCastleRights(move); }
+            if (CastleRights != 0) { UpdateCastleRights(move); }
 
             //Enpassant square
             EnPassantSquare = move.EnPassantSquare;
@@ -217,7 +157,7 @@ namespace Hattin.Types
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
             //UpdatePositionHashes();
             PositionHash.MovePiece(move, this);
-            pieceProperties.MovePiece(move);
+            PieceProperties.MovePiece(move);
             NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             OnNewMoveEvent(eventArgs);
         }
@@ -500,7 +440,7 @@ namespace Hattin.Types
             //50 move rule (in ply)
             if (int.TryParse(FENparts[4], out int plies))
             {
-                pliesWithoutCapture = plies;
+                PliesWithoutCapture = plies;
             }
             else
             {
