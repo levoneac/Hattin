@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Utils;
 
@@ -48,6 +49,7 @@ namespace Hattin.Types
 
         }
 
+        //Use method in Engine instead, as this lacks access to the attack array
         public int CompareTo(GeneratedMove? obj)
         {
             if (obj is null && this is null) { return 0; }

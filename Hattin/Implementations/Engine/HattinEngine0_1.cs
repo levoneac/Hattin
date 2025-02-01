@@ -36,8 +36,37 @@ namespace Hattin.Implementations.Engine
             return MoveConstraintBuilder.GetConstraintFunction();
         }
 
+        //Change to inplace sort later
+        private List<GeneratedMove> OrderMoves(List<GeneratedMove> moves)
+        {
+            List<(int, GeneratedMove)> scoreAndMove = [];
+            foreach (GeneratedMove move in moves)
+            {
+                int score = 0;
+                if (move.IsCheck) { score += 10; }
+                if (move.IsCapture) { score += 5; }
+                if (move.IsPromotion) { score += 5; }
 
-        //BUG 1: if the transptable is small, the engine sometimes cant generate moves even if possible moves exist
+                AttackInformation destinationAttackInfo = Board.PieceProperties.GetAttackCountOnSquare(move.DestSquare);
+                int sumAttacks = destinationAttackInfo.AttackTotals.White - destinationAttackInfo.AttackTotals.Black;
+
+                //Need one more attacker than defender to win the exchange
+                if (sumAttacks > 0 && Board.SideToMove == SideToMove.White) { score += 8; }
+                else if (sumAttacks < 0 && Board.SideToMove == SideToMove.Black) { score += 8; }
+
+                foreach (BoardSquare attackedFromSquare in Board.PieceProperties.GetAttackSource(move.DestSquare))
+                {
+                    NormalPieceValue capturingPieceValue = Board.PieceProperties.GetPieceOnSquare(attackedFromSquare).ToValue();
+                    if (capturingPieceValue < move.Piece.ToValue() || capturingPieceValue == NormalPieceValue.King)
+                    {
+                        score -= 3;
+                    }
+                }
+                scoreAndMove.Add((score, move));
+            }
+            return scoreAndMove.OrderByDescending(key => key.Item1).Select(i => i.Item2).ToList();
+        }
+
         private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int absoluteDepth, int maxDepth, float alpha, float beta, SideToMove player)
         {
 
@@ -46,9 +75,27 @@ namespace Hattin.Implementations.Engine
             GeneratedMove priorityMove = null;
             GeneratedMove curMove;
             List<GeneratedMove> possibleMoves = new List<GeneratedMove>();
+            TranspositionEntryType transpositionEntryType = TranspositionEntryType.FullySearched;
             bool tryFromTableFirst = false;
 
             int positionHash = Board.PositionHash.CurrentPositionHash;
+            //Check if the current position has occured before in the current game
+            if (move.Piece != NormalPiece.Empty)
+            {
+                if (Board.RepetitionTable.ProbePosition(positionHash))
+                {
+                    //Needed because it always gets popped afterwards
+                    Board.RepetitionTable.PushPosition(positionHash);
+
+                    //Returns an almost equal score because (3-fold) repetition is a draw
+                    //Added a small penalty to encourage the engine to play other drawn moves before going for repetiotion
+                    bestMove.SetToNewMove(move, Board.SideToMove == SideToMove.White ? 10 : -10);
+                    return bestMove;
+                }
+                Board.RepetitionTable.PushPosition(positionHash);
+            }
+
+            //Check if the current position has occured in a different branch of the search tree
             if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
             {
                 //If the found position was searched longer than this one will be, return the move
@@ -63,15 +110,16 @@ namespace Hattin.Implementations.Engine
                     priorityMove = preCalculated.Move;
                 }
             }
+
+            //Evaluate the position if the depth limit has been reached
             if (depth <= 0 || absoluteDepth >= maxDepth)
             {
                 return new MoveEvaluation(move, PositionEvaluator.EvaluateCurrentPosition(currentBoard));
             }
 
-            TranspositionEntryType transpositionEntryType = TranspositionEntryType.FullySearched;
-
+            //Try to order the moves in such a way that we prune as many branches as possible
             possibleMoves.AddRange(GetPossibleMoves());
-            possibleMoves.Sort();
+            possibleMoves = OrderMoves(possibleMoves);
             if (priorityMove is not null)
             {
                 //Due to hash collisions you need to check if the move is actually legal
@@ -83,18 +131,22 @@ namespace Hattin.Implementations.Engine
                 }
             }
 
+            //If not moves are possible, it means the position is either mate or stalemate
             if (possibleMoves.Count == 0)
             {
                 return ResolveNoMoves(player);
             }
+
+            //Search for white
             if (player == SideToMove.White)
             {
                 for (int i = 0; i < possibleMoves.Count; i++)
                 {
                     curMove = possibleMoves[i];
-                    Board.MovePiece(curMove);
+                    Board.MovePiece(curMove, true);
                     curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
-                    Board.UndoLastMove();
+                    Board.RepetitionTable.PopPosition();
+                    Board.UndoLastMove(true);
 
                     if (curEval.Evaluation > bestMove.Evaluation)
                     {
@@ -124,14 +176,16 @@ namespace Hattin.Implementations.Engine
                 return bestMove;
             }
 
+            //Search for black
             if (player == SideToMove.Black)
             {
                 for (int i = 0; i < possibleMoves.Count; i++)
                 {
                     curMove = possibleMoves[i];
-                    Board.MovePiece(curMove);
+                    Board.MovePiece(curMove, true);
                     curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
-                    Board.UndoLastMove();
+                    Board.RepetitionTable.PopPosition();
+                    Board.UndoLastMove(true);
 
                     if (curEval.Evaluation < bestMove.Evaluation)
                     {

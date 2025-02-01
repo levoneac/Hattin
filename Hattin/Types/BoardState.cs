@@ -24,6 +24,7 @@ namespace Hattin.Types
         public bool IsCheck { get; set; }
         public ZobristHash PositionHash { get; set; }
         public GameResult GameResult { get; set; }
+        public RepetitionTable RepetitionTable { get; set; }
 
         public BoardState()
         {
@@ -38,6 +39,7 @@ namespace Hattin.Types
             CastleRights = CastleRights.WhiteKingsideCastle | CastleRights.WhiteQueensideCastle | CastleRights.BlackKingsideCastle | CastleRights.BlackQueensideCastle;
             IsCheck = false;
             PositionHash = new ZobristHash();
+            RepetitionTable = new RepetitionTable();
             //PositionHashes = new Dictionary<int, int>();
 
             //NewMoveEvent += PrintMove;
@@ -102,7 +104,7 @@ namespace Hattin.Types
             }
         }
 
-        public void MovePiece(Move move)
+        public void MovePiece(Move move, bool manualRepetitionTable = false)
         {
             NormalPiece pieceAfterMove = move.PromoteTo == NormalPiece.Empty ? move.Piece : move.PromoteTo;
             //120 based array for some reason
@@ -125,7 +127,6 @@ namespace Hattin.Types
                 PlyCounter = PlyCounter,
                 PliesWithoutCapture = PliesWithoutCapture,
                 SideToMove = SideToMove,
-                //PositionHashes = PositionHashes,
                 IsCheck = IsCheck,
 
                 PromotedFromPiece = move.Piece,
@@ -155,24 +156,29 @@ namespace Hattin.Types
             else { PliesWithoutCapture = 0; }
 
             SideToMove = SideToMove == SideToMove.White ? SideToMove.Black : SideToMove.White;
-            //UpdatePositionHashes();
+
             PositionHash.MovePiece(move, this);
+            if (!manualRepetitionTable)
+            {
+                RepetitionTable.PushPosition(PositionHash.CurrentPositionHash);
+            }
+
             PieceProperties.MovePiece(move);
-            NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
-            OnNewMoveEvent(eventArgs);
+            //NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
+            //OnNewMoveEvent(eventArgs);
         }
 
-        public void UndoLastMove()
+        public void UndoLastMove(bool manualRepetitionTable = false)
         {
             //ALT. 1: Use FEN to restore the boardstate (loses detailed move history outside the info in the FEN strings)
             //ALT. 2: Restart the board and play through the game again (Pointless, since the board is restarted through FEN anyway)
             //ALT. 3: Undo the last move (Fastest probably, but difficult to get right)
             //ALT. 4: Copy the current state into an array (same as FEN? but uses more space)
             PlayedMove moveToUndo = moveHistory.Pop();
-            UndoMove(moveToUndo);
+            UndoMove(moveToUndo, manualRepetitionTable);
         }
 
-        public void UndoMove(PlayedMove move)
+        public void UndoMove(PlayedMove move, bool manualRepetitionTable = false)
         {
 
             Board[(int)move.FromSquare] = move.PromotedFromPiece;
@@ -194,6 +200,11 @@ namespace Hattin.Types
             PlyCounter = move.PlyCounter; //strip
             PliesWithoutCapture = move.PliesWithoutCapture;
             SideToMove = move.SideToMove; //strip
+            if (!manualRepetitionTable)
+            {
+                //Should be changed to Remove() to fit with the rest of the function but its not really neccesary
+                RepetitionTable.PopPosition();
+            }
             PositionHash.UndoMove(move, this);
             PieceProperties.UndoMove(move);
         }
@@ -464,6 +475,7 @@ namespace Hattin.Types
                 throw new ArgumentException($"Plies without capture value of {FENparts[5]} is not valid", nameof(FEN));
             }
             PositionHash.InitializeHash(this);
+            RepetitionTable.PushPosition(PositionHash.CurrentPositionHash);
         }
     }
 }
