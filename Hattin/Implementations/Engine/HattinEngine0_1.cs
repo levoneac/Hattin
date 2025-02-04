@@ -68,7 +68,7 @@ namespace Hattin.Implementations.Engine
             return scoreAndMove.OrderByDescending(key => key.Item1).Select(i => i.Item2).ToList();
         }
 
-        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int absoluteDepth, int maxDepth, float alpha, float beta, SideToMove player)
+        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int absoluteDepth, float alpha, float beta, SideToMove player)
         {
 
             MoveEvaluation bestMove = new MoveEvaluation(player);
@@ -113,7 +113,7 @@ namespace Hattin.Implementations.Engine
             }
 
             //Evaluate the position if the depth limit has been reached
-            if (depth <= 0 || absoluteDepth >= maxDepth)
+            if (depth <= 0)
             {
                 return new MoveEvaluation(move, PositionEvaluator.EvaluateCurrentPosition(currentBoard));
             }
@@ -145,7 +145,7 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
@@ -185,7 +185,7 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove), absoluteDepth + 1, maxDepth, alpha, beta, player.ToOppositeColor());
+                    curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
@@ -237,14 +237,19 @@ namespace Hattin.Implementations.Engine
             }
         }
 
-        private int ExtendSearch(GeneratedMove move)
+        private static int ExtendSearch(GeneratedMove move, int depth)
         {
-            int extension = 0;
-            if (move.IsCheck || move.IsCapture)
+            if (depth == 0)
             {
-                extension = 1;
+                int extension = 0;
+                if (move.IsCheck || move.IsCapture)
+                {
+                    extension = 1;
+                }
+                return extension;
             }
-            return extension;
+            return 0;
+
         }
 
         public List<GeneratedMove> GetPossibleMoves()
@@ -271,7 +276,7 @@ namespace Hattin.Implementations.Engine
             {
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
                 //TranspositionTable.Clear();
-                MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 3, 0, 8, float.MinValue, float.MaxValue, Board.SideToMove);
+                MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 5, 0, float.MinValue, float.MaxValue, Board.SideToMove);
                 Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()}");
                 chosenMove = bestMove.Move;
             }
