@@ -46,7 +46,7 @@ namespace Hattin.Implementations.Controllers
             if (GUICommands.CommandFromGUI == UCICommandFromGUI.Uci)
             {
                 UCIMode = true;
-                string[] ret = ["id name HattinCH", "id author Mathias G. Lien", "uciok"];
+                string[] ret = ["id name HattinQS", "id author Mathias G. Lien", "uciok"];
                 return ret;
             }
             if (UCIMode == false)
@@ -160,6 +160,7 @@ namespace Hattin.Implementations.Controllers
                     Console.WriteLine($"bestmove {currentPosition.BestMove.Move.ToAlgebra()}");
                     Engine.Board.PrintBoard(Engine.Board.SideToMove);
                 }
+                Thread.Sleep(100);
             }
         }
 

@@ -12,7 +12,6 @@ namespace Hattin.Implementations.MoveGenerators
     {
         public BoardState Board { get; private set; } //make into interface later
         public int LastGeneratedPly { get; private set; }
-        public MoveOrdering MoveOrder { get; set; }
         public BasicMoveGeneratorThreaded(BoardState board)
         {
             Board = board;

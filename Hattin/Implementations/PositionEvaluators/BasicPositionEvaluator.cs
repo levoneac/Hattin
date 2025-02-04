@@ -7,7 +7,7 @@ namespace Hattin.Implementations.PositionEvaluators
 {
     public class BasicPositionEvaluator : IPositionEvaluator
     {
-        public float EvaluateCurrentPosition(BoardState currentBoard)
+        public int EvaluateCurrentPosition(BoardState currentBoard)
         {
             PieceTotals totals = currentBoard.PieceProperties.CalculatePieceTotals();
             int materialScore = totals.White - totals.Black;
@@ -31,7 +31,7 @@ namespace Hattin.Implementations.PositionEvaluators
         }
 
         //well just the move
-        public float EvaluatePositionAfterMove(Move newMove, BoardState currentBoard)
+        public int EvaluatePositionAfterMove(Move newMove, BoardState currentBoard)
         {
             PieceTotals totals = currentBoard.PieceProperties.CalculatePieceTotals();
             int materialScore = totals.White - totals.Black;

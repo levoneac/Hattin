@@ -4,7 +4,7 @@ namespace Hattin.Interfaces
 {
     public interface IPositionEvaluator
     {
-        float EvaluatePositionAfterMove(Move newMove, BoardState currentBoard);
-        float EvaluateCurrentPosition(BoardState currentBoard);
+        int EvaluatePositionAfterMove(Move newMove, BoardState currentBoard);
+        int EvaluateCurrentPosition(BoardState currentBoard);
     }
 }

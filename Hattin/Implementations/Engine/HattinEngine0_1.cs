@@ -37,30 +37,35 @@ namespace Hattin.Implementations.Engine
             return MoveConstraintBuilder.GetConstraintFunction();
         }
 
-        //Change to inplace sort later
-        private List<GeneratedMove> OrderMoves(List<GeneratedMove> moves)
+        private List<GeneratedMove> FilterAndOrderTacticalMoves(List<GeneratedMove> moves)
         {
             List<(int, GeneratedMove)> scoreAndMove = [];
             foreach (GeneratedMove move in moves)
             {
+                NormalPiece[] promotionClass = NormalPieceClassifications.GetPiececlassFromPiece(move.PromoteTo);
+                if (!move.IsCapture || !move.IsCheck || promotionClass == NormalPieceClassifications.Queens || promotionClass == NormalPieceClassifications.Knights) { continue; }
                 int score = 0;
-                if (move.IsCheck) { score += 10; }
-                if (move.IsCapture) { score += 5; }
-                if (move.IsPromotion) { score += 5; }
+                NormalPieceValue pieceValue = move.Piece.ToValue();
+                if (move.IsCheck) { score += 15_000; }
+                if (move.IsPromotion) { score += 5_000; }
+
+                //Increase score if the piece you are capturing is lower valued
+                score += Board.PieceProperties.GetPieceOnSquare(move.DestSquare).ToValue() - pieceValue + 10_000;
 
                 AttackInformation destinationAttackInfo = Board.PieceProperties.GetAttackCountOnSquare(move.DestSquare);
                 int sumAttacks = destinationAttackInfo.AttackTotals.White - destinationAttackInfo.AttackTotals.Black;
 
-                //Need one more attacker than defender to win the exchange
-                if (sumAttacks > 0 && Board.SideToMove == SideToMove.White) { score += 8; }
-                else if (sumAttacks < 0 && Board.SideToMove == SideToMove.Black) { score += 8; }
+                //Increase score if you can win the exchange
+                if (sumAttacks > 0 && Board.SideToMove == SideToMove.White) { score += 8_000; }
+                else if (sumAttacks < 0 && Board.SideToMove == SideToMove.Black) { score += 8_000; }
 
+                //Reduce the score if a lower valued piece can recapture
                 foreach (BoardSquare attackedFromSquare in Board.PieceProperties.GetAttackSource(move.DestSquare))
                 {
                     NormalPieceValue capturingPieceValue = Board.PieceProperties.GetPieceOnSquare(attackedFromSquare).ToValue();
-                    if (capturingPieceValue < move.Piece.ToValue() || capturingPieceValue == NormalPieceValue.King)
+                    if (capturingPieceValue < pieceValue || capturingPieceValue == NormalPieceValue.King)
                     {
-                        score -= 3;
+                        score -= pieceValue - capturingPieceValue;
                     }
                 }
                 scoreAndMove.Add((score, move));
@@ -68,16 +73,52 @@ namespace Hattin.Implementations.Engine
             return scoreAndMove.OrderByDescending(key => key.Item1).Select(i => i.Item2).ToList();
         }
 
-        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, BoardState currentBoard, int depth, int absoluteDepth, float alpha, float beta, SideToMove player)
+        //Change to inplace sort later
+        private List<GeneratedMove> OrderMoves(List<GeneratedMove> moves)
+        {
+            List<(int, GeneratedMove)> scoreAndMove = [];
+            foreach (GeneratedMove move in moves)
+            {
+                int score = 0;
+                NormalPieceValue pieceValue = move.Piece.ToValue();
+                if (move.IsCheck) { score += 15_000; }
+                if (move.IsPromotion) { score += 5_000; }
+                if (move.IsCapture)
+                {
+                    //Increase score if the piece you are capturing is lower valued
+                    score += Board.PieceProperties.GetPieceOnSquare(move.DestSquare).ToValue() - pieceValue + 10_000;
+                }
+
+                AttackInformation destinationAttackInfo = Board.PieceProperties.GetAttackCountOnSquare(move.DestSquare);
+                int sumAttacks = destinationAttackInfo.AttackTotals.White - destinationAttackInfo.AttackTotals.Black;
+
+                //Increase score if you can win the exchange
+                if (sumAttacks > 0 && Board.SideToMove == SideToMove.White) { score += 8_000; }
+                else if (sumAttacks < 0 && Board.SideToMove == SideToMove.Black) { score += 8_000; }
+
+                //Reduce the score if a lower valued piece can recapture
+                foreach (BoardSquare attackedFromSquare in Board.PieceProperties.GetAttackSource(move.DestSquare))
+                {
+                    NormalPieceValue capturingPieceValue = Board.PieceProperties.GetPieceOnSquare(attackedFromSquare).ToValue();
+                    if (capturingPieceValue < pieceValue || capturingPieceValue == NormalPieceValue.King)
+                    {
+                        score -= pieceValue - capturingPieceValue;
+                    }
+                }
+                scoreAndMove.Add((score, move));
+            }
+            return scoreAndMove.OrderByDescending(key => key.Item1).Select(i => i.Item2).ToList();
+        }
+
+        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, int depth, int absoluteDepth, int alpha, int beta, SideToMove player)
         {
 
             MoveEvaluation bestMove = new MoveEvaluation(player);
             MoveEvaluation curEval;
-            GeneratedMove priorityMove = null;
+            GeneratedMove? priorityMove = null;
             GeneratedMove curMove;
             List<GeneratedMove> possibleMoves = new List<GeneratedMove>();
             TranspositionEntryType transpositionEntryType = TranspositionEntryType.FullySearched;
-            bool tryFromTableFirst = false;
 
             int positionHash = Board.PositionHash.CurrentPositionHash;
             //Check if the current position has occured before in the current game
@@ -112,12 +153,6 @@ namespace Hattin.Implementations.Engine
                 }
             }
 
-            //Evaluate the position if the depth limit has been reached
-            if (depth <= 0)
-            {
-                return new MoveEvaluation(move, PositionEvaluator.EvaluateCurrentPosition(currentBoard));
-            }
-
             //Try to order the moves in such a way that we prune as many branches as possible
             possibleMoves.AddRange(GetPossibleMoves());
             possibleMoves = OrderMoves(possibleMoves);
@@ -138,6 +173,14 @@ namespace Hattin.Implementations.Engine
                 return ResolveNoMoves(player);
             }
 
+            //Evaluate the position if the depth limit has been reached
+            if (depth <= 0)
+            {
+                return new MoveEvaluation(move, (int)player * QuiessenceSearch(int.MinValue, int.MaxValue, player));
+            }
+
+
+
             //Search for white
             if (player == SideToMove.White)
             {
@@ -145,7 +188,7 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
+                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
@@ -165,12 +208,6 @@ namespace Hattin.Implementations.Engine
                         transpositionEntryType = TranspositionEntryType.Pruned;
                         break;
                     }
-
-                    if (tryFromTableFirst)
-                    {
-                        tryFromTableFirst = false;
-                        possibleMoves.AddRange(GetPossibleMoves());
-                    }
                 }
                 TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
 
@@ -185,7 +222,7 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, currentBoard, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
+                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
@@ -205,19 +242,60 @@ namespace Hattin.Implementations.Engine
                         transpositionEntryType = TranspositionEntryType.Pruned;
                         break;
                     }
-
-                    if (tryFromTableFirst)
-                    {
-                        tryFromTableFirst = false;
-                        possibleMoves.AddRange(GetPossibleMoves());
-                    }
                 }
                 TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
 
                 return bestMove;
             }
             return new MoveEvaluation(bestMove.Move, (int)GameResult.Draw);
+        }
 
+        private int QuiessenceSearch(int alpha, int beta, SideToMove player)
+        {
+            //Trying negamax approach for this one
+            //alpha is the minumum secured score for the current player, while beta is the same for the opponent player 
+
+            //Repetition table not needed as captures can never lead to a repeated position
+
+            //Also im avoiding using the transpotition table for now as it would fill quickly with positions that would rarely be found again
+            //This also seems to be the consensus of the sources ive found so far but i will test this later
+
+            //Evaluate the position and assigne it to alpha if we dont prune already
+            //The reason we can set this as a minimum for alpha is because making a move is almost always better than not
+            //Also not making a move is a decent approximation of all the quiet moves as well  
+            int staticEvaluation = (int)player * PositionEvaluator.EvaluateCurrentPosition(Board);
+
+            //Opponent has already secured a better score in another branch, so stop searching further
+            if (staticEvaluation >= beta) { return staticEvaluation; }
+            if (alpha < staticEvaluation) { alpha = staticEvaluation; }
+            int bestValue = staticEvaluation;
+
+            //Generate tactical moves
+            List<GeneratedMove> possibleMoves = GetPossibleMoves();
+            if (Board.IsCheck)
+            {
+                //All evading moves will need to be evaluated
+                possibleMoves = OrderMoves(possibleMoves);
+            }
+            else
+            {
+                possibleMoves = FilterAndOrderTacticalMoves(possibleMoves);
+            }
+
+            for (int i = 0; i < possibleMoves.Count; i++)
+            {
+                Board.MovePiece(possibleMoves[i], true);
+                int score = -QuiessenceSearch(-beta, -alpha, player.ToOppositeColor());
+                Board.UndoLastMove(true);
+
+                //Opponent has already secured a better score in another branch, so stop searching further
+                if (score >= beta) { return score; }
+
+                if (score > bestValue) { bestValue = score; }
+                //Update our minimum secured score for this branch
+                if (score > alpha) { alpha = score; }
+            }
+            return bestValue;
         }
 
         private MoveEvaluation ResolveNoMoves(SideToMove player)
@@ -227,7 +305,7 @@ namespace Hattin.Implementations.Engine
             if (Board.IsCheck)
             {
                 Board.GameResult = player == SideToMove.White ? GameResult.BlackWin : GameResult.WhiteWin;
-                return new MoveEvaluation(noMove, 100000000 * (int)Board.GameResult);
+                return new MoveEvaluation(noMove, 1_000_000 * (int)Board.GameResult);
             }
             //Stalemate
             else
@@ -237,12 +315,13 @@ namespace Hattin.Implementations.Engine
             }
         }
 
-        private static int ExtendSearch(GeneratedMove move, int depth)
+        //Makes sure that Quiessence Search doesnt start with a check
+        private int ExtendSearch(GeneratedMove move, int depth)
         {
             if (depth == 0)
             {
                 int extension = 0;
-                if (move.IsCheck || move.IsCapture)
+                if (move.IsCheck || Board.IsCheck)
                 {
                     extension = 1;
                 }
@@ -268,23 +347,22 @@ namespace Hattin.Implementations.Engine
         }
 
         //Mostly for testingpurposes still
-        public GeneratedMove GetNextMove()
+        public MoveEvaluation GetNextMove()
         {
             List<GeneratedMove> generatedMoves = GetPossibleMoves();
-            GeneratedMove chosenMove;
+            MoveEvaluation chosenMove;
             if (generatedMoves.Count > 0)
             {
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
                 //TranspositionTable.Clear();
-                MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 5, 0, float.MinValue, float.MaxValue, Board.SideToMove);
-                Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()}");
-                chosenMove = bestMove.Move;
+                chosenMove = AlphaBetaSearch(new GeneratedMove(), 3, 0, int.MinValue, int.MaxValue, Board.SideToMove);
+                Console.WriteLine($"info score cp {chosenMove.Evaluation} pv {chosenMove.Move.ToAlgebra()}");
             }
             else
             {
-                chosenMove = new GeneratedMove();
+                chosenMove = new MoveEvaluation(SideToMove.Black);
             }
-            if (chosenMove.Piece == NormalPiece.Empty)
+            if (chosenMove.Move is null)
             {
                 Board.PrintBoard(SideToMove.White);
                 throw new Exception("$GAME OVER");
@@ -306,30 +384,13 @@ namespace Hattin.Implementations.Engine
             }
         }
 
-        //Autoplay test
-        public void PlayUntillPly(object? plyCount)
-        {
-            while (Board.PlyCounter <= (int)plyCount)
-            {
-                PlayChosenMove(GetNextMove());
-                Board.PrintBoard(SideToMove.White);
-                Thread.Sleep(3000);
-            }
-        }
 
         //Dummy function for testing right now
         public void AnalyzeCurrent(AnalyzedPosition analyzedPosition)
         {
-            GeneratedMove chosenMove = GetNextMove();
-            analyzedPosition.BestMove = new MoveEvaluation(chosenMove, 1.0f);
+            analyzedPosition.BestMove = GetNextMove();
             analyzedPosition.IsDone = true;
             return;
-            //while (Board.PlyCounter <= 1000 && !analyzedPosition.StopToken.IsCancellationRequested)
-            //{
-            //    PlayChosenMove(GetNextMove());
-            //    Board.PrintBoard(SideToMove.White);
-            //    Thread.Sleep(3000);
-            //}
         }
 
         //Wrapper for void AnalyzeCurrent(AnalyzedPosition analyzedPosition), needed for Thread instance
