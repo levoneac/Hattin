@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Diagnostics;
+using Hattin.Extensions.Move;
 using Hattin.Extensions.NormalPiece;
 using Hattin.Extensions.SideToMove;
 using Hattin.Interfaces;
@@ -151,6 +152,7 @@ namespace Hattin.Implementations.Engine
                     if (curEval.Evaluation > bestMove.Evaluation)
                     {
                         bestMove.SetToNewMove(curMove, curEval.Evaluation);
+                        if (absoluteDepth == 0) { Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()}"); }
                     }
 
                     if (bestMove.Evaluation > alpha)
@@ -190,6 +192,7 @@ namespace Hattin.Implementations.Engine
                     if (curEval.Evaluation < bestMove.Evaluation)
                     {
                         bestMove.SetToNewMove(curMove, curEval.Evaluation);
+                        if (absoluteDepth == 0) { Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()}"); }
                     }
 
                     if (bestMove.Evaluation < beta)
@@ -269,6 +272,7 @@ namespace Hattin.Implementations.Engine
                 //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
                 //TranspositionTable.Clear();
                 MoveEvaluation bestMove = AlphaBetaSearch(new GeneratedMove(), Board, 3, 0, 8, float.MinValue, float.MaxValue, Board.SideToMove);
+                Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()}");
                 chosenMove = bestMove.Move;
             }
             else
@@ -279,11 +283,6 @@ namespace Hattin.Implementations.Engine
             {
                 Board.PrintBoard(SideToMove.White);
                 throw new Exception("$GAME OVER");
-            }
-            if (chosenMove.IsPromotion)
-            {
-                NormalPiece piece = Board.SideToMove == SideToMove.White ? NormalPiece.WhiteQueen : NormalPiece.BlackQueen;
-                chosenMove.PromoteTo = piece;
             }
             return chosenMove;
         }

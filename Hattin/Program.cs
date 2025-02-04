@@ -28,8 +28,8 @@ namespace Hattin
 
 
             //Perft perft = new Perft(engineThreaded);
-            //perft.PrintTotalMovesTillDepth(3, "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
-
+            //perft.PrintTotalMovesTillDepth(4, "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8 ");
+            //perft.PrintTotalMovesTillDepth(4, "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1");
 
             //v SAVE FOR LOGGING LATER v
 

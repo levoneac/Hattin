@@ -33,19 +33,8 @@ namespace Hattin.Utils
                 if (move.IsCheck) { curResult.NumChecks++; }
                 if (move.IsEnPassant) { curResult.NumEnPassant++; }
                 if (move.RookCastleFromSquare != BoardSquare.NoSquare) { curResult.NumCasltes++; }
-                if (move.IsPromotion)
-                {
-                    curResult.NumMoves += 3;
-                    curResult.NumPromotions += 4;
-                    foreach (NormalPiece promotion in NormalPieceClassifications.Promoteable)
-                    {
-                        if (promotion.ToColor() != Engine.Board.SideToMove) { continue; }
-                        move.PromoteTo = promotion;
-                        Engine.Board.MovePiece(move);
-                        MoveGeneration(depth + 1);
-                        Engine.Board.UndoLastMove();
-                    }
-                }
+                if (move.IsPromotion) { curResult.NumPromotions++; }
+
                 Engine.Board.MovePiece(move);
                 MoveGeneration(depth + 1);
                 Engine.Board.UndoLastMove();
@@ -67,35 +56,17 @@ namespace Hattin.Utils
             {
                 GeneratedMove move = branches[i];
                 //promote
-                if (move.IsPromotion)
-                {
-                    foreach (NormalPiece promotion in NormalPieceClassifications.Promoteable)
-                    {
-                        if (promotion.ToColor() != Engine.Board.SideToMove) { continue; }
-                        InitializeTotalPositoins(depth);
-                        move.PromoteTo = promotion;
 
-                        Engine.Board.MovePiece(move);
-                        MoveGeneration(1);
-                        Engine.Board.UndoLastMove();
 
-                        curBranchCount = GetSumBranch(depth, onlyLastDepth);
-                        totalMoves += curBranchCount;
-                        Console.WriteLine($"Branch: {i + 1} - Move: {move.ToAlgebra(true)} -> {curBranchCount}");
+                InitializeTotalPositoins(depth);
+                Engine.Board.MovePiece(move);
+                MoveGeneration(1);
+                Engine.Board.UndoLastMove();
 
-                    }
-                }
-                else
-                {
-                    InitializeTotalPositoins(depth);
-                    Engine.Board.MovePiece(move);
-                    MoveGeneration(1);
-                    Engine.Board.UndoLastMove();
+                curBranchCount = GetSumBranch(depth, onlyLastDepth);
+                totalMoves += curBranchCount;
+                Console.WriteLine($"Branch: {i + 1} - Move: {branches[i].ToAlgebra(true)} -> {curBranchCount}");
 
-                    curBranchCount = GetSumBranch(depth, onlyLastDepth);
-                    totalMoves += curBranchCount;
-                    Console.WriteLine($"Branch: {i + 1} - Move: {branches[i].ToAlgebra(true)} -> {curBranchCount}");
-                }
             }
             Console.WriteLine($"Total moves: {totalMoves}");
         }
