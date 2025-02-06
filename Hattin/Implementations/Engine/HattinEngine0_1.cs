@@ -43,7 +43,7 @@ namespace Hattin.Implementations.Engine
             foreach (GeneratedMove move in moves)
             {
                 NormalPiece[] promotionClass = NormalPieceClassifications.GetPiececlassFromPiece(move.PromoteTo);
-                if (!move.IsCapture || !move.IsCheck || promotionClass == NormalPieceClassifications.Queens || promotionClass == NormalPieceClassifications.Knights) { continue; }
+                if (!move.IsCapture || promotionClass == NormalPieceClassifications.Queens || promotionClass == NormalPieceClassifications.Knights) { continue; }
                 int score = 0;
                 NormalPieceValue pieceValue = move.Piece.ToValue();
                 if (move.IsCheck) { score += 15_000; }
