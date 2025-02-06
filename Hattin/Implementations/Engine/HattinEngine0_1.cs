@@ -17,6 +17,8 @@ namespace Hattin.Implementations.Engine
         public IPositionEvaluator PositionEvaluator { get; init; }
         private TranspositionTable<Transposition> TranspositionTable;
         private Stack<GeneratedMove> PV;
+        private static long NodeCounter;
+        private List<GeneratedMove[]> KillerMoves;
         public HattinEngine0_1(BoardState board, IMoveGenerator moveGenerator, IMoveConstraintBuilder moveConstraintBuilder, IPositionEvaluator positionEvaluator)
         {
             Board = board;
@@ -25,6 +27,8 @@ namespace Hattin.Implementations.Engine
             PositionEvaluator = positionEvaluator;
             TranspositionTable = new TranspositionTable<Transposition>(100_000);
             PV = new Stack<GeneratedMove>();
+            NodeCounter = 0;
+            KillerMoves = new List<GeneratedMove[]>();
         }
 
         //Gets the constraints based on the current boardstate
@@ -114,7 +118,7 @@ namespace Hattin.Implementations.Engine
 
         private MoveEvaluation AlphaBetaSearch(GeneratedMove move, int depth, int absoluteDepth, int alpha, int beta, SideToMove player, List<GeneratedMove> pVStack)
         {
-
+            NodeCounter++;
             MoveEvaluation bestMove = new MoveEvaluation(player);
             MoveEvaluation curEval;
             GeneratedMove? priorityMove = null;
@@ -202,7 +206,21 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
+                    //The first move gets a proper search
+                    if (i == 0)
+                    {
+                        curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
+                    }
+                    else
+                    {//moves afterward gets a tiny windows to prune faster
+                        curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, alpha + 1, player.ToOppositeColor(), pVStack);
+                        //If a better move is found then we need to do a proper search
+                        if (alpha > curEval.Evaluation && curEval.Evaluation < beta)
+                        {
+                            Board.RepetitionTable.PopPosition();
+                            curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
+                        }
+                    }
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
@@ -235,7 +253,19 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
+                    if (i == 0)
+                    {
+                        curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
+                    }
+                    else
+                    {
+                        curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, beta - 1, beta, player.ToOppositeColor(), pVStack);
+                        if (beta < curEval.Evaluation && curEval.Evaluation > alpha)
+                        {
+                            Board.RepetitionTable.PopPosition();
+                            curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
+                        }
+                    }
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
@@ -310,6 +340,7 @@ namespace Hattin.Implementations.Engine
             }
             return bestValue;
         }
+        //position startpos moves d2d4 d7d5 c1f4 c8f5 b1d2 a7a5 g1f3 b8c6 a2a3 h7h5 h2h4 g8f6 b2b3 f6g4 g2g3 b7b5 f1g2 e7e6 c2c3 f8d6 d2f1 e8g8 f1d2 d6f4 g3f4 g4f6 e1g1 g8h8 f3g5 f6g4 d2f3 f7f6 g5h3 e6e5 d1d2 e5e4 f3e1 d8d6 d2c1 a8a7 f2f3 g4h6 f3e4 d5e4 c1c2 d6d5 g1h1 f8f7 h3f2 h6g4 f2e4 g4e3 e4g5 d5d7 g5f7 d7f7 c2a2 e3f1 g2c6 f1e3 a2d2 f7e6 c6f3 g7g6 e1d3 c7c6 d3c5 e6e8 h1g1 a7c7 a3a4 e3c2 a1a2 e8e3 d2e3 c2e3 a4b5 c7a7 f3c6 h8g8 b5b6 f5b1 b6a7 b1a2 a7a8q g8g7 a8a5 a2b1 a5d8 e3g4 e2e4 g7h7 e4e5 f6f5 d8d6 g4e3 c6e8 g6g5 f4g5 f5f4 e8h5 b1f5 d6f8 f4f3 h5f3 f5b1 f8f4 e3f5 f4c1 b1a2 c1c2 h7g6 f3g4 a2b3 c2b3 f5g7
 
         private MoveEvaluation ResolveNoMoves(SideToMove player)
         {
@@ -366,10 +397,11 @@ namespace Hattin.Implementations.Engine
             MoveEvaluation bestMove = new MoveEvaluation(null, int.MinValue);
             if (generatedMoves.Count > 0)
             {
-                for (int depth = 1; depth < 4; depth++)
+                NodeCounter = 0;
+                for (int depth = 1; depth <= 4; depth++)
                 {
                     bestMove = AlphaBetaSearch(new GeneratedMove(), depth, 0, int.MinValue, int.MaxValue, Board.SideToMove, bestMove.PV);
-                    Console.Write($"info score cp {bestMove.Evaluation / 100} depth {depth} pv ");
+                    Console.Write($"info score cp {bestMove.Evaluation / 100} depth {depth} nodes {NodeCounter} pv ");
                     for (int j = bestMove.PV.Count - 1; j >= 0; j--)
                     {
                         Console.Write($"{(bestMove.PV[j].Piece != NormalPiece.Empty ? bestMove.PV[j].ToAlgebra() : "")} ");
