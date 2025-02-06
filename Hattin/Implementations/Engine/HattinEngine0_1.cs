@@ -16,6 +16,7 @@ namespace Hattin.Implementations.Engine
         public IMoveConstraintBuilder MoveConstraintBuilder { get; init; }
         public IPositionEvaluator PositionEvaluator { get; init; }
         private TranspositionTable<Transposition> TranspositionTable;
+        private Stack<GeneratedMove> PV;
         public HattinEngine0_1(BoardState board, IMoveGenerator moveGenerator, IMoveConstraintBuilder moveConstraintBuilder, IPositionEvaluator positionEvaluator)
         {
             Board = board;
@@ -23,6 +24,7 @@ namespace Hattin.Implementations.Engine
             MoveConstraintBuilder = moveConstraintBuilder;
             PositionEvaluator = positionEvaluator;
             TranspositionTable = new TranspositionTable<Transposition>(100_000);
+            PV = new Stack<GeneratedMove>();
         }
 
         //Gets the constraints based on the current boardstate
@@ -110,7 +112,7 @@ namespace Hattin.Implementations.Engine
             return scoreAndMove.OrderByDescending(key => key.Item1).Select(i => i.Item2).ToList();
         }
 
-        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, int depth, int absoluteDepth, int alpha, int beta, SideToMove player)
+        private MoveEvaluation AlphaBetaSearch(GeneratedMove move, int depth, int absoluteDepth, int alpha, int beta, SideToMove player, List<GeneratedMove> pVStack)
         {
 
             MoveEvaluation bestMove = new MoveEvaluation(player);
@@ -131,7 +133,7 @@ namespace Hattin.Implementations.Engine
 
                     //Returns an almost equal score because (3-fold) repetition is a draw
                     //Added a small penalty to encourage the engine to play other drawn moves before going for repetiotion
-                    bestMove.SetToNewMove(move, Board.SideToMove == SideToMove.White ? 10 : -10);
+                    bestMove.SetToNewMove(move, Board.SideToMove == SideToMove.White ? 10 : -10, [move]);
                     return bestMove;
                 }
                 Board.RepetitionTable.PushPosition(positionHash);
@@ -143,7 +145,7 @@ namespace Hattin.Implementations.Engine
                 //If the found position was searched longer than this one will be, return the move
                 if (preCalculated.Depth >= depth && preCalculated.Type == TranspositionEntryType.FullySearched)
                 {
-                    bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation);
+                    bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation, [preCalculated.Move]);
                     return bestMove;
                 }
                 //Else try the found move first for possible fast pruning
@@ -153,14 +155,37 @@ namespace Hattin.Implementations.Engine
                 }
             }
 
+            //Evaluate the position if the depth limit has been reached
+            if (depth <= 0)
+            {
+                return new MoveEvaluation(move, (int)player * QuiessenceSearch(int.MinValue, int.MaxValue, player));
+            }
+
             //Try to order the moves in such a way that we prune as many branches as possible
             possibleMoves.AddRange(GetPossibleMoves());
             possibleMoves = OrderMoves(possibleMoves);
+
+            //Try the PV first
+            if (pVStack.Count > 0)
+            {
+                int pvStackArrayPointer = depth - 2;
+                if (pvStackArrayPointer < pVStack.Count && pvStackArrayPointer >= 0)
+                {
+                    GeneratedMove pVMove = pVStack[pvStackArrayPointer];
+
+                    if (!possibleMoves.Remove(pVMove)) { pVStack.Clear(); }
+                    else { possibleMoves.Insert(0, pVMove); }
+
+                }
+                else { pVStack.Clear(); }
+            }
+
+            //If there was a hit in the transposition table, then move it first if its not already the same move as in PV
             if (priorityMove is not null)
             {
                 //Due to hash collisions you need to check if the move is actually legal
                 int priorityMoveIndex = possibleMoves.IndexOf(priorityMove);
-                if (priorityMoveIndex != -1)
+                if (priorityMoveIndex > 0)
                 {
                     possibleMoves.RemoveAt(priorityMoveIndex);
                     possibleMoves.Insert(0, priorityMove);
@@ -168,18 +193,7 @@ namespace Hattin.Implementations.Engine
             }
 
             //If not moves are possible, it means the position is either mate or stalemate
-            if (possibleMoves.Count == 0)
-            {
-                return ResolveNoMoves(player);
-            }
-
-            //Evaluate the position if the depth limit has been reached
-            if (depth <= 0)
-            {
-                return new MoveEvaluation(move, (int)player * QuiessenceSearch(int.MinValue, int.MaxValue, player));
-            }
-
-
+            if (possibleMoves.Count == 0) { ResolveNoMoves(player); }
 
             //Search for white
             if (player == SideToMove.White)
@@ -188,14 +202,14 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
+                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
                     if (curEval.Evaluation > bestMove.Evaluation)
                     {
-                        bestMove.SetToNewMove(curMove, curEval.Evaluation);
-                        if (absoluteDepth == 0) { Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()}"); }
+                        bestMove.SetToNewMove(curMove, curEval.Evaluation, curEval.PV);
+                        //Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()} depth {absoluteDepth}");
                     }
 
                     if (bestMove.Evaluation > alpha)
@@ -210,8 +224,7 @@ namespace Hattin.Implementations.Engine
                     }
                 }
                 TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
-
-
+                bestMove.PV.Add(move);
                 return bestMove;
             }
 
@@ -222,14 +235,14 @@ namespace Hattin.Implementations.Engine
                 {
                     curMove = possibleMoves[i];
                     Board.MovePiece(curMove, true);
-                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor());
+                    curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
                     Board.RepetitionTable.PopPosition();
                     Board.UndoLastMove(true);
 
                     if (curEval.Evaluation < bestMove.Evaluation)
                     {
-                        bestMove.SetToNewMove(curMove, curEval.Evaluation);
-                        if (absoluteDepth == 0) { Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()}"); }
+                        bestMove.SetToNewMove(curMove, curEval.Evaluation, curEval.PV);
+                        //Console.WriteLine($"info score cp {bestMove.Evaluation} pv {bestMove.Move.ToAlgebra()} depth {absoluteDepth}");
                     }
 
                     if (bestMove.Evaluation < beta)
@@ -244,7 +257,7 @@ namespace Hattin.Implementations.Engine
                     }
                 }
                 TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
-
+                bestMove.PV.Add(move);
                 return bestMove;
             }
             return new MoveEvaluation(bestMove.Move, (int)GameResult.Draw);
@@ -347,27 +360,34 @@ namespace Hattin.Implementations.Engine
         }
 
         //Mostly for testingpurposes still
-        public MoveEvaluation GetNextMove()
+        public MoveEvaluation GetNextMove(CancellationToken stopToken)
         {
             List<GeneratedMove> generatedMoves = GetPossibleMoves();
-            MoveEvaluation chosenMove;
+            MoveEvaluation bestMove = new MoveEvaluation(null, int.MinValue);
             if (generatedMoves.Count > 0)
             {
-                //chosenMove = generatedMoves?[new Random().Next(0, generatedMoves.Count - 1)] ?? new GeneratedMove();
-                //TranspositionTable.Clear();
-                chosenMove = AlphaBetaSearch(new GeneratedMove(), 3, 0, int.MinValue, int.MaxValue, Board.SideToMove);
-                Console.WriteLine($"info score cp {chosenMove.Evaluation} pv {chosenMove.Move.ToAlgebra()}");
+                for (int depth = 1; depth < 4; depth++)
+                {
+                    bestMove = AlphaBetaSearch(new GeneratedMove(), depth, 0, int.MinValue, int.MaxValue, Board.SideToMove, bestMove.PV);
+                    Console.Write($"info score cp {bestMove.Evaluation / 100} depth {depth} pv ");
+                    for (int j = bestMove.PV.Count - 1; j >= 0; j--)
+                    {
+                        Console.Write($"{(bestMove.PV[j].Piece != NormalPiece.Empty ? bestMove.PV[j].ToAlgebra() : "")} ");
+                    }
+                    Console.WriteLine();
+                    if (stopToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                }
             }
-            else
-            {
-                chosenMove = new MoveEvaluation(SideToMove.Black);
-            }
-            if (chosenMove.Move is null)
+
+            if (bestMove.Move is null)
             {
                 Board.PrintBoard(SideToMove.White);
                 throw new Exception("$GAME OVER");
             }
-            return chosenMove;
+            return bestMove;
         }
 
         //Testing move gen
@@ -388,7 +408,7 @@ namespace Hattin.Implementations.Engine
         //Dummy function for testing right now
         public void AnalyzeCurrent(AnalyzedPosition analyzedPosition)
         {
-            analyzedPosition.BestMove = GetNextMove();
+            analyzedPosition.BestMove = GetNextMove(analyzedPosition.StopToken);
             analyzedPosition.IsDone = true;
             return;
         }

@@ -3,9 +3,7 @@ using Hattin.Utils;
 
 namespace Hattin.Types
 {
-    //Changed from class to record because a chessmove is more like a value type, but too complex to be a struct(which should represent single values according to microsoft)
-    //This also means its possible to check if two moves are equal based on their properties rather than their reference (possible with class as well i think, but you have to overload the Equals method)
-    public record Move
+    public class Move
     {
         public NormalPiece Piece { get; init; }
         public BoardSquare FromSquare { get; init; }

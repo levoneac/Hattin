@@ -4,7 +4,7 @@ using Hattin.Utils;
 
 namespace Hattin.Types
 {
-    public record GeneratedMove : Move, IComparable<GeneratedMove>
+    public class GeneratedMove : Move, IComparable<GeneratedMove>, IEquatable<GeneratedMove>
     {
         public List<List<AttackProjection>> AttackedSquares { get; set; }
         public bool IsPromotion { get; set; }
@@ -91,6 +91,23 @@ namespace Hattin.Types
             else if (obj.IsPromotion == true) { score += 10; }
 
             return score;
+        }
+        public bool Equals(GeneratedMove? other)
+        {
+            if (this is null) { return false; }
+            if (other is null) { return false; }
+            if (ReferenceEquals(this, other)) { return true; }
+
+            if (Piece != other.Piece) { return false; }
+            if (FromSquare != other.FromSquare) { return false; }
+            if (DestSquare != other.DestSquare) { return false; }
+            if (PromoteTo != other.PromoteTo) { return false; }
+            if (RookCastleFromSquare != other.RookCastleFromSquare) { return false; }
+            if (RookCastleToSquare != other.RookCastleToSquare) { return false; }
+            if (EnPassantSquare != other.EnPassantSquare) { return false; }
+            if (EnPassantCaptureSquare != other.EnPassantCaptureSquare) { return false; }
+
+            return true;
         }
     }
 }
