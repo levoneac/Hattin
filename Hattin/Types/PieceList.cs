@@ -139,14 +139,15 @@ namespace Hattin.Types
         //Gets the source squares of the attacks on the given square
         public List<BoardSquare> GetAttackSource(BoardSquare attackedSquare, int maxXRayLevel = 0)
         {
+            SideToMove attackedColor = GetPieceOnSquare(attackedSquare).ToColor();
             List<BoardSquare> attacks = new List<BoardSquare>();
             List<AttackProjection> attackSources = attackedFrom[attackedSquare.ToBase64Int()];
 
             foreach (AttackProjection attackSource in attackSources)
             {
+                if (attackSource.AsPiece.ToColor() == attackedColor) { continue; }
                 bool directAttacks = attackingSquares[attackSource.Square.ToBase64Int()].Where(
-                    key => key.XRayLevel <= maxXRayLevel &&
-                    !(key.AsPiece.ToColor() != key.PieceOnSquare.ToColor())).Any();
+                    key => key.XRayLevel <= maxXRayLevel).Any();
                 if (directAttacks)
                 {
                     attacks.Add(attackSource.Square);
