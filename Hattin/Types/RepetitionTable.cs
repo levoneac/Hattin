@@ -45,5 +45,11 @@ namespace Hattin.Types
             }
             return false;
         }
+
+        public void Clear()
+        {
+            HashStack.Clear();
+            PositionHashes.Clear();
+        }
     }
 }

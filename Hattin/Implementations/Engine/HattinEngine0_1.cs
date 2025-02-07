@@ -149,36 +149,42 @@ namespace Hattin.Implementations.Engine
 
                     //Returns an almost equal score because (3-fold) repetition is a draw
                     //Added a small penalty to encourage the engine to play other drawn moves before going for repetiotion
-                    bestMove.SetToNewMove(move, Board.SideToMove == SideToMove.White ? 10 : -10, [move]);
+                    bestMove.SetToNewMove(move, Board.SideToMove == SideToMove.White ? 100 : -100, [move]);
                     return bestMove;
                 }
                 Board.RepetitionTable.PushPosition(positionHash);
-            }
 
-            //Check if the current position has occured in a different branch of the search tree
-            if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
-            {
-                //If the found position was searched longer than this one will be, return the move
-                if (preCalculated.Depth >= depth && preCalculated.Type == TranspositionEntryType.FullySearched)
+
+                //Check if the current position has occured in a different branch of the search tree
+                if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
                 {
-                    bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation, [preCalculated.Move]);
-                    return bestMove;
-                }
-                //Else try the found move first for possible fast pruning
-                else
-                {
-                    priorityMove = preCalculated.Move;
+                    //If the found position was searched longer than this one will be, return the move
+                    if (preCalculated.Depth >= (depth + absoluteDepth) && preCalculated.Type == TranspositionEntryType.FullySearched)
+                    {
+                        bestMove.SetToNewMove(preCalculated.Move, preCalculated.Evaluation, [move]);
+                        return bestMove;
+                    }
+                    //Else try the found move first for possible fast pruning
+                    else if (preCalculated.Move is not null)
+                    {
+                        //bug -> never useful when using just move
+                        priorityMove = preCalculated.Move;
+                    }
                 }
             }
 
             //Evaluate the position if the depth limit has been reached
             if (depth <= 0)
             {
-                return new MoveEvaluation(move, (int)player * QuiessenceSearch(int.MinValue, int.MaxValue, player));
+                return new MoveEvaluation(move, (int)player * QuiessenceSearch(int.MinValue, int.MaxValue, absoluteDepth + 1, player));
             }
 
             //Try to order the moves in such a way that we prune as many branches as possible
             possibleMoves.AddRange(GetPossibleMoves());
+
+            //If not moves are possible, it means the position is either mate or stalemate
+            if (possibleMoves.Count == 0) { return ResolveNoMoves(player); }
+
             possibleMoves = OrderMoves(possibleMoves);
 
             int priorityPlacement = 0;
@@ -224,8 +230,6 @@ namespace Hattin.Implementations.Engine
                 }
             }
 
-            //If not moves are possible, it means the position is either mate or stalemate
-            if (possibleMoves.Count == 0) { return ResolveNoMoves(player); }
 
             //Search for white
             if (player == SideToMove.White)
@@ -270,7 +274,7 @@ namespace Hattin.Implementations.Engine
                         break;
                     }
                 }
-                TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
+                TranspositionTable[positionHash] = new Transposition(bestMove, absoluteDepth, transpositionEntryType);
                 bestMove.PV.Add(move);
                 return bestMove;
             }
@@ -317,14 +321,14 @@ namespace Hattin.Implementations.Engine
                     }
                 }
                 //if (bestMove.Move is null) { bestMove.SetToNewMove(curEval.Move, curEval.Evaluation, curEval.PV); }
-                TranspositionTable[positionHash] = new Transposition(bestMove, depth, transpositionEntryType);
+                TranspositionTable[positionHash] = new Transposition(bestMove, absoluteDepth, transpositionEntryType);
                 bestMove.PV.Add(move);
                 return bestMove;
             }
             return new MoveEvaluation(bestMove.Move, (int)GameResult.Draw);
         }
 
-        private int QuiessenceSearch(int alpha, int beta, SideToMove player)
+        private int QuiessenceSearch(int alpha, int beta, int absoluteDepth, SideToMove player)
         {
             //Trying negamax approach for this one
             //alpha is the minumum secured score for the current player, while beta is the same for the opponent player 
@@ -333,16 +337,34 @@ namespace Hattin.Implementations.Engine
 
             //Also im avoiding using the transpotition table for now as it would fill quickly with positions that would rarely be found again
             //This also seems to be the consensus of the sources ive found so far but i will test this later
+            //The above turned out to be false, at least for the shallow depth of the engine currently (depth 4)
 
-            //Evaluate the position and assigne it to alpha if we dont prune already
+            //Evaluate the position and assign it to alpha if we dont prune already
             //The reason we can set this as a minimum for alpha is because making a move is almost always better than not
             //Also not making a move is a decent approximation of all the quiet moves as well  
-            int staticEvaluation = (int)player * PositionEvaluator.EvaluateCurrentPosition(Board);
+
+            GeneratedMove? priorityMove = null;
+            int positionHash = Board.PositionHash.CurrentPositionHash;
+            if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
+            {
+                //If the found position was searched longer than this one will be, return the move
+                if (preCalculated.Depth >= absoluteDepth && preCalculated.Type == TranspositionEntryType.FullySearched)
+                {
+                    return (int)player * preCalculated.Evaluation;
+                }
+                //Else try the found move first for possible fast pruning
+                else
+                {
+                    priorityMove = preCalculated.Move;
+                }
+            }
+
+            int playerEvaluation = (int)player * PositionEvaluator.EvaluateCurrentPosition(Board);
 
             //Opponent has already secured a better score in another branch, so stop searching further
-            if (staticEvaluation >= beta) { return staticEvaluation; }
-            if (alpha < staticEvaluation) { alpha = staticEvaluation; }
-            int bestValue = staticEvaluation;
+            if (playerEvaluation >= beta) { return playerEvaluation; }
+            if (alpha < playerEvaluation) { alpha = playerEvaluation; }
+            int bestValue = playerEvaluation;
 
             //Generate tactical moves
             List<GeneratedMove> possibleMoves = GetPossibleMoves();
@@ -350,25 +372,44 @@ namespace Hattin.Implementations.Engine
             {
                 //All evading moves will need to be evaluated
                 possibleMoves = OrderMoves(possibleMoves);
+                if (possibleMoves.Count == 0)
+                {
+                    return (int)player * ResolveNoMoves(player).Evaluation;
+                }
             }
             else
             {
                 possibleMoves = FilterAndOrderTacticalMoves(possibleMoves);
             }
+            if (priorityMove is not null)
+            {
+                int indexOfPriorityMove = possibleMoves.IndexOf(priorityMove);
+                if (indexOfPriorityMove > 0)
+                {
+                    possibleMoves.RemoveAt(indexOfPriorityMove);
+                    possibleMoves.Insert(0, priorityMove);
+                }
+            }
 
             for (int i = 0; i < possibleMoves.Count; i++)
             {
                 Board.MovePiece(possibleMoves[i], true);
-                int score = -QuiessenceSearch(-beta, -alpha, player.ToOppositeColor());
+                int score = -QuiessenceSearch(-beta, -alpha, absoluteDepth + 1, player.ToOppositeColor());
                 Board.UndoLastMove(true);
 
                 //Opponent has already secured a better score in another branch, so stop searching further
-                if (score >= beta) { return score; }
-
                 if (score > bestValue) { bestValue = score; }
+                if (score >= beta)
+                {
+                    //dont add to TT as its not a stable position 
+                    return bestValue;
+                }
+
                 //Update our minimum secured score for this branch
                 if (score > alpha) { alpha = score; }
             }
+            int tTableScore = bestValue * (int)player;
+            TranspositionTable[positionHash] = new Transposition(new MoveEvaluation(null, tTableScore), absoluteDepth, TranspositionEntryType.FullySearched);
             return bestValue;
         }
         //position startpos moves d2d4 d7d5 c1f4 c8f5 b1d2 a7a5 g1f3 b8c6 a2a3 h7h5 h2h4 g8f6 b2b3 f6g4 g2g3 b7b5 f1g2 e7e6 c2c3 f8d6 d2f1 e8g8 f1d2 d6f4 g3f4 g4f6 e1g1 g8h8 f3g5 f6g4 d2f3 f7f6 g5h3 e6e5 d1d2 e5e4 f3e1 d8d6 d2c1 a8a7 f2f3 g4h6 f3e4 d5e4 c1c2 d6d5 g1h1 f8f7 h3f2 h6g4 f2e4 g4e3 e4g5 d5d7 g5f7 d7f7 c2a2 e3f1 g2c6 f1e3 a2d2 f7e6 c6f3 g7g6 e1d3 c7c6 d3c5 e6e8 h1g1 a7c7 a3a4 e3c2 a1a2 e8e3 d2e3 c2e3 a4b5 c7a7 f3c6 h8g8 b5b6 f5b1 b6a7 b1a2 a7a8q g8g7 a8a5 a2b1 a5d8 e3g4 e2e4 g7h7 e4e5 f6f5 d8d6 g4e3 c6e8 g6g5 f4g5 f5f4 e8h5 b1f5 d6f8 f4f3 h5f3 f5b1 f8f4 e3f5 f4c1 b1a2 c1c2 h7g6 f3g4 a2b3 c2b3 f5g7
@@ -379,8 +420,7 @@ namespace Hattin.Implementations.Engine
             //Mate
             if (Board.IsCheck)
             {
-                Board.GameResult = player == SideToMove.White ? GameResult.BlackWin : GameResult.WhiteWin;
-                return new MoveEvaluation(noMove, 1_000_000 * (int)Board.GameResult);
+                return new MoveEvaluation(noMove, 1_000_000 * (int)player * -1);
             }
             //Stalemate
             else
@@ -432,7 +472,7 @@ namespace Hattin.Implementations.Engine
                 for (int depth = 1; depth <= 4; depth++)
                 {
                     bestMove = AlphaBetaSearch(new GeneratedMove(), depth, 0, int.MinValue, int.MaxValue, Board.SideToMove, bestMove.PV);
-                    Console.Write($"info score cp {bestMove.Evaluation / 100} depth {depth} nodes {NodeCounter} pv ");
+                    Console.Write($"info score cp {bestMove.Evaluation / 10} depth {depth} nodes {NodeCounter} pv ");
                     for (int j = bestMove.PV.Count - 1; j >= 0; j--)
                     {
                         Console.Write($"{(bestMove.PV[j].Piece != NormalPiece.Empty ? bestMove.PV[j].ToAlgebra() : "")} ");
@@ -445,11 +485,11 @@ namespace Hattin.Implementations.Engine
                 }
             }
 
-            if (bestMove.Move is null)
-            {
-                Board.PrintBoard(SideToMove.White);
-                throw new Exception("$GAME OVER");
-            }
+            //if (bestMove.Move is null)
+            //{
+            //    Board.PrintBoard(SideToMove.White);
+            //    throw new Exception("$GAME OVER");
+            //}
             return bestMove;
         }
 

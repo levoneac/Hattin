@@ -102,9 +102,13 @@ namespace Hattin.Implementations.Controllers
 
                 return [""];
             }
-            else if (GUICommands.CommandFromGUI == UCICommandFromGUI.Stop && (engineThread?.IsAlive ?? false))
+            else if (GUICommands.CommandFromGUI == UCICommandFromGUI.Stop)
             {
                 cancellationToken?.Cancel();
+                if (!engineThread?.IsAlive ?? true)
+                {
+                    return ["bestmove"];
+                }
                 return [""];
             }
             else if (GUICommands.CommandFromGUI == UCICommandFromGUI.Quit)
@@ -157,8 +161,15 @@ namespace Hattin.Implementations.Controllers
                 if (EngineIsActive && isEngineDone)
                 {
                     EngineIsActive = false;
-                    Console.WriteLine($"bestmove {currentPosition.BestMove.Move.ToAlgebra()}");
-                    Engine.Board.PrintBoard(Engine.Board.SideToMove);
+                    if (currentPosition.BestMove.Move is not null)
+                    {
+                        Console.WriteLine($"bestmove {currentPosition.BestMove.Move.ToAlgebra()}");
+                        Engine.Board.PrintBoard(Engine.Board.SideToMove);
+                    }
+                    else
+                    {
+                        Console.WriteLine("bestmove");
+                    }
                 }
                 Thread.Sleep(100);
             }

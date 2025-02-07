@@ -234,6 +234,7 @@ namespace Hattin.Types
             EnPassantSquare = BoardSquare.NoSquare;
             CastleRights = 0;
             moveHistory.Clear();
+            RepetitionTable.Clear();
         }
         public void PrintBoard(SideToMove perspective, bool moreInfo = false)
         {
