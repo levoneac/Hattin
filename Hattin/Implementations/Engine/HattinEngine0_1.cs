@@ -176,14 +176,14 @@ namespace Hattin.Implementations.Engine
             //Evaluate the position if the depth limit has been reached
             if (depth <= 0)
             {
-                return new MoveEvaluation(move, (int)player * QuiessenceSearch(int.MinValue, int.MaxValue, absoluteDepth + 1, player));
+                return new MoveEvaluation(move, (int)player * QuiessenceSearch(int.MinValue, int.MaxValue, absoluteDepth + 1, player, true));
             }
 
             //Try to order the moves in such a way that we prune as many branches as possible
             possibleMoves.AddRange(GetPossibleMoves());
 
             //If not moves are possible, it means the position is either mate or stalemate
-            if (possibleMoves.Count == 0) { return ResolveNoMoves(player); }
+            if (possibleMoves.Count == 0) { return ResolveNoMoves(player, absoluteDepth); }
 
             possibleMoves = OrderMoves(possibleMoves);
 
@@ -328,7 +328,7 @@ namespace Hattin.Implementations.Engine
             return new MoveEvaluation(bestMove.Move, (int)GameResult.Draw);
         }
 
-        private int QuiessenceSearch(int alpha, int beta, int absoluteDepth, SideToMove player)
+        private int QuiessenceSearch(int alpha, int beta, int absoluteDepth, SideToMove player, bool firstDepth = false)
         {
             //Trying negamax approach for this one
             //alpha is the minumum secured score for the current player, while beta is the same for the opponent player 
@@ -348,7 +348,7 @@ namespace Hattin.Implementations.Engine
             if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
             {
                 //If the found position was searched longer than this one will be, return the move
-                if (preCalculated.Depth >= absoluteDepth && preCalculated.Type == TranspositionEntryType.FullySearched)
+                if (preCalculated.Depth >= absoluteDepth)
                 {
                     return (int)player * preCalculated.Evaluation;
                 }
@@ -363,8 +363,20 @@ namespace Hattin.Implementations.Engine
 
             //Opponent has already secured a better score in another branch, so stop searching further
             if (playerEvaluation >= beta) { return playerEvaluation; }
-            if (alpha < playerEvaluation) { alpha = playerEvaluation; }
-            int bestValue = playerEvaluation;
+
+            int bestValue;
+            //This is just a "quickfix" to help when searching at lower detphs in the main search
+            //Sometimes when searching the search stops right after taking a piece and gives a very optimistic playerEvaluation -
+            //when the piece will be captured in the next move.
+            if (firstDepth == true)
+            {
+                bestValue = int.MinValue;
+            }
+            else
+            {
+                if (alpha < playerEvaluation) { alpha = playerEvaluation; }
+                bestValue = playerEvaluation;
+            }
 
             //Generate tactical moves
             List<GeneratedMove> possibleMoves = GetPossibleMoves();
@@ -374,7 +386,7 @@ namespace Hattin.Implementations.Engine
                 possibleMoves = OrderMoves(possibleMoves);
                 if (possibleMoves.Count == 0)
                 {
-                    return (int)player * ResolveNoMoves(player).Evaluation;
+                    return (int)player * ResolveNoMoves(player, absoluteDepth).Evaluation;
                 }
             }
             else
@@ -408,19 +420,27 @@ namespace Hattin.Implementations.Engine
                 //Update our minimum secured score for this branch
                 if (score > alpha) { alpha = score; }
             }
-            int tTableScore = bestValue * (int)player;
-            TranspositionTable[positionHash] = new Transposition(new MoveEvaluation(null, tTableScore), absoluteDepth, TranspositionEntryType.FullySearched);
+            //if no moves are found in the position, use the current position evalutaiton
+            if (bestValue == int.MinValue) { bestValue = playerEvaluation; }
+            //else
+            {
+                //only happens at Qdepth 0, which will be added to TT anyway if its good enough in main search
+                int tTableScore = bestValue * (int)player;
+                TranspositionTable[positionHash] = new Transposition(new MoveEvaluation(null, tTableScore), absoluteDepth, TranspositionEntryType.Quiessence);
+            }
+
             return bestValue;
         }
         //position startpos moves d2d4 d7d5 c1f4 c8f5 b1d2 a7a5 g1f3 b8c6 a2a3 h7h5 h2h4 g8f6 b2b3 f6g4 g2g3 b7b5 f1g2 e7e6 c2c3 f8d6 d2f1 e8g8 f1d2 d6f4 g3f4 g4f6 e1g1 g8h8 f3g5 f6g4 d2f3 f7f6 g5h3 e6e5 d1d2 e5e4 f3e1 d8d6 d2c1 a8a7 f2f3 g4h6 f3e4 d5e4 c1c2 d6d5 g1h1 f8f7 h3f2 h6g4 f2e4 g4e3 e4g5 d5d7 g5f7 d7f7 c2a2 e3f1 g2c6 f1e3 a2d2 f7e6 c6f3 g7g6 e1d3 c7c6 d3c5 e6e8 h1g1 a7c7 a3a4 e3c2 a1a2 e8e3 d2e3 c2e3 a4b5 c7a7 f3c6 h8g8 b5b6 f5b1 b6a7 b1a2 a7a8q g8g7 a8a5 a2b1 a5d8 e3g4 e2e4 g7h7 e4e5 f6f5 d8d6 g4e3 c6e8 g6g5 f4g5 f5f4 e8h5 b1f5 d6f8 f4f3 h5f3 f5b1 f8f4 e3f5 f4c1 b1a2 c1c2 h7g6 f3g4 a2b3 c2b3 f5g7
 
-        private MoveEvaluation ResolveNoMoves(SideToMove player)
+        private MoveEvaluation ResolveNoMoves(SideToMove player, int absoluteDepth)
         {
             GeneratedMove noMove = new GeneratedMove();
             //Mate
             if (Board.IsCheck)
             {
-                return new MoveEvaluation(noMove, 1_000_000 * (int)player * -1);
+                //To return the fastest mate, give a malus for higher depth
+                return new MoveEvaluation(noMove, (1_000_000 * (int)player * -1) + ((int)player * absoluteDepth));
             }
             //Stalemate
             else
@@ -469,7 +489,7 @@ namespace Hattin.Implementations.Engine
             if (generatedMoves.Count > 0)
             {
                 NodeCounter = 0;
-                for (int depth = 1; depth <= 4; depth++)
+                for (int depth = 1; depth <= 3; depth++)
                 {
                     bestMove = AlphaBetaSearch(new GeneratedMove(), depth, 0, int.MinValue, int.MaxValue, Board.SideToMove, bestMove.PV);
                     Console.Write($"info score cp {bestMove.Evaluation / 10} depth {depth} nodes {NodeCounter} pv ");
