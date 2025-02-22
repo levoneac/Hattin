@@ -9,6 +9,7 @@ using Hattin.Implementations.PositionEvaluators;
 using Hattin.Interfaces;
 using Hattin.Types;
 using Hattin.Utils;
+using Hattin.Utils.CSV;
 
 namespace Hattin
 {
@@ -23,8 +24,11 @@ namespace Hattin
             IMoveGenerator threadedGenerator = new BasicMoveGeneratorThreaded(board);
             HattinEngine0_1 engineThreaded = new HattinEngine0_1(board, threadedGenerator, constraintBuilder, evaluator);
 
-            UCIController controller = new UCIController(engineThreaded);
-            controller.StartListening();
+            NNCsvHandler csv = new NNCsvHandler(board);
+            csv.ReadConvertAndWrite("/home/mathias/programming/chess/NNData/train.csv", "/home/mathias/programming/chess/NNData/output1000.csv", 1000);
+
+            //UCIController controller = new UCIController(engineThreaded);
+            //controller.StartListening();
 
 
             //Perft perft = new Perft(engineThreaded);

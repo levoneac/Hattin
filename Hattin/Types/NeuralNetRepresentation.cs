@@ -1,3 +1,7 @@
+using Hattin.Extensions.Squares;
+using Hattin.Utils.Conversions;
+using Microsoft.VisualBasic;
+
 namespace Hattin.Types
 {
     public class NeuralNetRepresentation
@@ -21,7 +25,7 @@ namespace Hattin.Types
             {
                 throw new ArgumentException($"Piece cant be empty ({piece} and square cant be nosquare ({square}))");
             }
-            int arrPos = (int)piece * ((int)square - 21 + 1);
+            int arrPos = (((int)piece - 1) * 64) + square.ToBase64Int();
             if (exists)
             {
                 NeuralInput[arrPos] = 1;
