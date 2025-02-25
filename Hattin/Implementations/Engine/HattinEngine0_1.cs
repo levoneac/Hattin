@@ -347,16 +347,17 @@ namespace Hattin.Implementations.Engine
             int positionHash = Board.PositionHash.CurrentPositionHash;
             if (TranspositionTable.TryGetValue(positionHash, out Transposition preCalculated))
             {
+                //Leads to hallucinations
                 //If the found position was searched longer than this one will be, return the move
-                if (preCalculated.Depth >= absoluteDepth)
-                {
-                    return (int)player * preCalculated.Evaluation;
-                }
-                //Else try the found move first for possible fast pruning
-                else
-                {
-                    priorityMove = preCalculated.Move;
-                }
+                //if (preCalculated.Depth >= absoluteDepth)
+                //{
+                //    return (int)player * preCalculated.Evaluation;
+                //}
+                ////Else try the found move first for possible fast pruning
+                //else
+                //{
+                priorityMove = preCalculated.Move;
+                //}
             }
 
             int playerEvaluation = (int)player * PositionEvaluator.EvaluateCurrentPosition(Board);
@@ -489,7 +490,7 @@ namespace Hattin.Implementations.Engine
             if (generatedMoves.Count > 0)
             {
                 NodeCounter = 0;
-                for (int depth = 1; depth <= 5; depth++)
+                for (int depth = 1; depth <= 4; depth++)
                 {
                     bestMove = AlphaBetaSearch(new GeneratedMove(), depth, 0, int.MinValue, int.MaxValue, Board.SideToMove, bestMove.PV);
                     Console.Write($"info score cp {bestMove.Evaluation / 10} depth {depth} nodes {NodeCounter} pv ");
