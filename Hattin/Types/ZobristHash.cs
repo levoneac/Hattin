@@ -45,7 +45,7 @@ namespace Hattin.Types
         //100 to 1398
         public static int GetKey(NormalPiece piece, BoardSquare square)
         {
-            return ((int)piece * 1000) + (int)square; //fine as long as square is under 100 (i think)
+            return ((int)piece * 100) + (int)square; //fine as long as square is under 100 (i think)
         }
 
         //-1

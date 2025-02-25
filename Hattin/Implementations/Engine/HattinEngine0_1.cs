@@ -247,7 +247,7 @@ namespace Hattin.Implementations.Engine
                     {//moves afterward gets a tiny windows to prune faster (Asumes that the first move that was searched was the best)
                         curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, alpha + 1, player.ToOppositeColor(), pVStack);
                         //If a better move is found then we need to do a proper search, hopefully not every time
-                        if (alpha > curEval.Evaluation && curEval.Evaluation < beta)
+                        if (alpha < curEval.Evaluation && curEval.Evaluation < beta)
                         {
                             Board.RepetitionTable.PopPosition();
                             curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
@@ -293,7 +293,7 @@ namespace Hattin.Implementations.Engine
                     else
                     {
                         curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, beta - 1, beta, player.ToOppositeColor(), pVStack);
-                        if (beta < curEval.Evaluation && curEval.Evaluation > alpha)
+                        if (beta > curEval.Evaluation && curEval.Evaluation > alpha)
                         {
                             Board.RepetitionTable.PopPosition();
                             curEval = AlphaBetaSearch(curMove, depth - 1 + ExtendSearch(curMove, depth), absoluteDepth + 1, alpha, beta, player.ToOppositeColor(), pVStack);
@@ -489,7 +489,7 @@ namespace Hattin.Implementations.Engine
             if (generatedMoves.Count > 0)
             {
                 NodeCounter = 0;
-                for (int depth = 1; depth <= 3; depth++)
+                for (int depth = 1; depth <= 5; depth++)
                 {
                     bestMove = AlphaBetaSearch(new GeneratedMove(), depth, 0, int.MinValue, int.MaxValue, Board.SideToMove, bestMove.PV);
                     Console.Write($"info score cp {bestMove.Evaluation / 10} depth {depth} nodes {NodeCounter} pv ");

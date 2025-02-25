@@ -12,5 +12,8 @@
     <ItemGroup>
       <Compile Remove=".\Implementations\MoveGenerators\BasicMoveGenerator.cs" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="CsvHelper" Version="33.0.1" />
+    </ItemGroup>
 
 </Project>

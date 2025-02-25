@@ -25,6 +25,7 @@ namespace Hattin.Types
         public ZobristHash PositionHash { get; set; }
         public GameResult GameResult { get; set; }
         public RepetitionTable RepetitionTable { get; set; }
+        public NeuralNetRepresentation NeuralNetRepresentation { get; set; }
 
         public BoardState()
         {
@@ -40,6 +41,7 @@ namespace Hattin.Types
             IsCheck = false;
             PositionHash = new ZobristHash();
             RepetitionTable = new RepetitionTable();
+            NeuralNetRepresentation = new NeuralNetRepresentation();
             //PositionHashes = new Dictionary<int, int>();
 
             //NewMoveEvent += PrintMove;
@@ -111,12 +113,21 @@ namespace Hattin.Types
             Board[(int)move.FromSquare] = NormalPiece.Empty;
             Board[(int)move.DestSquare] = pieceAfterMove;
 
+            NeuralNetRepresentation.SetValue(move.Piece, move.FromSquare, false);
+            NeuralNetRepresentation.SetValue(pieceAfterMove, move.DestSquare, true);
+
             //Castle move 
             if (move.RookCastleToSquare != BoardSquare.NoSquare && move.RookCastleFromSquare != BoardSquare.NoSquare)
             {
-                Board[(int)move.RookCastleToSquare] = PieceProperties.GetPieceOnSquare(move.RookCastleFromSquare);
+                NormalPiece rook = PieceProperties.GetPieceOnSquare(move.RookCastleFromSquare);
+                Board[(int)move.RookCastleToSquare] = rook;
                 Board[(int)move.RookCastleFromSquare] = NormalPiece.Empty;
+
+                NeuralNetRepresentation.SetValue(rook, move.RookCastleFromSquare, false);
+                NeuralNetRepresentation.SetValue(rook, move.RookCastleToSquare, true);
             }
+
+            NormalPiece pieceOnDestSquare = PieceProperties.GetPieceOnSquare(move.DestSquare);
 
             //Save prev move data and state
             moveHistory.Push(new PlayedMove
@@ -133,7 +144,7 @@ namespace Hattin.Types
                 PromotedToPiece = pieceAfterMove,
                 FromSquare = move.FromSquare,
                 DestSquare = move.DestSquare,
-                PieceOnDestSquare = PieceProperties.GetPieceOnSquare(move.DestSquare),
+                PieceOnDestSquare = pieceOnDestSquare,
                 RookSourceSquare = move.RookCastleFromSquare,
                 RookDestSquare = move.RookCastleToSquare,
 
@@ -148,10 +159,15 @@ namespace Hattin.Types
             if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
             {
                 Board[(int)move.EnPassantCaptureSquare] = NormalPiece.Empty;
+                NeuralNetRepresentation.SetValue(PieceProperties.GetPieceOnSquare(move.EnPassantCaptureSquare), move.EnPassantCaptureSquare, false);
             }
 
             PlyCounter++;
-            if (PieceProperties.GetPieceOnSquare(move.DestSquare) == NormalPiece.Empty || move.Piece.ToValue() != NormalPieceValue.Pawn)
+            if (pieceOnDestSquare != NormalPiece.Empty)
+            {
+                NeuralNetRepresentation.SetValue(pieceOnDestSquare, move.DestSquare, false);
+            }
+            if (pieceOnDestSquare != NormalPiece.Empty || move.EnPassantCaptureSquare != BoardSquare.NoSquare || move.Piece.ToValue() != NormalPieceValue.Pawn)
             { PliesWithoutCapture++; }
             else { PliesWithoutCapture = 0; }
 
@@ -164,6 +180,7 @@ namespace Hattin.Types
             }
 
             PieceProperties.MovePiece(move);
+
             //NewMoveEventArgs eventArgs = new NewMoveEventArgs(move);
             //OnNewMoveEvent(eventArgs);
         }
@@ -184,17 +201,30 @@ namespace Hattin.Types
             Board[(int)move.FromSquare] = move.PromotedFromPiece;
             Board[(int)move.DestSquare] = move.PieceOnDestSquare;
 
+            NeuralNetRepresentation.SetValue(move.PromotedToPiece, move.DestSquare, false);
+            NeuralNetRepresentation.SetValue(move.PromotedFromPiece, move.FromSquare, true);
+            if (move.PieceOnDestSquare != NormalPiece.Empty)
+            {
+                NeuralNetRepresentation.SetValue(move.PieceOnDestSquare, move.DestSquare, true);
+            }
+
             if (move.RookSourceSquare != BoardSquare.NoSquare && move.RookDestSquare != BoardSquare.NoSquare)
             {
-                Board[(int)move.RookSourceSquare] = PieceProperties.GetPieceOnSquare(move.RookDestSquare);
+                NormalPiece rook = PieceProperties.GetPieceOnSquare(move.RookDestSquare);
+                Board[(int)move.RookSourceSquare] = rook;
                 Board[(int)move.RookDestSquare] = NormalPiece.Empty;
+
+                NeuralNetRepresentation.SetValue(rook, move.RookSourceSquare, true);
+                NeuralNetRepresentation.SetValue(rook, move.RookDestSquare, false);
             }
 
             CastleRights = move.CastleRights;
             EnPassantSquare = move.EnPassantSquare;
             if (move.EnPassantCaptureSquare != BoardSquare.NoSquare)
             {
-                Board[(int)move.EnPassantCaptureSquare] = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
+                NormalPiece pawn = move.SideToMove == SideToMove.White ? NormalPiece.BlackPawn : NormalPiece.WhitePawn;
+                Board[(int)move.EnPassantCaptureSquare] = pawn;
+                NeuralNetRepresentation.SetValue(pawn, move.EnPassantCaptureSquare, true);
             }
             IsCheck = move.IsCheck;
             PlyCounter = move.PlyCounter; //strip
@@ -208,17 +238,6 @@ namespace Hattin.Types
             PositionHash.UndoMove(move, this);
             PieceProperties.UndoMove(move);
         }
-
-        //quickfix
-        public bool IsValid(Move move)
-        {
-            if (PieceProperties.GetPieceOnSquare(move.FromSquare) == move.Piece)
-            {
-                return true;
-            }
-            return false;
-        }
-
 
         private void FlushBoard()
         {
@@ -235,6 +254,7 @@ namespace Hattin.Types
             CastleRights = 0;
             moveHistory.Clear();
             RepetitionTable.Clear();
+            NeuralNetRepresentation.Clear();
         }
         public void PrintBoard(SideToMove perspective, bool moreInfo = false)
         {
@@ -353,6 +373,7 @@ namespace Hattin.Types
                         int realPosition = Utils.Conversions.SquareConversions.Array64To120[boardPointer];
                         Board[realPosition] = (NormalPiece)piece;
                         PieceProperties.AddPiece((NormalPiece)piece, (BoardSquare)realPosition);
+                        NeuralNetRepresentation.SetValue((NormalPiece)piece, (BoardSquare)realPosition, true);
                         boardPointer++;
                         elemsInRank++;
                     }
