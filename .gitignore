@@ -1,11 +1,15 @@
-Hattin/bin/**/*
-Hattin/obj/**/*
+**/bin/**/*
+**/obj/**/*
 .vscode
 *.pgn
+Games
+*.txt
 HattinB
 arenalinux_64bit_3.10beta
 backupHattin
+stockfishperft
 /.vs
 /Hattin/.vs
 /Hattin/Properties/PublishProfiles
 /Hattin/Hattin.csproj.user
+NNData

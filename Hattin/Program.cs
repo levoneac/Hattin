@@ -1,15 +1,11 @@
-﻿using Hattin.Implementations.Engine;
-using Hattin.Extensions.SideToMove;
-using Hattin.Extensions.SquareInteraction;
-using Hattin.Extensions.Squares;
-using Hattin.Implementations.Controllers;
-using Hattin.Implementations.MoveConstraintBuilders;
-using Hattin.Implementations.MoveGenerators;
-using Hattin.Implementations.PositionEvaluators;
-using Hattin.Interfaces;
-using Hattin.Types;
-using Hattin.Utils;
-using Hattin.Utils.CSV;
+﻿using HattinEngineLibrary.Implementations.Controllers;
+using HattinEngineLibrary.Implementations.Engine;
+using HattinEngineLibrary.Implementations.MoveConstraintBuilders;
+using HattinEngineLibrary.Implementations.MoveGenerators;
+using HattinEngineLibrary.Implementations.PositionEvaluators;
+using HattinEngineLibrary.Interfaces;
+using HattinEngineLibrary.Types;
+
 
 namespace Hattin
 {
